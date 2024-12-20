@@ -84,6 +84,7 @@ export default function NouvelleDemandeForm({ onClose, initialProgram, type = 'n
         title: "Erreur",
         description: "Le champ Intitulé est obligatoire",
         variant: "destructive",
+        id: ''
       });
       return;
     }
@@ -92,6 +93,7 @@ export default function NouvelleDemandeForm({ onClose, initialProgram, type = 'n
         title: "Erreur",
         description: "Le champ Description est obligatoire",
         variant: "destructive",
+        id: ''
       });
       return;
     }
@@ -117,6 +119,7 @@ export default function NouvelleDemandeForm({ onClose, initialProgram, type = 'n
       toast({
         title: 'Succès !',
         description: 'Votre demande a été envoyée avec succès.',
+        id: ''
       });
       onClose();
     } catch (error) {
@@ -124,6 +127,7 @@ export default function NouvelleDemandeForm({ onClose, initialProgram, type = 'n
         title: 'Erreur',
         description: 'Échec de l\'envoi de la demande. Veuillez réessayer.',
         variant: 'destructive',
+        id: ''
       });
     }
   }

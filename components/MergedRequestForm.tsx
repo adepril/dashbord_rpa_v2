@@ -68,6 +68,7 @@ export default function MergedRequestForm({ onClose, initialProgram, type = 'new
         title: "Erreur",
         description: "Le champ Intitulé est obligatoire",
         variant: "destructive",
+        id: ''
       });
       return;
     }
@@ -76,6 +77,7 @@ export default function MergedRequestForm({ onClose, initialProgram, type = 'new
         title: "Erreur",
         description: "Le champ Description est obligatoire",
         variant: "destructive",
+        id: ''
       });
       return;
     }
@@ -106,6 +108,7 @@ export default function MergedRequestForm({ onClose, initialProgram, type = 'new
       toast({
         title: 'Succès !',
         description: 'Votre demande a été envoyée avec succès.',
+        id: ''
       });
       onClose();
     } catch (error) {
@@ -113,6 +116,7 @@ export default function MergedRequestForm({ onClose, initialProgram, type = 'new
         title: 'Erreur',
         description: 'Échec de l\'envoi de la demande. Veuillez réessayer.',
         variant: 'destructive',
+        id: ''
       });
     }
   }
