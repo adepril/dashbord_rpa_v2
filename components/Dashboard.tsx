@@ -174,10 +174,11 @@ export default function Dashboard() {
   return (
     <>
       <div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center bg-x-100">
-            <Image src="/logo_bbl-groupe.png" alt="Logo BBL Groupe" width={100} height={70} />
-            <div className="ml-20">
+        <Image src="/logo_bbl-groupe.png" alt="Logo BBL Groupe" width={100} height={70} />
+        <div className="flex items-center justify bg-x-100 container mx-auto">
+          <div className=" bg-x-100 ">
+            
+            <div className="ml-5  bg-x-100">
               <span className="text-black ">Utilisateur connecté: {user}</span>
               <div className="flex items-center space-x-8 mt-2">
                 <div className="flex items-center space-x-2">
@@ -199,7 +200,7 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-          <div className="flex items-center space-x-4 mr-8">
+          <div className=" ml-8 bg-x-100">
             <Button onClick={handleOpenForm} className="bg-[#000] hover:bg-gray-700 text-white">Nouvelle Demande</Button>
           </div>
         </div>

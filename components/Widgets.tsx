@@ -11,17 +11,17 @@ export default function Widgets({ data }: WidgetsProps) {
     {
       title: "NB Unités Mois N-1",
       value: data['NB UNITES MOIS N-1'] || '0',
-      color: "bg-red-800 hover:bg-red-600"
+      color: "bg-purple-800 hover:bg-red-600"
     },
     {
       title: "NB Unités Mois N-2",
       value: data['NB UNITES MOIS N-2'] || '0',
-      color: "bg-red-600 hover:bg-red-400"
+      color: "bg-purple-600 hover:bg-red-400"
     },
     {
       title: "NB Unités Mois N-3",
       value: data['NB UNITES MOIS N-3'] || '0',
-      color: "bg-red-400 hover:bg-red-200"
+      color: "bg-purple-400 hover:bg-red-200"
     }
   ];
 

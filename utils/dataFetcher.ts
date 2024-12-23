@@ -139,7 +139,6 @@ export async function fetchProgramsByAgencyId(agencyId: string): Promise<Program
  * @returns An array of objects containing the date data and other relevant fields
  *          for the matching program, or an empty array if no matches are found.
  */
-
 export async function fetchDataReportingByProgram(programName: string) {
   console.log('Fetching DataReportingMoisCourant for program name:', programName);
   try {
@@ -147,12 +146,12 @@ export async function fetchDataReportingByProgram(programName: string) {
     console.log('Raw documents fetched:', querySnapshot.size);
     
     const documents = querySnapshot.docs.map(doc => doc.data());
-    //console.log('All documents:', JSON.stringify(documents, null, 2));
+    console.log('All documents:', JSON.stringify(documents, null, 2));
     
     const data = querySnapshot.docs
       .map(doc => {
         const docData = doc.data();
-        
+        //console.log('docData :', docData);
         // Créer un objet avec toutes les dates du mois
         const dateData: { [key: string]: string } = {};
         const currentDate = new Date();

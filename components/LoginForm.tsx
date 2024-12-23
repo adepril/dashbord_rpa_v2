@@ -18,6 +18,7 @@ export default function LoginForm() {
 
         try {
             const usersRef = collection(db, 'utilisateurs');
+            console.log('User collection:', usersRef);
             const q = query(usersRef, where('userName', '==', username));
             const querySnapshot = await getDocs(q);
 
@@ -29,7 +30,7 @@ export default function LoginForm() {
             const userDoc = querySnapshot.docs[0];
             const userData = userDoc.data();
             const userId = userData.userId;
-
+            console.log('User data loaded:', userData);
             router.push(`/dashboard?user=${encodeURIComponent(username)}`);
         } catch (err) {
             console.error('Erreur lors de la connexion:', err);

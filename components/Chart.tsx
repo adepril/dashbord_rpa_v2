@@ -15,6 +15,15 @@ interface CustomizedAxisTickProps {
   };
 }
 
+/**
+ * A custom axis tick component, which is used to rotate the x-axis tick labels
+ * by -35 degrees to fit more labels on the x-axis.
+ *
+ * @param {number} x The x-coordinate of the tick.
+ * @param {number} y The y-coordinate of the tick.
+ * @param {Object} payload An object containing the value of the tick.
+ * @returns {JSX.Element} The JSX element for the tick.
+ */
 const CustomizedAxisTick: React.FC<CustomizedAxisTickProps> = (props) => {
   const { x, y, payload } = props;
   return (
@@ -33,6 +42,15 @@ const CustomizedAxisTick: React.FC<CustomizedAxisTickProps> = (props) => {
     </g>
   );
 }
+
+/**
+ * Renders a bar chart component displaying data for each day of the current month.
+ * If no data is available, shows a message indicating the chart cannot be generated.
+ *
+ * @param {Object} props - The component props.
+ * @param {Object} props.data - An object containing date keys and corresponding values for the chart.
+ * @returns {JSX.Element} The JSX element for the chart or a message if no data is available.
+ */
 
 export default function Chart({ data }: ChartProps) {
   if (!data) {
@@ -57,7 +75,7 @@ export default function Chart({ data }: ChartProps) {
       value = parseInt(data[dateKey]);
       if (isNaN(value)) value = 0;
     }
-    
+    console.log(dateKey," : ",value);
     return {
       date: dateKey,
       valeur: value

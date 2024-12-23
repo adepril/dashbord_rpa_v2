@@ -10,8 +10,8 @@ export default function DashboardPage() {
   const router = useRouter();
 
   return (
-    <main className="bx-100">
-      <div className="text-left mb-4">
+    <main >
+      <div className="text-left ">
         {/* Space keeper */}
       </div>
       <Dashboard />
