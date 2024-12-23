@@ -11,9 +11,6 @@ export default function DashboardPage() {
 
   return (
     <main >
-      <div className="text-left ">
-        {/* Space keeper */}
-      </div>
       <Dashboard />
     </main>
   );

@@ -174,7 +174,7 @@ export default function Dashboard() {
   return (
     <>
       <div>
-        <Image src="/logo_bbl-groupe.png" alt="Logo BBL Groupe" width={100} height={70} />
+        <Image src="/logo_bbl-groupe2.png" alt="Logo BBL Groupe" width={100} height={70} />
         <div className="flex items-center justify bg-x-100 container mx-auto">
           <div className=" bg-x-100 ">
             
@@ -196,13 +196,15 @@ export default function Dashboard() {
                     selectedProgramId={selectedProgram?.id_programme || ''}
                     onProgramChange={handleProgramChange}
                   />
+                  <div className=" bg-red-100"></div>    
+                  <div className="ml-10 bg-x-100">
+                    <Button onClick={handleOpenForm} className="bg-[#000] hover:bg-gray-700 text-white">Nouvelle Demande</Button>
+                  </div>               
                 </div>
               </div>
             </div>
           </div>
-          <div className=" ml-8 bg-x-100">
-            <Button onClick={handleOpenForm} className="bg-[#000] hover:bg-gray-700 text-white">Nouvelle Demande</Button>
-          </div>
+
         </div>
       </div>
 

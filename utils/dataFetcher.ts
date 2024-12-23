@@ -228,6 +228,27 @@ export async function fetchEvolutionsByProgram(programId: string) {
   }
 }
 
+export async function fetchRandomQuote(): Promise<string | null> {
+  console.log('Fetching a random quote...');
+  try {
+    const quotesRef = collection(db, 'citations');
+    const querySnapshot = await getDocs(quotesRef);
+    //console.log('Quotes fetched:', querySnapshot.docs);
+    if (querySnapshot.empty) {
+      console.log('No quotes found.');
+      return null;
+    }
+
+    const quotes = querySnapshot.docs.map(doc => doc.data().phrase); // Le champ de la citation s'appelle "phrase"
+    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+    console.log('Random quote fetched:', randomQuote);
+    return randomQuote;
+  } catch (error) {
+    console.error('Error fetching random quote:', error);
+    return null;
+  }
+}
+
 export async function fetchStatuts() {
   console.log('Fetching statuts...');
   try {
