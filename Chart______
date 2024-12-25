@@ -1,7 +1,3 @@
-'use client'
-
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
-import React from 'react';
 
 interface ChartProps {
   data: any
@@ -43,6 +39,7 @@ export default function Chart({ data }: ChartProps) {
     );
   }
 
+  // Créer les données pour le graphique pour tous les jours du mois
   const currentDate = new Date();
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth() + 1;
@@ -56,12 +53,14 @@ export default function Chart({ data }: ChartProps) {
       value = parseInt(data[dateKey]);
       if (isNaN(value)) value = 0;
     }
+    
     return {
       date: dateKey,
       valeur: value
     };
   });
 
+  // Ne pas filtrer les jours sans données
   if (chartData.every(item => item.valeur === 0)) {
     return (
       <div className="flex justify-center items-center h-[400px] text-gray-500">
@@ -74,17 +73,17 @@ export default function Chart({ data }: ChartProps) {
     <div className="w-full p-4 bg-white rounded-lg shadow">
       <div className="h-[400px]">
         <ResponsiveContainer width="100%" height="100%">
-            <BarChart 
+          <BarChart 
             data={chartData} 
             margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-            >
+          >
             <XAxis
               dataKey="date"
               stroke="#888888"
               tickLine={false}
               axisLine={false}
               tick={<CustomizedAxisTick x={0} y={0} payload={{
-              value: ""
+                value: ""
               }} />}
               height={60}
             />
@@ -92,34 +91,22 @@ export default function Chart({ data }: ChartProps) {
               stroke="#888888"
               tickLine={false}
               axisLine={false}
-              tickFormatter={(value: number) => `${value}`}
+              tickFormatter={(value) => `${value}`}
             />
             <Tooltip
-              labelFormatter={(label: string) => label}
-              formatter={(value: any, name: string, props: any) => {
-                const gainValue = props.payload.valeur;
-                if (gainValue === undefined || gainValue === 0) {
-                  return [''];
-                }
-                return [`Gain de temps: ${gainValue}`];
-              }}
+              labelFormatter={(label) => label}
+              formatter={(value) => [value]}
             />
-            <Bar
-              dataKey="valeur"
-              fill="#3498db"
-              radius={[4, 4, 0, 0]}
+            <Bar 
+              dataKey="valeur" 
+              fill="#3498db" 
+              radius={[4, 4, 0, 0]} 
               name="Quantité"
-              label={{
-                position: 'top',
-                fill: '#000',
-                fontSize: 12,
-                formatter: (value: number) => value === 0 ? '' : `${value}`
-              }}
-              activeBar={{ fill: '#0066cc' }}
+              label={{ position: 'top', fill: '#000', fontSize: 12 }}
             />
-            </BarChart>
+          </BarChart>
         </ResponsiveContainer>
-        </div>
+      </div>
       <div className="text-center bg-blue-500 mt-1 text-white shadow-md rounded-lg py-1 mx-auto max-w-xs" style={{marginTop: 10}}>
         {data['NB UNITES DEPUIS DEBUT DU MOIS']} unités depuis le début du mois
       </div>

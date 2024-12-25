@@ -146,15 +146,8 @@ export async function fetchDataReportingByProgram(programName: string) {
     console.log('Raw documents fetched:', querySnapshot.size);
     
     const documents = querySnapshot.docs.map(doc => doc.data());
-    //console.log('All documents:', JSON.stringify(documents, null, 2));
+    console.log('All documents:', JSON.stringify(documents, null, 2));
     
-    // Récupérer le barème correspondant au programme
-    const baremeRef = collection(db, 'baremes');
-    const q = query(baremeRef, where('nom_programme', '==', programName));
-    const baremeSnapshot = await getDocs(q);
-    const bareme = baremeSnapshot.docs[0].data();
-    const tempsParUnite = bareme.temps_par_unite;
-
     const data = querySnapshot.docs
       .map(doc => {
         const docData = doc.data();
@@ -172,12 +165,6 @@ export async function fetchDataReportingByProgram(programName: string) {
           dateData[dateKey] = docData[dateKey] || '';
         }
 
-        // Calculer le gain de temps gagné par unité produite
-        const gain: Record<string, number> = Object.keys(dateData).reduce((acc: Record<string, number>, dateKey: string) => {
-          acc[dateKey] = (Number(dateData[dateKey]) * tempsParUnite);
-          return acc;
-        }, {});
-
         return {
           ...dateData,
           AGENCE: docData.AGENCE || '',
@@ -185,21 +172,29 @@ export async function fetchDataReportingByProgram(programName: string) {
           'NB UNITES DEPUIS DEBUT DU MOIS': docData['NB UNITES DEPUIS DEBUT DU MOIS'] || '',
           'NB UNITES MOIS N-1': docData['NB UNITES MOIS N-1'] || '',
           'NB UNITES MOIS N-2': docData['NB UNITES MOIS N-2'] || '',
-          'NB UNITES MOIS N-3': docData['NB UNITES MOIS N-3'] || '',
-          gain // Ajouter l'attribut "gain" à l'objet de données
+          'NB UNITES MOIS N-3': docData['NB UNITES MOIS N-3'] || ''
         };
       })
       .filter(item => {
         console.log('Comparing:', {
           'Item AGENCE + NOM PROGRAMME': item['AGENCE'] +"_"+item['NOM PROGRAMME'],
+          'Search programName': programName
         });
-        return item['AGENCE'] +"_"+item['NOM PROGRAMME'] === programName;
+        // Compare program names after normalizing them
+        const normalizedItemName = (item['AGENCE'] +"_"+item['NOM PROGRAMME'])?.trim().toLowerCase();
+        const normalizedSearchName = programName?.trim().toLowerCase();
+        const isMatch = normalizedItemName === normalizedSearchName;
+        if (isMatch) {
+          console.log('Found matching program:', item['AGENCE'] +"_"+item['NOM PROGRAMME']);
+          console.log('Matched item details:', JSON.stringify(item, null, 2));
+        }
+        return isMatch;
       });
-
-    console.log('Processed data:', data);
+    
+    console.log('Filtered DataReportingMoisCourant data:', data);
     return data;
   } catch (error) {
-    console.error('Error fetching data:', error);
+    console.error('Error fetching data reporting:', error);
     return [];
   }
 }
