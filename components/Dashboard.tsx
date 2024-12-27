@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation';
 import ProgramSelector from './ProgramSelector'
-import Widgets from './Widgets'
+//import Widgets from './Widgets'
 import Chart from './Chart'
 import ProgramTable from './ProgramTable'
 import MergedRequestForm from './MergedRequestForm'
@@ -43,7 +43,7 @@ export default function Dashboard() {
   const [programData, setProgramData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isFormOpen, setIsFormOpen] = useState(false); // État pour contrôler l'ouverture du formulaire
+  const [OpenFormNewOrder, setIsFormOpen] = useState(false); // État pour contrôler l'ouverture du formulaire
 
   const router = useRouter();
   const user = searchParams.get('user');
@@ -175,12 +175,15 @@ export default function Dashboard() {
     <>
       <div>
         <Image src="/logo_bbl-groupe2.png" alt="Logo BBL Groupe" width={100} height={70} />
-        <div className="flex items-center justify bg-x-100 container mx-auto">
-          <div className=" bg-x-100 ">
-            
+        <div className="flex bg-x-100 container mx-auto">
+         
             <div className="ml-5  bg-x-100">
-              <span className="text-black ">Utilisateur connecté: {user}</span>
-              <div className="flex items-center space-x-8 mt-2">
+              <span className="text-black flex">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-user w-5 h-5 mr-2 text-gray-600">
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>
+              </svg> {user}</span>
+              <div className="flex space-x-8 mt-2">
                 <div className="flex items-center space-x-2">
                   <span>Agence:</span>
                   <AgencySelector
@@ -197,18 +200,33 @@ export default function Dashboard() {
                     onProgramChange={handleProgramChange}
                   />
                   <div className=" bg-red-100"></div>    
-                  <div className="ml-10 bg-x-100">
+                  <div className="flex justify-end bg-x-100 ">
                     <Button onClick={handleOpenForm} className="bg-[#000] hover:bg-gray-700 text-white">Nouvelle Demande</Button>
                   </div>               
                 </div>
               </div>
             </div>
-          </div>
-
+          
         </div>
       </div>
 
-      {isFormOpen && <MergedRequestForm onClose={handleCloseForm} initialProgram={selectedProgram?.nom_programme} />}
+      {OpenFormNewOrder &&  
+            <MergedRequestForm
+              onClose={handleCloseForm}
+              type="new"
+              formData={{
+                Intitulé: '',
+                Description: '',
+                Programme: '',
+                Temps_consommé: '',
+                Taches_mensuelle: '',
+                Temps_estimé: '',
+                Gain_estimé: '',
+                Statut: '1' // Par défaut "En attente de validation"
+              }}
+            /> }
+
+
 
       <div className="container mx-auto min-h-screen bg-x-100">
         {selectedProgram && (
@@ -219,11 +237,9 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="grid grid-cols-4 gap-4 bg-white-500" style={{ marginTop: 20 }}>
-              <div className="col-span-1 flex flex-col space-y-4 bg-white-500">
-                <Widgets data={programData?.[0]} />
-              </div>
-              <div className="col-span-2 flex flex-col">
+            <div className="grid grid-cols-4 gap-4 bg-x-300 mt-5" >
+
+              <div className="col-span-4 w-full">
                 <ProgramTable data={historiqueData} />
               </div>
             </div>

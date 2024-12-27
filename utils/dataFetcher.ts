@@ -159,7 +159,7 @@ export async function fetchDataReportingByProgram(programName: string) {
       .map(doc => {
         const docData = doc.data();
         //console.log('docData :', docData);
-        // Créer un objet avec toutes les dates du mois
+        // Créer un objet avec toutes les dates du mois et leurs valeurs
         const dateData: { [key: string]: string } = {};
         const currentDate = new Date();
         const year = currentDate.getFullYear();
@@ -169,7 +169,11 @@ export async function fetchDataReportingByProgram(programName: string) {
         for (let i = 1; i <= 31; i++) {
           const day = i.toString().padStart(2, '0');
           const dateKey = `${day}/${month.toString().padStart(2, '0')}/${year}`;
-          dateData[dateKey] = docData[dateKey] || '';
+          dateData[dateKey] = '';
+          if (docData[dateKey] && docData[dateKey] !== '') {
+            dateData[dateKey] = docData[dateKey] +"¤"+ (Number(docData[dateKey]) * tempsParUnite);
+          }
+          
         }
 
         // Calculer le gain de temps gagné par unité produite

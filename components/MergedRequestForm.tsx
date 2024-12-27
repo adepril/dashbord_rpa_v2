@@ -15,22 +15,35 @@ import { fetchStatuts } from '../utils/dataFetcher';
 
 interface MergedRequestFormProps {
   onClose: () => void;
-  initialProgram?: string;
-  type?: 'evolution' | 'new';
+  type?: 'evolution' | 'new' | 'edit';
+  formData?: {
+    Intitulé: string;
+    Description: string;
+    Programme: string;
+    Temps_consommé: string;
+    Taches_mensuelle: string;
+    Temps_estimé: string;
+    Gain_estimé: string;
+    Statut: string;
+  };
 }
 
-export default function MergedRequestForm({ onClose, initialProgram, type = 'new' }: MergedRequestFormProps) {
-  const { toast } = useToast();
-  const [formData, setFormData] = useState({
+export default function MergedRequestForm({
+  onClose,
+  type = 'new',
+  formData = {
     Intitulé: '',
     Description: '',
-    Programme: initialProgram || '',
+    Programme: '',
     Temps_consommé: '',
     Taches_mensuelle: '',
     Temps_estimé: '',
     Gain_estimé: '',
     Statut: '1' // Par défaut "En attente de validation"
-  })
+  }
+}: MergedRequestFormProps) {
+  const { toast } = useToast();
+  const [formDataState, setFormData] = useState(formData);
 
   const [statuts, setStatuts] = useState<{numero: string, label: string}[]>([]);
 
@@ -137,6 +150,7 @@ export default function MergedRequestForm({ onClose, initialProgram, type = 'new
               <Label htmlFor="Description">Description</Label>
               <Textarea id="Description" name="Description" value={formData.Description} onChange={handleChange} />
             </div>
+
             <div>
               <Label htmlFor="programme">Programme</Label>
               <Input 
@@ -144,8 +158,8 @@ export default function MergedRequestForm({ onClose, initialProgram, type = 'new
                 name="Programme" 
                 value={formData.Programme} 
                 onChange={handleChange}
-                disabled={!!initialProgram || type === 'new'}
-                className={initialProgram || type === 'new' ? "bg-gray-100" : ""}
+                disabled={ type === 'edit'}
+                className={type === 'new' ? "bg-gray-100" : ""}
               />
             </div>
             <div>
@@ -175,6 +189,8 @@ export default function MergedRequestForm({ onClose, initialProgram, type = 'new
                 </SelectContent>
               </Select>
             </div>
+
+            
             <div>
               <Label htmlFor="Temps consommé">Temps consommé</Label>
               <Input id="Temps consommé" name="Temps_consommé" value={formData.Temps_consommé} onChange={handleChange} />
