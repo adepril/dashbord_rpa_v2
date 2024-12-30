@@ -23,6 +23,8 @@ interface Program {
   id_programme: string;
   nom_programme: string;
   id_agence: string;
+  type_gain: string;
+  bareme: string;
 }
 
 interface Agency {
@@ -38,7 +40,7 @@ export default function Dashboard() {
   const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
-  const [selectedProgramData, setSelectedProgramData] = useState<string>('');
+  const [selectedProgramData, setSelectedProgramData] = useState<Program | null>(null);
   const [historiqueData, setHistoriqueData] = useState<any[]>([]);
   const [programData, setProgramData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -107,13 +109,13 @@ export default function Dashboard() {
           setSelectedProgram(defaultProgram);
           // Use the exact program name for searching in Firebase
           console.log('Setting program data with name:', defaultProgram.nom_programme);
-          setSelectedProgramData(defaultProgram.nom_programme);
+          setSelectedProgramData(defaultProgram);
         }
       } else {
         console.log('No agency selected, clearing programs');
         setPrograms([]);
         setSelectedProgram(null);
-        setSelectedProgramData('');
+        setSelectedProgramData(null);
       }
     };
 
@@ -125,10 +127,10 @@ export default function Dashboard() {
     const loadProgramData = async () => {
       if (selectedProgramData) {
         console.log('Loading data for program:', selectedProgramData);
-        const data = await fetchDataReportingByProgram(selectedProgramData);
+        const data = await fetchDataReportingByProgram(selectedProgramData.nom_programme, selectedProgramData.bareme);
         setProgramData(data);
         
-        const historique = await fetchEvolutionsByProgram(selectedProgramData);
+        const historique = await fetchEvolutionsByProgram(selectedProgramData.nom_programme);
         setHistoriqueData(historique);
       }
     };
@@ -147,7 +149,7 @@ export default function Dashboard() {
       setSelectedProgram(program);
       // Use the exact program name for searching in Firebase
       console.log('Setting program data with name:', program.nom_programme);
-      setSelectedProgramData(program.nom_programme);
+      setSelectedProgramData(program);
     }
   };
 

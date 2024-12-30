@@ -89,6 +89,8 @@ interface Program {
   id_programme: string;
   nom_programme: string;
   id_agence: string;
+  type_gain: string;
+  bareme: string;
 }
 
   /**
@@ -109,7 +111,7 @@ export async function fetchProgramsByAgencyId(agencyId: string): Promise<Program
       // Sinon, filtrer par id_agence
       q = query(programsRef, where('id_agence', '==', agencyId));
     }
-    console.log("q:", q);
+    //console.log("q:", q);
     const querySnapshot = await getDocs(q);
     
     const programs = querySnapshot.docs.map(doc => {
@@ -117,7 +119,9 @@ export async function fetchProgramsByAgencyId(agencyId: string): Promise<Program
       return {
         id_programme: data.id_programme,
         nom_programme: data.nom_programme,
-        id_agence: data.id_agence
+        id_agence: data.id_agence,
+        type_gain: data.type_gain,
+        bareme: data.bareme
       };
     });
     console.log('fetchProgramsByAgencyId(): ', programs);
@@ -139,7 +143,7 @@ export async function fetchProgramsByAgencyId(agencyId: string): Promise<Program
  * @returns An array of objects containing the date data and other relevant fields
  *          for the matching program, or an empty array if no matches are found.
  */
-export async function fetchDataReportingByProgram(programName: string) {
+export async function fetchDataReportingByProgram(programName: string, bareme: string) {
   console.log('Fetching DataReportingMoisCourant for program name:', programName);
   try {
     const querySnapshot = await getDocs(collection(db, 'DataReportingMoisCourant'));
@@ -147,13 +151,6 @@ export async function fetchDataReportingByProgram(programName: string) {
     
     const documents = querySnapshot.docs.map(doc => doc.data());
     //console.log('All documents:', JSON.stringify(documents, null, 2));
-    
-    // Récupérer le barème correspondant au programme
-    const baremeRef = collection(db, 'baremes');
-    const q = query(baremeRef, where('nom_programme', '==', programName));
-    const baremeSnapshot = await getDocs(q);
-    const bareme = baremeSnapshot.docs[0].data();
-    const tempsParUnite = bareme.temps_par_unite;
 
     const data = querySnapshot.docs
       .map(doc => {
@@ -171,14 +168,13 @@ export async function fetchDataReportingByProgram(programName: string) {
           const dateKey = `${day}/${month.toString().padStart(2, '0')}/${year}`;
           dateData[dateKey] = '';
           if (docData[dateKey] && docData[dateKey] !== '') {
-            dateData[dateKey] = docData[dateKey] +"¤"+ (Number(docData[dateKey]) * tempsParUnite);
+            dateData[dateKey] = docData[dateKey] +"¤"+ (Number(docData[dateKey]) * Number(bareme));
           }
-          
         }
 
         // Calculer le gain de temps gagné par unité produite
         const gain: Record<string, number> = Object.keys(dateData).reduce((acc: Record<string, number>, dateKey: string) => {
-          acc[dateKey] = (Number(dateData[dateKey]) * tempsParUnite);
+          acc[dateKey] = (Number(dateData[dateKey]) * Number(bareme));
           return acc;
         }, {});
 

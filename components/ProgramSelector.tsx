@@ -6,6 +6,8 @@ interface Program {
   id_programme: string;
   nom_programme: string;
   id_agence: string;
+  type_gain: string;
+  bareme: string;
 }
 
 interface ProgramSelectorProps {
