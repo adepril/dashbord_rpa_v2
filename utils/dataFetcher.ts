@@ -194,9 +194,7 @@ export async function fetchDataReportingByProgram(programName: string) {
         };
       })
       .filter(item => {
-        console.log('Comparing:', {
-          'Item AGENCE + NOM PROGRAMME': item['AGENCE'] +"_"+item['NOM PROGRAMME'],
-        });
+        //console.log('Comparing:', {'Item AGENCE + NOM PROGRAMME': item['AGENCE'] +"_"+item['NOM PROGRAMME'], });
         return item['AGENCE'] +"_"+item['NOM PROGRAMME'] === programName;
       });
 

@@ -14,13 +14,11 @@ import { Button } from "@/components/ui/button"
 import { fetchStatuts } from '../utils/dataFetcher'
 import MergedRequestForm from './MergedRequestForm'
 
-
 interface ProgramTableProps {
   data: any[]
 }
 
-
-export default function ProgramTable({ data }: ProgramTableProps) {
+export default function ProgramTable({ data }: ProgramTableProps): JSX.Element {
   const [showForm, setShowForm] = useState(false);
   //const [showForm2, setShowForm2] = useState(false);
   const [popupInfo, setPopupInfo] = useState<{ row: any; position: { x: number; y: number } | null }>({ row: null, position: null });
@@ -35,30 +33,52 @@ export default function ProgramTable({ data }: ProgramTableProps) {
     Gain_estimé: '',
     Statut: ''
   });
-  const [OpenFormRequestEvolution, setIsFormOpen_Evolution] = useState(false); // État pour contrôler l'ouverture du formulaire de demande d'évolution
-  const [OpenFormEdit, setIsFormOpen_Edit] = useState(false); // État pour contrôler l'ouverture du formulaire pour l'édition
+
+  // État pour contrôler l'ouverture du formulaire de demande d'évolution
+  const [OpenFormRequestEvolution, setIsFormOpen_Evolution] = useState(false); 
+  // État pour contrôler l'ouverture du formulaire pour l'édition
+  const [OpenFormEdit, setIsFormOpen_Edit] = useState(false); 
 
   useEffect(() => {
     const loadStatuts = async () => {
       const statutsData = await fetchStatuts();
       const statutsMap: { [key: string]: string } = {};
       statutsData.forEach((statut: any) => {
+        console.log(statut);
         statutsMap[statut.numero] = statut.label;
       });
       setStatuts(statutsMap);
     };
-
     loadStatuts();
   }, []);
 
+/**
+ * Returns a JSX element representing the label and icon for a given statut number.
+ * If the statut number is not found, it returns a paragraph indicating "Statut inconnu".
+ *
+ * @param {string} statutNumero - The number of the statut to retrieve the label and icon for.
+ * @returns {JSX.Element} The JSX element containing the statut label and icon, or a message indicating the statut is unknown.
+ */
   const getStatutLabel = (statutNumero: string) => {
-    return statuts[statutNumero] || 'Statut inconnu';
-  };
+    if (!statuts[statutNumero]) {
+      return <p>Statut inconnu</p>; // Message si le statut n'existe pas
+    }
+    
+  return (
+    <div className='icon flex items-center'> 
+      <svg className="w-5 h-5"> 
+        <use xlinkHref={`statusIcons.svg#${statuts[statutNumero]}`}></use>
+      </svg>
+      <span className='ml-2'>{statuts[statutNumero]}</span>
+    </div>
+  );
+};
 
   //ouverture de la popoup pour la demande d'évolution
   const handleOpenForm_Evolution = () => {
     setIsFormOpen_Evolution(true);
   };
+
   //fermeture de la popoup 
   // pour la demande d'évolution ou la demande d'édition
   const handleCloseForm = () => {
@@ -66,6 +86,7 @@ export default function ProgramTable({ data }: ProgramTableProps) {
     setIsFormOpen_Edit(false);
   };
 
+  //Ouvre la pop-up pour éditer une demande
   const handleOpenForm_Edit = (
     Intitulé: string,
     Description: string,
@@ -89,17 +110,18 @@ export default function ProgramTable({ data }: ProgramTableProps) {
       setIsFormOpen_Edit(true);
   };
 
-
   if (!data || data.length === 0) {
     return (
       <div className="space-y-4 " style={{marginLeft: 100}}>
         
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold">Evolutions du programme</h2>
-          <Button variant="default" className="bg-[#000] text-white" onClick={() => setShowForm(true)}>
-            Demande d'évolution
-          </Button>
-        </div>
+            <button onClick={() => setShowForm(true)} 
+              className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-lg hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
+              <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-lg opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
+              Demande d'évolution
+            </button>
+         </div>
 
         <div className="text-center p-4 text-gray-500 h-[400px] "> 
           Aucune donnée disponible sur l'évolution de ce programme.
@@ -110,11 +132,15 @@ export default function ProgramTable({ data }: ProgramTableProps) {
   }
 
   return (
-    <div className="space-y-4 " >
+    <div className="space-y-4">
        
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Evolutions du programme</h2>  
-        <Button onClick={handleOpenForm_Evolution} className="bg-[#000] hover:bg-gray-700 text-white">Demande d'évolution</Button>    
+      <div className="flex justify-between items-center h-[50px]">
+        <h2 className="text-2xl font-bold">Evolutions du programme</h2>     
+        <button onClick={handleOpenForm_Evolution}
+              className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-lg hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
+              <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-lg opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_5px_5px_rgba(0,0,0,0.3)]"></span>
+              Demande d'évolution
+            </button>
       </div>
 
       <div className="rounded-lg shadow-lg overflow-hidden border border-gray-200">
@@ -133,9 +159,7 @@ export default function ProgramTable({ data }: ProgramTableProps) {
             {data.map((row, index) => (
               <TableRow
                 key={index}
-                className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100`}
-                /* onMouseEnter={(e) => handleMouseEnter(e, row)}
-                onMouseLeave={handleMouseLeave} */
+                className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 h-[49px]`}
               >
                 <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">{row.Intitulé}</TableCell>
                 <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">Nouveau</TableCell>
@@ -145,7 +169,11 @@ export default function ProgramTable({ data }: ProgramTableProps) {
                 <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">{row['Gain de temps estimé']}</TableCell>
                 <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">N/A</TableCell>
                 <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">
-                  <Button onClick={() => handleOpenForm_Edit(row.Intitulé, row.Description, row.Programme, row['Temps consommé'], row['Tâches mensuelles'], row['Temps Estimé'], row['Gain de temps estimé'], row.Statut  )} className="bg-[#000] hover:bg-gray-700 text-white">Editer</Button>
+                  <button onClick={() => handleOpenForm_Edit(row.Intitulé, row.Description, row.Programme, row['Temps consommé'], row['Tâches mensuelles'], row['Temps Estimé'], row['Gain de temps estimé'], row.Statut  )} 
+                    className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium overflow-hidden relative px-3 py-1 rounded-lg hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
+                    <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-lg opacity-50 group-hover:top-[150%] duration-500 "></span>
+                    Détails
+                  </button>
                 </TableCell>
               </TableRow>
             ))}
