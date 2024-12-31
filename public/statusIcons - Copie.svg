@@ -1,23 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0">
   <!-- En attente de validation -->
   <symbol id="En attente de validation" viewBox="0 0 24 24">
-    <circle cx="12" cy="12" r="10" fill="#007bff" stroke="#000" stroke-width="2"/>
-    <circle cx="12" cy="12" r="3" fill="#fff"/>
-    <line x1="12" y1="12" x2="12" y2="16" stroke="#fff" stroke-width="2"/>
-    <line x1="12" y1="12" x2="22" y2="38" stroke="#fff" stroke-width="2"/>
+    <circle cx="12" cy="12" r="10" stroke="blue" strokeWidth="2" fill="lightblue" />
+    <path d="M12 6v6h6" stroke="blue" strokeWidth="2" />
   </symbol>
   
   <!-- Validé par le validateur -->
   <symbol id="Validé par le validateur" viewBox="0 0 24 24">
     <circle cx="12" cy="12" r="10" stroke="green" strokeWidth="2" fill="lightgreen" />
-    <path d="M7 12l3 3 5-5" stroke="green" stroke-width="2" fill="none" />
+    <path d="M8 12l2 2 4-4" stroke="green" strokeWidth="2" />
   </symbol>
   
     <!-- En développement -->
   <symbol id="En développement" viewBox="0 0 24 24">
-    <circle cx="2" cy="12" r="10" fill="#5bc0de" stroke="#000" strokeWidth="2"/>
-    <path d="M20 40 L44 16 L48 20 L24 44 L20 40 Z" fill="#fff"/>
-    <path d="M24 44 L20 40 L20 48 L28 48 L24 44 Z" fill="#ccc"/>
+    <circle cx="12" cy="12" r="10" stroke="blue" strokeWidth="2" fill="lightblue" />
+    <path d="M12 6l0 12M6 12l12 0" stroke="navy" strokeWidth="2" />
   </symbol>
   
   <!-- En production -->

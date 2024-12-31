@@ -100,18 +100,20 @@ interface Program {
    * @returns An array of programs
    */
 export async function fetchProgramsByAgencyId(agencyId: string): Promise<Program[]> {
-  console.log('Fetching programs for agency ID:', agencyId);
+  console.log('fetchProgramsByAgencyId for agency ID:', agencyId);
   try {
     const programsRef = collection(db, 'programmes');
     let q;
-    if (agencyId === "ALL") {
-      // Si l'agence est "ALL", récupérer tous les programmes
+    if (agencyId === "1") {
+      // l'agence est "ALL", on récupérer tous les programmes
+      console.log('All agency -> Fetching ALL programs');
       q = query(programsRef);
     } else {
-      // Sinon, filtrer par id_agence
+      // filtrer par id_agence
+      console.log('Fetching programs for agency ID:', agencyId);
       q = query(programsRef, where('id_agence', '==', agencyId));
     }
-    //console.log("q:", q);
+
     const querySnapshot = await getDocs(q);
     
     const programs = querySnapshot.docs.map(doc => {

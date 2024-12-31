@@ -76,11 +76,10 @@ export default function Chart({ data }: ChartProps) {
   }
 
   return (
-    
     <>
     <div className="w-full flex justify-center items-center ">
 
-      <div className="w-full p-4 bg-white rounded-lg shadow mr-4">
+      <div className="w-1/2 p-4 bg-white rounded-lg shadow mr-4">
         <div className="h-[300px] relative">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
@@ -129,6 +128,7 @@ export default function Chart({ data }: ChartProps) {
             Échelle de temps en minutes
           </div>
         </div>
+
         <div className="flex justify-around mt-2">
             <div className="w-1/4 mr-5 ml-5 ">
               <div className="bg-blue-400 hover:bg-blue-600 text-white shadow-md rounded-lg py-2">
@@ -157,7 +157,87 @@ export default function Chart({ data }: ChartProps) {
           </div>
           
       </div>
-   
+      
+      <div className="w-1/2 p-4 bg-white rounded-lg shadow ml-2">
+          <div className="h-[300px] relative">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={chartData}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              >
+                <XAxis
+                  dataKey="date"
+                  stroke="#888888"
+                  tickLine={false}
+                  axisLine={false}
+                  tick={<CustomizedAxisTick x={0} y={0} payload={{
+                    value: ""
+                  }} />}
+                  height={60}
+                  tickFormatter={(t) => `${t} min`} />
+                <YAxis
+                  stroke="#888888"
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(value: number) => `${value}`} />
+                <Tooltip
+                  labelFormatter={(label: string) => label}
+                  formatter={(value: any, name: string, props: any) => {
+                    const { valeur, gain } = props.payload;
+                    if ((valeur === undefined || valeur === 0) && (gain === undefined || gain === 0)) {
+                      return [''];
+                    }
+                    return [`Gain : ${gain} min`];
+                  } } />
+                <Bar
+                  dataKey="valeur"
+                  fill="#3498db"
+                  radius={[4, 4, 0, 0]}
+                  name="Quantité"
+                  label={{
+                    position: 'top',
+                    fill: '#000',
+                    fontSize: 12,
+                    formatter: (value: number) => value === 0 ? '' : `${value}`
+                  }}
+                  activeBar={{ fill: '#0066cc' }} />
+              </BarChart>
+            </ResponsiveContainer>
+            <div className="absolute top-2 right-2 text-black px-2 py-1 rounded-md shadow-md">
+              Échelle de temps en minutes
+            </div>
+          </div>
+          
+          <div className="flex justify-around mt-2">
+            <div className="w-1/4 mr-5 ml-5 ">
+              <div className="bg-blue-400 hover:bg-blue-600 text-white shadow-md rounded-lg py-2">
+                <div className="ml-4 text-xs ">Total du mois</div>
+                <div className="ml-4 text-xl ">{data['NB UNITES DEPUIS DEBUT DU MOIS']} h</div>
+              </div>
+            </div>
+            <div className=" w-1/4 mr-5 ml-5">
+              <div className="bg-blue-400 hover:bg-blue-600 text-white shadow-md rounded-lg py-2 ">
+                <div className="ml-4 text-xs ">M-1</div>
+                <div className="ml-4 text-xl ">{data['NB UNITES MOIS N-1']} h</div>
+              </div>
+            </div>
+            <div className=" w-1/4 mr-5 ml-5">
+              <div className="bg-blue-400 hover:bg-blue-600 text-white shadow-md rounded-lg py-2 ">
+                <div className="ml-4 text-xs ">M-2</div>
+                <div className="ml-4 text-xl">{data['NB UNITES MOIS N-2']} h</div>
+              </div>
+            </div>
+            <div className="w-1/4 mr-5 ml-5">
+              <div className="bg-blue-400 hover:bg-blue-600 text-white shadow-md rounded-lg py-2 ">
+                <div className="ml-4 text-xs ">M-3</div>
+                <div className="ml-4 text-xl ">{data['NB UNITES MOIS N-3']} h</div>
+              </div>
+            </div>
+          </div>
+
+      </div>
+          
+
     </div>
      
      </>

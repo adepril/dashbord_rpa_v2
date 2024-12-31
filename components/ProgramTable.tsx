@@ -44,7 +44,6 @@ export default function ProgramTable({ data }: ProgramTableProps): JSX.Element {
       const statutsData = await fetchStatuts();
       const statutsMap: { [key: string]: string } = {};
       statutsData.forEach((statut: any) => {
-        console.log(statut);
         statutsMap[statut.numero] = statut.label;
       });
       setStatuts(statutsMap);
@@ -115,7 +114,7 @@ export default function ProgramTable({ data }: ProgramTableProps): JSX.Element {
       <div className="space-y-4 " style={{marginLeft: 100}}>
         
         <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">Evolutions du programme</h2>
+          <h2 className="text-2xl font-bold">Evolutions du robot</h2>
             <button onClick={() => setShowForm(true)} 
               className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-lg hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
               <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-lg opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
@@ -124,7 +123,7 @@ export default function ProgramTable({ data }: ProgramTableProps): JSX.Element {
          </div>
 
         <div className="text-center p-4 text-gray-500 h-[400px] "> 
-          Aucune donnée disponible sur l'évolution de ce programme.
+          Aucune donnée disponible sur l'évolution de ce robot.
         </div>
 
       </div>

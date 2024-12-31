@@ -6,6 +6,7 @@ import ProgramSelector from './ProgramSelector'
 //import Widgets from './Widgets'
 import Chart from './Chart'
 import ProgramTable from './ProgramTable'
+import Chart4All from './Chart4All'
 import MergedRequestForm from './MergedRequestForm'
 import AgencySelector from './AgencySelector'
 import Image from 'next/image';
@@ -181,9 +182,9 @@ export default function Dashboard() {
          
             <div className="ml-5  bg-x-100">
               <span className="text-black flex">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
-            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user w-5 h-5 mr-2 text-gray-600">
-              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
+                  stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user w-5 h-5 mr-2 text-gray-600">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>
               </svg> {user}</span>
               <div className="flex space-x-8 mt-2">
                 <div className="flex items-center space-x-2">
@@ -195,7 +196,7 @@ export default function Dashboard() {
                   />
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span>Programme:</span>
+                  <span>Robot:</span>
                   <ProgramSelector
                     programs={programs}
                     selectedProgramId={selectedProgram?.id_programme || ''}
@@ -238,7 +239,13 @@ export default function Dashboard() {
           <div className="p-4 bg-x-200">
             <div className="grid grid-cols-4 gap-4 bg-x-100">
               <div className="col-span-4">
-                <Chart data={programData?.[0]} />
+          
+                 {selectedAgency?.idAgence === '1' ? (
+                  <Chart4All data={programData?.[0]} />
+                ) : (
+                  <Chart data={programData?.[0]} />
+                )}
+
               </div>
             </div>
 
