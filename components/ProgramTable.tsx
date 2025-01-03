@@ -8,9 +8,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "./ui/table"
 import NewRequestForm from './NewRequestForm'
-import { Button } from "@/components/ui/button"
+import { Button } from "./ui/button"
 import { fetchStatuts } from '../utils/dataFetcher'
 import MergedRequestForm from './MergedRequestForm'
 
@@ -20,7 +20,6 @@ interface ProgramTableProps {
 
 export default function ProgramTable({ data }: ProgramTableProps): JSX.Element {
   const [showForm, setShowForm] = useState(false);
-  //const [showForm2, setShowForm2] = useState(false);
   const [popupInfo, setPopupInfo] = useState<{ row: any; position: { x: number; y: number } | null }>({ row: null, position: null });
   const [statuts, setStatuts] = useState<{ [key: string]: string }>({});
   const [selectedProgram, setSelectedProgram] = useState({
@@ -31,7 +30,8 @@ export default function ProgramTable({ data }: ProgramTableProps): JSX.Element {
     Taches_mensuelle: '',
     Temps_estimé: '',
     Gain_estimé: '',
-    Statut: ''
+    Statut: '',
+    Nombre_operations_mensuelles: '' // Ajout de la nouvelle propriété
   });
 
   // État pour contrôler l'ouverture du formulaire de demande d'évolution
@@ -60,18 +60,18 @@ export default function ProgramTable({ data }: ProgramTableProps): JSX.Element {
  */
   const getStatutLabel = (statutNumero: string) => {
     if (!statuts[statutNumero]) {
-      return <p>Statut inconnu</p>; // Message si le statut n'existe pas
+      return <p>Statut inconnu</p>; 
     }
     
-  return (
-    <div className='icon flex items-center'> 
-      <svg className="w-5 h-5"> 
-        <use xlinkHref={`statusIcons.svg#${statuts[statutNumero]}`}></use>
-      </svg>
-      <span className='ml-2'>{statuts[statutNumero]}</span>
-    </div>
-  );
-};
+    return (
+      <div className='icon flex items-center'> 
+        <svg className="w-5 h-5"> 
+          <use xlinkHref={`statusIcons.svg#${statuts[statutNumero]}`}></use>
+        </svg>
+        <span className='ml-2'>{statuts[statutNumero]}</span>
+      </div>
+    );
+  };
 
   //ouverture de la popoup pour la demande d'évolution
   const handleOpenForm_Evolution = () => {
@@ -94,52 +94,50 @@ export default function ProgramTable({ data }: ProgramTableProps): JSX.Element {
     Taches_mensuelle: string,
     Temps_estimé: string,
     Gain_estimé: string,
-    Statut: string
-    ) => {
-       setSelectedProgram({
-         Intitulé,
-         Description,
-         Programme,
-         Temps_consommé,
-         Taches_mensuelle,
-         Temps_estimé,
-         Gain_estimé,
-         Statut
-       });
-      setIsFormOpen_Edit(true);
+    Statut: string,
+    Nombre_operations_mensuelles: string // Ajout de la nouvelle propriété
+  ) => {
+    setSelectedProgram({
+      Intitulé,
+      Description,
+      Programme,
+      Temps_consommé,
+      Taches_mensuelle,
+      Temps_estimé,
+      Gain_estimé,
+      Statut,
+      Nombre_operations_mensuelles // Ajout de la nouvelle propriété
+    });
+    setIsFormOpen_Edit(true);
   };
 
   if (!data || data.length === 0) {
     return (
       <div className="space-y-4 " style={{marginLeft: 100}}>
-        
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold">Evolutions du robot</h2>
-            <button onClick={() => setShowForm(true)} 
-              className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-lg hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
-              <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-lg opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
-              Demande d'évolution
-            </button>
-         </div>
-
+          <button onClick={() => setShowForm(true)} 
+            className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-lg hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
+            <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-lg opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
+            Demande d'évolution
+          </button>
+        </div>
         <div className="text-center p-4 text-gray-500 h-[400px] "> 
           Aucune donnée disponible sur l'évolution de ce robot.
         </div>
-
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
-       
       <div className="flex justify-between items-center h-[50px]">
-        <h2 className="text-2xl font-bold">Evolutions du programme</h2>     
+        <h2 className="text-2xl font-bold">Evolutions du robot</h2>     
         <button onClick={handleOpenForm_Evolution}
-              className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-lg hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
-              <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-lg opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_5px_5px_rgba(0,0,0,0.3)]"></span>
-              Demande d'évolution
-            </button>
+          className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-lg hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
+          <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-lg opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_5px_5px_rgba(0,0,0,0.3)]"></span>
+          Demande d'évolution
+        </button>
       </div>
 
       <div className="rounded-lg shadow-lg overflow-hidden border border-gray-200">
@@ -168,7 +166,7 @@ export default function ProgramTable({ data }: ProgramTableProps): JSX.Element {
                 <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">{row['Gain de temps estimé']}</TableCell>
                 <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">N/A</TableCell>
                 <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">
-                  <button onClick={() => handleOpenForm_Edit(row.Intitulé, row.Description, row.Programme, row['Temps consommé'], row['Tâches mensuelles'], row['Temps Estimé'], row['Gain de temps estimé'], row.Statut  )} 
+                  <button onClick={() => handleOpenForm_Edit(row.Intitulé, row.Description, row.Programme, row['Temps consommé'], row['Tâches mensuelles'], row['Temps Estimé'], row['Gain de temps estimé'], row.Statut, row.Nombre_operations_mensuelles)} 
                     className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium overflow-hidden relative px-3 py-1 rounded-lg hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
                     <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-lg opacity-50 group-hover:top-[150%] duration-500 "></span>
                     Détails
@@ -192,7 +190,8 @@ export default function ProgramTable({ data }: ProgramTableProps): JSX.Element {
             Taches_mensuelle: '',
             Temps_estimé: '',
             Gain_estimé: '',
-            Statut: '1' // Par défaut "En attente de validation"
+            Statut: '1', // Par défaut "En attente de validation"
+            Nombre_operations_mensuelles: '' // Ajout de la nouvelle propriété
           }}
         />
       )}

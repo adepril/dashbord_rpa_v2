@@ -26,7 +26,7 @@ interface Program {
   id_agence: string;
   type_gain: string;
   bareme: string;
-}
+  }
 
 interface Agency {
   idAgence: string;
@@ -228,6 +228,7 @@ export default function Dashboard() {
                 Taches_mensuelle: '',
                 Temps_estimé: '',
                 Gain_estimé: '',
+                Nombre_operations_mensuelles: '',
                 Statut: '1' // Par défaut "En attente de validation"
               }}
             /> }
@@ -240,7 +241,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-4 gap-4 bg-x-100">
               <div className="col-span-4">
           
-                 {selectedAgency?.idAgence === '1' ? (
+                {selectedAgency?.idAgence === '1' ? (
                   <Chart4All data={programData?.[0]} />
                 ) : (
                   <Chart data={programData?.[0]} />

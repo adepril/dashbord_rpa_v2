@@ -20,11 +20,10 @@ interface MergedRequestFormProps {
     Intitulé: string;
     Description: string;
     Programme: string;
+    Nombre_operations_mensuelles: string; 
     Temps_consommé: string;
-    Taches_mensuelle: string;
-    Temps_estimé: string;
-    Gain_estimé: string;
     Statut: string;
+    DatePost: string;
   };
 }
 
@@ -36,10 +35,9 @@ export default function MergedRequestForm({
     Description: '',
     Programme: '',
     Temps_consommé: '',
-    Taches_mensuelle: '',
-    Temps_estimé: '',
-    Gain_estimé: '',
-    Statut: '1' // Par défaut "En attente de validation"
+    Nombre_operations_mensuelles: '',
+    Statut: '1', // Par défaut "En attente de validation"
+    DatePost: new Date().toLocaleString()
   }
 }: MergedRequestFormProps) {
   const { toast } = useToast();
@@ -110,7 +108,12 @@ export default function MergedRequestForm({
           name: "Demande via formulaire",
           email: "noreply@bbl-groupe.fr",
           subject: `Nouvelle demande: ${formData.Intitulé}`,
-          message: `Programme: ${formData.Programme}\n\nDescription: ${formData.Description}\n\nTemps consommé: ${formData.Temps_consommé}\n\nTâches mensuelles: ${formData.Taches_mensuelle}\n\nTemps estimé: ${formData.Temps_estimé}\n\nGain de temps estimé: ${formData.Gain_estimé}\n\nStatut: ${formData.Statut}`
+          message: `Programme: ${formData.Programme}\n\n
+          <br>Description: ${formData.Description}\n\n
+          <br>Temps consommé: ${formData.Temps_consommé}\n\n
+          <br>Statut: ${formData.Statut}\n\n
+          <br>${type === 'new' ? "Date de création de la demande" : "Date de mise à jour de la demande"} : ${new Date().toLocaleString()}
+          `
         }),
       });
 
@@ -127,7 +130,7 @@ export default function MergedRequestForm({
     } catch (error) {
       toast({
         title: 'Erreur',
-        description: 'Échec de l\'envoi de la demande. Veuillez réessayer.',
+        description: 'Échec de l\'envoi de la demande.',
         variant: 'destructive',
         id: ''
       });
@@ -137,31 +140,32 @@ export default function MergedRequestForm({
   return (
     <ClientWrapper className="contents">
       <Dialog open={true} onOpenChange={onClose}>
-        <DialogContent>
+        <DialogContent className="max-w-md w-full max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{type === 'evolution' ? "Demande d'évolution" : "Nouvelle demande"}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="Intitulé">Intitulé</Label>
-              <Input id="Intitulé" name="Intitulé" value={formData.Intitulé} onChange={handleChange} />
+              <Input id="Intitulé" name="Intitulé" value={formDataState.Intitulé} onChange={handleChange} />
             </div>
             <div>
               <Label htmlFor="Description">Description</Label>
-              <Textarea id="Description" name="Description" value={formData.Description} onChange={handleChange} />
+              <Textarea id="Description" name="Description" value={formDataState.Description} onChange={handleChange} />
             </div>
-
-            <div>
+            {type !== 'new' && (
+              <>
+{/*             <div>
               <Label htmlFor="programme">Programme</Label>
               <Input 
                 id="programme" 
                 name="Programme" 
-                value={formData.Programme} 
+                value={formDataState.Programme} 
                 onChange={handleChange}
                 disabled={ type === 'edit'}
-                className={type === 'new' ? "bg-gray-100" : ""}
+                className="bg-gray-100"
               />
-            </div>
+            </div> */}
             <div>
               <Label htmlFor="statut">Statut</Label>
               <Select 
@@ -189,28 +193,21 @@ export default function MergedRequestForm({
                 </SelectContent>
               </Select>
             </div>
-
-            
+              </>
+            )}
             <div>
-              <Label htmlFor="Temps consommé">Temps consommé</Label>
-              <Input id="Temps consommé" name="Temps_consommé" value={formData.Temps_consommé} onChange={handleChange} />
+              <Label htmlFor="Nombre d'opérations mensuelles">Nombre d'opérations mensuelles</Label>
+              <Input id="Nombre d'opérations mensuelles" name="Nombre_operations_mensuelles" value={formDataState.Nombre_operations_mensuelles} onChange={handleChange} />
             </div>
             <div>
-              <Label htmlFor="Tâches mensuelles">Tâches mensuelles</Label>
-              <Input id="Tâches mensuelles" name="Taches_mensuelle" value={formData.Taches_mensuelle} onChange={handleChange} />
-            </div>
-            <div>
-              <Label htmlFor="Temps Estimé">Temps Estimé</Label>
-              <Input id="Temps Estimé" name="Temps_estimé" value={formData.Temps_estimé} onChange={handleChange} />
-            </div>
-            <div>
-              <Label htmlFor="Gain de temps estimé">Gain de temps estimé</Label>
-              <Input id="Gain de temps estimé" name="Gain_estimé" value={formData.Gain_estimé} onChange={handleChange} />
+              <Label htmlFor="Temps consommé">Temps consommé (minutes par opération</Label>
+              <Input id="Temps consommé" name="Temps_consommé" value={formDataState.Temps_consommé} onChange={handleChange} />
             </div>
             <div className="flex justify-end space-x-2">
-              <Button type="button" className="bg-red-500 hover:bg-red-700 text-white" onClick={onClose}>Annuler</Button>
-              <Button type="submit" className="bg-green-500 hover:bg-green-700 text-white">Envoyer</Button>
-            </div>
+            {/* style={{ position: 'fixed', top: 5, right: 10 }} */}
+            <Button type="button" className="bg-red-500 hover:bg-red-700 text-white" onClick={onClose}>Annuler</Button>
+            <Button type="submit" className="bg-green-500 hover:bg-green-700 text-white">Envoyer</Button>
+          </div>
           </form>
         </DialogContent>
       </Dialog>
