@@ -73,8 +73,10 @@ export default function MergedRequestForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    console.log('handleSubmit called with formDataState:', formDataState); // Ajout de la console.log
+
     // Validation des champs obligatoires
-    if (!formData.Intitulé.trim()) {
+    if (!formDataState.Intitulé.trim()) {
       toast({
         title: "Erreur",
         description: "Le champ Intitulé est obligatoire",
@@ -83,7 +85,7 @@ export default function MergedRequestForm({
       });
       return;
     }
-    if (!formData.Description.trim()) {
+    if (!formDataState.Description.trim()) {
       toast({
         title: "Erreur",
         description: "Le champ Description est obligatoire",
@@ -96,80 +98,85 @@ export default function MergedRequestForm({
     try {
       // Envoi à Firebase
       const evolutionCollection = collection(db, 'evolutions');
-      await addDoc(evolutionCollection, formData);
-      
-      // Envoi par email
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: "Demande via formulaire",
-          email: "noreply@bbl-groupe.fr",
-          subject: `Nouvelle demande: ${formData.Intitulé}`,
-          message: `Programme: ${formData.Programme}\n\n
-          <br>Description: ${formData.Description}\n\n
-          <br>Temps consommé: ${formData.Temps_consommé}\n\n
-          <br>Statut: ${formData.Statut}\n\n
-          <br>${type === 'new' ? "Date de création de la demande" : "Date de mise à jour de la demande"} : ${new Date().toLocaleString()}
-          `
-        }),
-      });
+      await addDoc(evolutionCollection, formDataState); // Utilisation de formDataState
+      console.error('Envoi des données avec succès !');
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi des données:', error);
+    }
 
-      if (!response.ok) {
-        throw new Error('Failed to send message');
+     // Envoi par email
+      try {
+        const response = await fetch('/api/contact', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: "Demande via formulaire",
+            email: "noreply@bbl-groupe.fr",
+            subject: `Nouvelle demande: ${formData.Intitulé}`,
+            message: `Programme: ${formData.Programme}\n\n
+            <br>Description: ${formData.Description}\n\n
+            <br>Temps consommé: ${formData.Temps_consommé}\n\n
+            <br>Statut: ${formData.Statut}\n\n
+            <br>${type === 'new' ? "Date de création de la demande" : "Date de mise à jour de la demande"} : ${new Date().toLocaleString()}
+            `
+          }),
+        });
+  
+        if (!response.ok) {
+          throw new Error('Failed to send message');
+        }
+  
+        toast({
+          title: 'Succès !',
+          description: 'Votre demande a été envoyée avec succès.',
+          id: ''
+        });
+        onClose();
+      } catch (error) {
+        toast({
+          title: 'Erreur',
+          description: 'Échec de l\'envoi de la demande.',
+          variant: 'destructive',
+          id: ''
+        });
       }
 
-      toast({
-        title: 'Succès !',
-        description: 'Votre demande a été envoyée avec succès.',
-        id: ''
-      });
-      onClose();
-    } catch (error) {
-      toast({
-        title: 'Erreur',
-        description: 'Échec de l\'envoi de la demande.',
-        variant: 'destructive',
-        id: ''
-      });
-    }
   }
 
   return (
-    <ClientWrapper className="contents">
+    <ClientWrapper>
       <Dialog open={true} onOpenChange={onClose}>
-        <DialogContent className="max-w-md w-full max-h-[80vh] overflow-y-auto">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>{type === 'evolution' ? "Demande d'évolution" : "Nouvelle demande"}</DialogTitle>
+            <DialogTitle>Formulaire de demande</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit}>
             <div>
-              <Label htmlFor="Intitulé">Intitulé</Label>
-              <Input id="Intitulé" name="Intitulé" value={formDataState.Intitulé} onChange={handleChange} />
-            </div>
-            <div>
-              <Label htmlFor="Description">Description</Label>
-              <Textarea id="Description" name="Description" value={formDataState.Description} onChange={handleChange} />
-            </div>
-            {type !== 'new' && (
-              <>
-{/*             <div>
-              <Label htmlFor="programme">Programme</Label>
+              <Label htmlFor="intitulé">Intitulé</Label>
               <Input 
-                id="programme" 
-                name="Programme" 
-                value={formDataState.Programme} 
+                id="intitulé" 
+                name="Intitulé" 
+                value={formDataState.Intitulé} 
                 onChange={handleChange}
-                disabled={ type === 'edit'}
-                className="bg-gray-100"
               />
-            </div> */}
+            </div>
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea 
+                id="description" 
+                name="Description" 
+                value={formDataState.Description} 
+                onChange={handleChange}
+              />
+            </div>
+            {type !== 'edit' && (
+              <>
             <div>
               <Label htmlFor="statut">Statut</Label>
               <Select 
-                value={formData.Statut} 
+                value={formDataState.Statut} 
                 onValueChange={handleStatusChange}
               >
                 <SelectTrigger className="bg-white border border-gray-300 rounded py-2 px-4">
@@ -203,7 +210,7 @@ export default function MergedRequestForm({
               <Label htmlFor="Temps consommé">Temps consommé (minutes par opération</Label>
               <Input id="Temps consommé" name="Temps_consommé" value={formDataState.Temps_consommé} onChange={handleChange} />
             </div>
-            <div className="flex justify-end space-x-2">
+            <div className="flex justify-end space-x-2 mt-4">
             {/* style={{ position: 'fixed', top: 5, right: 10 }} */}
             <Button type="button" className="bg-red-500 hover:bg-red-700 text-white" onClick={onClose}>Annuler</Button>
             <Button type="submit" className="bg-green-500 hover:bg-green-700 text-white">Envoyer</Button>

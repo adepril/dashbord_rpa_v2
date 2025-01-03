@@ -27,11 +27,9 @@ export default function ProgramTable({ data }: ProgramTableProps): JSX.Element {
     Description: '',
     Programme: '',
     Temps_consommé: '',
-    Taches_mensuelle: '',
-    Temps_estimé: '',
-    Gain_estimé: '',
     Statut: '',
-    Nombre_operations_mensuelles: '' // Ajout de la nouvelle propriété
+    Nombre_operations_mensuelles: '' ,
+    DatePost: ''
   });
 
   // État pour contrôler l'ouverture du formulaire de demande d'évolution
@@ -91,22 +89,18 @@ export default function ProgramTable({ data }: ProgramTableProps): JSX.Element {
     Description: string,
     Programme: string,
     Temps_consommé: string,
-    Taches_mensuelle: string,
-    Temps_estimé: string,
-    Gain_estimé: string,
     Statut: string,
-    Nombre_operations_mensuelles: string // Ajout de la nouvelle propriété
+    Nombre_operations_mensuelles: string,
+    DatePost: string
   ) => {
     setSelectedProgram({
       Intitulé,
       Description,
       Programme,
       Temps_consommé,
-      Taches_mensuelle,
-      Temps_estimé,
-      Gain_estimé,
       Statut,
-      Nombre_operations_mensuelles // Ajout de la nouvelle propriété
+      Nombre_operations_mensuelles,
+      DatePost
     });
     setIsFormOpen_Edit(true);
   };
@@ -166,7 +160,7 @@ export default function ProgramTable({ data }: ProgramTableProps): JSX.Element {
                 <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">{row['Gain de temps estimé']}</TableCell>
                 <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">N/A</TableCell>
                 <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">
-                  <button onClick={() => handleOpenForm_Edit(row.Intitulé, row.Description, row.Programme, row['Temps consommé'], row['Tâches mensuelles'], row['Temps Estimé'], row['Gain de temps estimé'], row.Statut, row.Nombre_operations_mensuelles)} 
+                  <button onClick={() => handleOpenForm_Edit(row.Intitulé, row.Description, row.Programme, row['Temps consommé'], row.Statut, row.Nombre_operations_mensuelles, row.dataPost)} 
                     className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium overflow-hidden relative px-3 py-1 rounded-lg hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
                     <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-lg opacity-50 group-hover:top-[150%] duration-500 "></span>
                     Détails
@@ -187,11 +181,9 @@ export default function ProgramTable({ data }: ProgramTableProps): JSX.Element {
             Description: '',
             Programme: '',
             Temps_consommé: '',
-            Taches_mensuelle: '',
-            Temps_estimé: '',
-            Gain_estimé: '',
-            Statut: '1', // Par défaut "En attente de validation"
-            Nombre_operations_mensuelles: '' // Ajout de la nouvelle propriété
+            Nombre_operations_mensuelles: '',
+            Statut: '1', 
+            DatePost: new Date().toISOString()
           }}
         />
       )}

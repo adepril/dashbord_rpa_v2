@@ -225,11 +225,9 @@ export default function Dashboard() {
                 Description: '',
                 Programme: '',
                 Temps_consommé: '',
-                Taches_mensuelle: '',
-                Temps_estimé: '',
-                Gain_estimé: '',
                 Nombre_operations_mensuelles: '',
-                Statut: '1' // Par défaut "En attente de validation"
+                Statut: '1', // Par défaut "En attente de validation"
+                DatePost: new Date().toISOString()
               }}
             /> }
 
