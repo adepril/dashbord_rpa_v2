@@ -208,7 +208,7 @@ export async function fetchEvolutionsByProgram(programId: string) {
   console.log('Fetching evolutions for Programme with ID:', programId);
   try {
     const evolutionsRef = collection(db, 'evolutions');
-    const q = query(evolutionsRef, where('Programme', '==', programId));
+    const q = query(evolutionsRef, where('Robot', '==', programId));
     const querySnapshot = await getDocs(q);
     
     console.log('Raw evolutions documents fetched:', querySnapshot.size);
@@ -219,9 +219,7 @@ export async function fetchEvolutionsByProgram(programId: string) {
       return {
         id: doc.id,
         ...docData,
-        'Date de la demande': docData['Date de la demande'] ? new Date(docData['Date de la demande']).toLocaleDateString('fr-FR') : '',
-        'Date de début': docData['Date de début'] ? new Date(docData['Date de début']).toLocaleDateString('fr-FR') : '',
-        'Date de fin': docData['Date de fin'] ? new Date(docData['Date de fin']).toLocaleDateString('fr-FR') : ''
+        'Date de la demande': docData['Date'] ? new Date(docData['Date']).toLocaleDateString('fr-FR') : ''
       };
     });
 

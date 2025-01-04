@@ -9,7 +9,7 @@ import { useToast } from "../hooks/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { ClientWrapper } from "./ui/client-wrapper"
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { fetchStatuts } from '../utils/dataFetcher';
 
@@ -19,27 +19,31 @@ interface MergedRequestFormProps {
   formData?: {
     Intitulé: string;
     Description: string;
-    Programme: string;
-    Nombre_operations_mensuelles: string; 
+    Robot: string;
+    Nb_operations_mensuelles: string; 
     Temps_consommé: string;
     Statut: string;
-    DatePost: string;
+    Date: string;
+    type: 'new' | 'evolution' | 'edit';
   };
 }
 
 export default function MergedRequestForm({
   onClose,
-  type = 'new',
+  type,
   formData = {
     Intitulé: '',
     Description: '',
-    Programme: '',
+    Robot: '',
     Temps_consommé: '',
-    Nombre_operations_mensuelles: '',
+    Nb_operations_mensuelles: '',
     Statut: '1', // Par défaut "En attente de validation"
-    DatePost: new Date().toLocaleString()
+    Date: new Date().toLocaleString(),
+    type: 'new'
   }
 }: MergedRequestFormProps) {
+  console.log('MergedRequestForm called with type:', type, 'and formData:', formData); 
+  
   const { toast } = useToast();
   const [formDataState, setFormData] = useState(formData);
 
@@ -70,10 +74,10 @@ export default function MergedRequestForm({
     setFormData(prev => ({ ...prev, Statut: value }))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    console.log('handleSubmit called with formDataState:', formDataState); // Ajout de la console.log
+    console.log('handleSubmit called with formDataState:', formDataState); 
 
     // Validation des champs obligatoires
     if (!formDataState.Intitulé.trim()) {
@@ -98,7 +102,21 @@ export default function MergedRequestForm({
     try {
       // Envoi à Firebase
       const evolutionCollection = collection(db, 'evolutions');
-      await addDoc(evolutionCollection, formDataState); // Utilisation de formDataState
+      if (formDataState.type === 'new') {
+        await addDoc(evolutionCollection, formDataState);
+      } else {
+        // Trouver l'enregistrement existant et le mettre à jour
+        const querySnapshot = await getDocs(evolutionCollection);
+        const matchingDoc = querySnapshot.docs.find((doc) => {
+          const data = doc.data();
+          return data.Intitulé === formDataState.Intitulé && data.Date === formDataState.Date;
+        });
+        if (matchingDoc) {
+          await updateDoc(matchingDoc.ref, formDataState);
+        } else {
+          await addDoc(evolutionCollection, formDataState);
+        }
+      }
       console.error('Envoi des données avec succès !');
     } catch (error) {
       console.error('Erreur lors de l\'envoi des données:', error);
@@ -115,11 +133,11 @@ export default function MergedRequestForm({
             name: "Demande via formulaire",
             email: "noreply@bbl-groupe.fr",
             subject: `Nouvelle demande: ${formData.Intitulé}`,
-            message: `Programme: ${formData.Programme}\n\n
+            message: `Programme: ${formData.Robot}\n\n
             <br>Description: ${formData.Description}\n\n
             <br>Temps consommé: ${formData.Temps_consommé}\n\n
             <br>Statut: ${formData.Statut}\n\n
-            <br>${type === 'new' ? "Date de création de la demande" : "Date de mise à jour de la demande"} : ${new Date().toLocaleString()}
+            <br>${formDataState.type === 'new' ? "Date de création de la demande" : "Date de mise à jour de la demande"} : ${new Date().toLocaleString()}
             `
           }),
         });
@@ -171,7 +189,7 @@ export default function MergedRequestForm({
                 onChange={handleChange}
               />
             </div>
-            {type !== 'edit' && (
+            {formDataState.type === 'edit' && (
               <>
             <div>
               <Label htmlFor="statut">Statut</Label>
@@ -204,14 +222,13 @@ export default function MergedRequestForm({
             )}
             <div>
               <Label htmlFor="Nombre d'opérations mensuelles">Nombre d'opérations mensuelles</Label>
-              <Input id="Nombre d'opérations mensuelles" name="Nombre_operations_mensuelles" value={formDataState.Nombre_operations_mensuelles} onChange={handleChange} />
+              <Input id="Nombre d'opérations mensuelles" name="Nb_operations_mensuelles" value={formDataState.Nb_operations_mensuelles} onChange={handleChange} />
             </div>
             <div>
               <Label htmlFor="Temps consommé">Temps consommé (minutes par opération</Label>
               <Input id="Temps consommé" name="Temps_consommé" value={formDataState.Temps_consommé} onChange={handleChange} />
             </div>
             <div className="flex justify-end space-x-2 mt-4">
-            {/* style={{ position: 'fixed', top: 5, right: 10 }} */}
             <Button type="button" className="bg-red-500 hover:bg-red-700 text-white" onClick={onClose}>Annuler</Button>
             <Button type="submit" className="bg-green-500 hover:bg-green-700 text-white">Envoyer</Button>
           </div>

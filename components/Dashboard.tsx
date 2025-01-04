@@ -3,14 +3,13 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation';
 import ProgramSelector from './ProgramSelector'
-//import Widgets from './Widgets'
 import Chart from './Chart'
 import ProgramTable from './ProgramTable'
 import Chart4All from './Chart4All'
 import MergedRequestForm from './MergedRequestForm'
 import AgencySelector from './AgencySelector'
 import Image from 'next/image';
-import { Button } from './ui/button'; // Ajout de l'importation du composant Button
+import { Button } from './ui/button';
 import { 
   fetchUserIdByUsername, 
   fetchAgenciesByIds,
@@ -33,6 +32,20 @@ interface Agency {
   nomAgence: string;
 }
 
+interface MergedRequestFormProps {
+  onClose: () => void;
+  type?: 'evolution' | 'new' | 'edit';
+  formData?: {
+    Intitulé: string;
+    Description: string;
+    Programme: string;
+    Nb_operations_mensuelles: string; 
+    Temps_consommé: string;
+    Statut: string;
+    Date: string;
+    type: 'new' | 'evolution' | 'edit';
+  };
+}
 
 export default function Dashboard() {
   const searchParams = useSearchParams();
@@ -46,7 +59,7 @@ export default function Dashboard() {
   const [programData, setProgramData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [OpenFormNewOrder, setIsFormOpen] = useState(false); // État pour contrôler l'ouverture du formulaire
+  const [OpenFormNewOrder, setIsFormOpen] = useState(false);
 
   const router = useRouter();
   const user = searchParams.get('user');
@@ -223,11 +236,12 @@ export default function Dashboard() {
               formData={{
                 Intitulé: '',
                 Description: '',
-                Programme: '',
+                Robot: '',
                 Temps_consommé: '',
-                Nombre_operations_mensuelles: '',
+                Nb_operations_mensuelles: '',
                 Statut: '1', // Par défaut "En attente de validation"
-                DatePost: new Date().toISOString()
+                Date: new Date().toISOString(),
+                type: 'new'
               }}
             /> }
 

@@ -9,7 +9,6 @@ import {
   TableHeader,
   TableRow,
 } from "./ui/table"
-import NewRequestForm from './NewRequestForm'
 import { Button } from "./ui/button"
 import { fetchStatuts } from '../utils/dataFetcher'
 import MergedRequestForm from './MergedRequestForm'
@@ -18,18 +17,33 @@ interface ProgramTableProps {
   data: any[]
 }
 
+interface MergedRequestFormProps {
+  onClose: () => void;
+  type?: 'evolution' | 'new' | 'edit';
+  formData?: {
+    Intitulé: string;
+    Description: string;
+    Programme: string;
+    Nb_operations_mensuelles: string; 
+    Temps_consommé: string;
+    Statut: string;
+    Date: string;
+    type: 'new' | 'evolution' | 'edit';
+  };
+}
+
 export default function ProgramTable({ data }: ProgramTableProps): JSX.Element {
   const [showForm, setShowForm] = useState(false);
   const [popupInfo, setPopupInfo] = useState<{ row: any; position: { x: number; y: number } | null }>({ row: null, position: null });
   const [statuts, setStatuts] = useState<{ [key: string]: string }>({});
-  const [selectedProgram, setSelectedProgram] = useState({
+  const [selectedRobot, setselectedRobot] = useState({
     Intitulé: '',
     Description: '',
     Programme: '',
     Temps_consommé: '',
     Statut: '',
-    Nombre_operations_mensuelles: '' ,
-    DatePost: ''
+    Nb_operations_mensuelles: '' ,
+    Date: ''
   });
 
   // État pour contrôler l'ouverture du formulaire de demande d'évolution
@@ -73,6 +87,7 @@ export default function ProgramTable({ data }: ProgramTableProps): JSX.Element {
 
   //ouverture de la popoup pour la demande d'évolution
   const handleOpenForm_Evolution = () => {
+    console.log('OpenFormRequestEvolution:', OpenFormRequestEvolution);
     setIsFormOpen_Evolution(true);
   };
 
@@ -90,35 +105,52 @@ export default function ProgramTable({ data }: ProgramTableProps): JSX.Element {
     Programme: string,
     Temps_consommé: string,
     Statut: string,
-    Nombre_operations_mensuelles: string,
-    DatePost: string
+    Nb_operations_mensuelles: string,
+    Date: string
   ) => {
-    setSelectedProgram({
+    setselectedRobot({
       Intitulé,
       Description,
       Programme,
       Temps_consommé,
       Statut,
-      Nombre_operations_mensuelles,
-      DatePost
+      Nb_operations_mensuelles,
+      Date
     });
     setIsFormOpen_Edit(true);
   };
 
   if (!data || data.length === 0) {
     return (
-      <div className="space-y-4 " style={{marginLeft: 100}}>
+      <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold">Evolutions du robot</h2>
-          <button onClick={() => setShowForm(true)} 
+          <button onClick={handleOpenForm_Evolution}
             className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-lg hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
             <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-lg opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
             Demande d'évolution
           </button>
         </div>
-        <div className="text-center p-4 text-gray-500 h-[400px] "> 
+        <div className="text-center p-4 text-gray-500 h-[50px]"> 
           Aucune donnée disponible sur l'évolution de ce robot.
         </div>
+
+        {OpenFormRequestEvolution && (
+          <MergedRequestForm
+            onClose={handleCloseForm}
+            type="evolution"
+            formData={{
+              Intitulé: '',
+              Description: '',
+              Robot: '',
+              Temps_consommé: '',
+              Nb_operations_mensuelles: '',
+              Statut: '1', 
+              Date: new Date().toISOString(),
+              type: 'evolution'
+            }}
+          />
+        )}
       </div>
     );
   }
@@ -157,10 +189,10 @@ export default function ProgramTable({ data }: ProgramTableProps): JSX.Element {
                 <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">
                   {getStatutLabel(row.Statut)}
                 </TableCell>
-                <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">{row['Gain de temps estimé']}</TableCell>
-                <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">N/A</TableCell>
+                <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">{row['Temps consommé']}</TableCell>
+                <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">{row.Date}</TableCell>
                 <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">
-                  <button onClick={() => handleOpenForm_Edit(row.Intitulé, row.Description, row.Programme, row['Temps consommé'], row.Statut, row.Nombre_operations_mensuelles, row.dataPost)} 
+                  <button onClick={() => handleOpenForm_Edit(row.Intitulé, row.Description, row.Robot, row['Temps consommé'], row.Statut, row.Nb_operations_mensuelles, row.data)} 
                     className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium overflow-hidden relative px-3 py-1 rounded-lg hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
                     <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-lg opacity-50 group-hover:top-[150%] duration-500 "></span>
                     Détails
@@ -179,11 +211,12 @@ export default function ProgramTable({ data }: ProgramTableProps): JSX.Element {
           formData={{
             Intitulé: '',
             Description: '',
-            Programme: '',
+            Robot: '',
             Temps_consommé: '',
-            Nombre_operations_mensuelles: '',
+            Nb_operations_mensuelles: '',
             Statut: '1', 
-            DatePost: new Date().toISOString()
+            Date: new Date().toISOString(),
+            type: 'evolution'
           }}
         />
       )}
@@ -192,7 +225,16 @@ export default function ProgramTable({ data }: ProgramTableProps): JSX.Element {
         <MergedRequestForm
           onClose={handleCloseForm}
           type="edit"
-          formData={selectedProgram}
+          formData={{
+            Intitulé: selectedRobot.Intitulé,
+            Description: selectedRobot.Description,
+            Robot: selectedRobot.Programme,
+            Temps_consommé: selectedRobot.Temps_consommé,
+            Statut: selectedRobot.Statut,
+            Nb_operations_mensuelles: selectedRobot.Nb_operations_mensuelles,
+            Date: selectedRobot.Date,
+            type: 'edit'
+          }}
         />
       )}
     </div>
