@@ -4,6 +4,7 @@ import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recha
 import React from 'react';
 
 interface ChartProps {
+  //robotType: string
   data: any
 }
 
@@ -35,7 +36,7 @@ const CustomizedAxisTick: React.FC<CustomizedAxisTickProps> = (props) => {
 }
 
 export default function Chart({ data }: ChartProps) {
-  //console.log("Chart.tsx",data);
+  //console.log("Chart4All.tsx",data);
   if (!data) {
     return (
       <div className="flex justify-center items-center h-[400px] text-gray-500">

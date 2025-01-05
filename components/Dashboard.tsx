@@ -140,7 +140,7 @@ export default function Dashboard() {
   useEffect(() => {
     const loadProgramData = async () => {
       if (selectedProgramData) {
-        console.log('Loading data for program:', selectedProgramData);
+        console.log('Loading data for robot :', selectedProgramData);
         const data = await fetchDataReportingByProgram(selectedProgramData.nom_programme, selectedProgramData.bareme);
         setProgramData(data);
         
@@ -216,8 +216,8 @@ export default function Dashboard() {
                     onProgramChange={handleProgramChange}
                   />
                   <div className=" bg-red-100"></div>    
-                  <div className="flex justify-end bg-x-100 h-[50px]">
-                    <button onClick={handleOpenForm} className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-lg hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
+                  <div className="flex justify-end bg-x-100 h-[40px]">
+                    <button onClick={handleOpenForm} className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium overflow-hidden relative px-4 py-1 rounded-lg hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
                       <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] roundedlg opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_5px_5px_rgba(0,0,0,0.3)]"></span>
                       Nouvelle Demande
                     </button>
@@ -236,7 +236,7 @@ export default function Dashboard() {
               formData={{
                 Intitulé: '',
                 Description: '',
-                Robot: '',
+                Robot: selectedProgram ? selectedProgram.nom_programme : '',
                 Temps_consommé: '',
                 Nb_operations_mensuelles: '',
                 Statut: '1', // Par défaut "En attente de validation"
@@ -245,27 +245,23 @@ export default function Dashboard() {
               }}
             /> }
 
-
-
       <div className="container mx-auto min-h-screen bg-x-100">
         {selectedProgram && (
           <div className="p-4 bg-x-200">
             <div className="grid grid-cols-4 gap-4 bg-x-100">
               <div className="col-span-4">
-          
                 {selectedAgency?.idAgence === '1' ? (
-                  <Chart4All data={programData?.[0]} />
+                  <Chart4All  data={programData?.[0]} />
                 ) : (
-                  <Chart data={programData?.[0]} />
+                  <Chart robotType={selectedProgram?.type_gain} data={programData?.[0]} />
                 )}
-
               </div>
             </div>
 
             <div className="grid grid-cols-4 gap-4 bg-x-300 mt-5" >
 
               <div className="col-span-4 w-full">
-                <ProgramTable data={historiqueData} />
+                <ProgramTable robot={selectedProgram?.nom_programme || ''} data={historiqueData} />
               </div>
             </div>
           </div>

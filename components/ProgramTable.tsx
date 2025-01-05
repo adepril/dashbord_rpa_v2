@@ -14,6 +14,7 @@ import { fetchStatuts } from '../utils/dataFetcher'
 import MergedRequestForm from './MergedRequestForm'
 
 interface ProgramTableProps {
+  robot: string;
   data: any[]
 }
 
@@ -32,14 +33,14 @@ interface MergedRequestFormProps {
   };
 }
 
-export default function ProgramTable({ data }: ProgramTableProps): JSX.Element {
+export default function ProgramTable({robot, data }: ProgramTableProps): JSX.Element {
   const [showForm, setShowForm] = useState(false);
   const [popupInfo, setPopupInfo] = useState<{ row: any; position: { x: number; y: number } | null }>({ row: null, position: null });
   const [statuts, setStatuts] = useState<{ [key: string]: string }>({});
   const [selectedRobot, setselectedRobot] = useState({
     Intitulé: '',
     Description: '',
-    Programme: '',
+    Programme: robot,
     Temps_consommé: '',
     Statut: '',
     Nb_operations_mensuelles: '' ,
@@ -131,9 +132,28 @@ export default function ProgramTable({ data }: ProgramTableProps): JSX.Element {
             Demande d'évolution
           </button>
         </div>
-        <div className="text-center p-4 text-gray-500 h-[50px]"> 
-          Aucune donnée disponible sur l'évolution de ce robot.
-        </div>
+
+        <div className="rounded-lg shadow-lg overflow-hidden border border-gray-200">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-50">
+              <TableHead className="py-2 px-3 text-sm font-bold text-gray-700 border-b">Intitulé</TableHead>
+              <TableHead className="py-2 px-3 text-sm font-bold text-gray-700 border-b">Type</TableHead>
+              <TableHead className="py-2 px-3 text-sm font-bold text-gray-700 border-b">Statut</TableHead>
+              <TableHead className="py-2 px-3 text-sm font-bold text-gray-700 border-b">Gains quotidiens</TableHead>
+              <TableHead className="py-2 px-3 text-sm font-bold text-gray-700 border-b">Dernière mise à jour</TableHead>
+              <TableHead className="py-2 px-3 text-sm font-bold text-gray-700 border-b"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow className='bg-white h-[100px] text-center'>
+              <TableCell className="text-xl text-gray-800 whitespace-normal" colSpan={10}>
+                Aucune donnée disponible sur l'évolution de ce robot.
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </div>
 
         {OpenFormRequestEvolution && (
           <MergedRequestForm
@@ -142,7 +162,7 @@ export default function ProgramTable({ data }: ProgramTableProps): JSX.Element {
             formData={{
               Intitulé: '',
               Description: '',
-              Robot: '',
+              Robot: robot,
               Temps_consommé: '',
               Nb_operations_mensuelles: '',
               Statut: '1', 
@@ -157,7 +177,7 @@ export default function ProgramTable({ data }: ProgramTableProps): JSX.Element {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center h-[50px]">
+      <div className="flex justify-between items-center h-[40px]">
         <h2 className="text-2xl font-bold">Evolutions du robot</h2>     
         <button onClick={handleOpenForm_Evolution}
           className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-lg hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
@@ -211,7 +231,7 @@ export default function ProgramTable({ data }: ProgramTableProps): JSX.Element {
           formData={{
             Intitulé: '',
             Description: '',
-            Robot: '',
+            Robot: selectedRobot.Programme,
             Temps_consommé: '',
             Nb_operations_mensuelles: '',
             Statut: '1', 

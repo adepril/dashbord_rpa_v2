@@ -7,6 +7,7 @@ import { Label } from "./ui/label"
 import { Textarea } from "./ui/textarea"
 import { useToast } from "../hooks/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { ClientWrapper } from "./ui/client-wrapper"
 import { collection, addDoc, getDocs, updateDoc } from 'firebase/firestore';
@@ -168,7 +169,21 @@ export default function MergedRequestForm({
       <Dialog open={true} onOpenChange={onClose}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Formulaire de demande</DialogTitle>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DialogTitle>Formulaire de demande</DialogTitle>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {formDataState.type === 'new' ? (
+                    <p>Nouvelle demande</p>
+                  ) : (
+                    <p>Demande d'évolution du robot {formData.Robot}</p>
+                  )}
+                  
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </DialogHeader>
           <form onSubmit={handleSubmit}>
             <div>

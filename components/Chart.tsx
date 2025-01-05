@@ -4,6 +4,7 @@ import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recha
 import React from 'react';
 
 interface ChartProps {
+  robotType: string
   data: any
 }
 
@@ -34,7 +35,7 @@ const CustomizedAxisTick: React.FC<CustomizedAxisTickProps> = (props) => {
   );
 }
 
-export default function Chart({ data }: ChartProps) {
+export default function Chart({ robotType,data }: ChartProps) {
   console.log("Chart.tsx - data:", data);
   if (!data) {
     return (
@@ -113,7 +114,8 @@ export default function Chart({ data }: ChartProps) {
                 } } />
               <Bar
                 dataKey="valeur"
-                fill="#3498db"
+                //swith color for temps or execution
+                fill={robotType?.toLowerCase() === "temps" ? "#3498db" : "#EA580C"}
                 radius={[4, 4, 0, 0]}
                 name="Quantité"
                 label={{
@@ -122,34 +124,40 @@ export default function Chart({ data }: ChartProps) {
                   fontSize: 12,
                   formatter: (value: number) => value === 0 ? '' : `${value}`
                 }}
-                activeBar={{ fill: '#0066cc' }} />
+                //activeBar={{ fill: '#3333db' }}
+                activeBar={{ fill: robotType?.toLowerCase() === "temps" ? '#3333db' : '#c24a0a' }}
+                />
             </BarChart>
           </ResponsiveContainer>
           <div className="absolute top-2 right-2 text-black px-2 py-1 rounded-md shadow-md">
-            Échelle de temps en minutes
+            {robotType?.toLowerCase() === "temps" ? (
+              "Échelle de temps en minutes"
+            ) : (
+              "Nombre d'execution"
+            )}
           </div>
         </div>
         <div className="flex justify-around mt-2">
             <div className="w-1/4 mr-5 ml-5 ">
-              <div className="bg-blue-400 hover:bg-blue-600 text-white shadow-md rounded-lg py-2">
+            <div className={robotType?.toLowerCase() === 'temps' ? ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2' ) : ( 'bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2')}>
                 <div className="ml-4 text-xs ">Total du mois</div>
                 <div className="ml-4 text-xl ">{data['NB UNITES DEPUIS DEBUT DU MOIS']} h</div>
               </div>
             </div>
             <div className=" w-1/4 mr-5 ml-5">
-              <div className="bg-blue-400 hover:bg-blue-600 text-white shadow-md rounded-lg py-2 ">
+              <div className={robotType?.toLowerCase() === 'temps' ? ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2' ) : ( 'bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2')}>
                 <div className="ml-4 text-xs ">M-1</div>
                 <div className="ml-4 text-xl ">{data['NB UNITES MOIS N-1']} h</div>
               </div>
             </div>
             <div className=" w-1/4 mr-5 ml-5">
-              <div className="bg-blue-400 hover:bg-blue-600 text-white shadow-md rounded-lg py-2 ">
+            <div className={robotType?.toLowerCase() === 'temps' ? ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2' ) : ( 'bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2')}>
                 <div className="ml-4 text-xs ">M-2</div>
                 <div className="ml-4 text-xl">{data['NB UNITES MOIS N-2']} h</div>
               </div>
             </div>
             <div className="w-1/4 mr-5 ml-5">
-              <div className="bg-blue-400 hover:bg-blue-600 text-white shadow-md rounded-lg py-2 ">
+            <div className={robotType?.toLowerCase() === 'temps' ? ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2' ) : ( 'bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2')}>
                 <div className="ml-4 text-xs ">M-3</div>
                 <div className="ml-4 text-xl ">{data['NB UNITES MOIS N-3']} h</div>
               </div>

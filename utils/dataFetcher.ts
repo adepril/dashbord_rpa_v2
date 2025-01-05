@@ -146,10 +146,10 @@ export async function fetchProgramsByAgencyId(agencyId: string): Promise<Program
  *          for the matching program, or an empty array if no matches are found.
  */
 export async function fetchDataReportingByProgram(programName: string, bareme: string) {
-  console.log('Fetching DataReportingMoisCourant for program name:', programName);
+  console.log('Fetching DataReportingMoisCourant for the robot named:', programName);
   try {
     const querySnapshot = await getDocs(collection(db, 'DataReportingMoisCourant'));
-    console.log('Raw documents fetched:', querySnapshot.size);
+    console.log('Nb robots:', querySnapshot.size);
     
     const documents = querySnapshot.docs.map(doc => doc.data());
     //console.log('All documents:', JSON.stringify(documents, null, 2));
@@ -157,7 +157,7 @@ export async function fetchDataReportingByProgram(programName: string, bareme: s
     const data = querySnapshot.docs
       .map(doc => {
         const docData = doc.data();
-        //console.log('docData :', docData);
+        console.log('docData :', docData);
         // Créer un objet avec toutes les dates du mois et leurs valeurs
         const dateData: { [key: string]: string } = {};
         const currentDate = new Date();
