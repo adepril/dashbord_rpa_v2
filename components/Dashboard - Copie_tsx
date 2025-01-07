@@ -72,7 +72,7 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [OpenFormNewOrder, setIsFormOpen] = useState(false);
-  const [useChart4All, setUseChart4All] = useState(true);
+  const [useChart4All, setUseChart4All] = useState(false);
 
   const router = useRouter();
   const user = searchParams.get('user');
@@ -195,11 +195,15 @@ export default function Dashboard() {
                       const new_string = old_value.toString() + '¤' + old_gain;
                       arrJoursDuMois[idx] = new_string;
                       //console.log('arrJoursDuMois:', arrJoursDuMois);
+                      //setProgramData(arrJoursDuMois);
+
                     }
                   } 
                 }//2
               } //1
               
+              //console.log('-1 rawData for robot:', robot.nom_programme, rawData);
+              //console.log('-2 Tableau des jours (arrJoursDuMois):', arrJoursDuMois);
               setProgramData(arrJoursDuMois);
               const historique = await fetchEvolutionsByProgram(robot.nom_programme);
               allHistorique.push(...historique);
@@ -219,22 +223,25 @@ export default function Dashboard() {
           setProgramData(rawData);
           setHistoriqueData(allHistorique);
           setUseChart4All(true);
-          // console.log('-TOUT-*1 programData:', programData);
-          // console.log('-TOUT-*2 data (arrJoursDuMois)', arrJoursDuMois);
-           console.log('-TOUT-*3 rawData reconstruit:', rawData);
-           console.log('-TOUT-*4 rawData_copy:', rawData_copy);
+          console.log('-TOUT-*1 programData:', programData);
+          console.log('-TOUT-*2 data (arrJoursDuMois)', arrJoursDuMois);
+          console.log('-TOUT-*3 rawData reconstruit:', rawData);
+          console.log('-TOUT-*4 rawData_copy:', rawData_copy);
         } else {
           setUseChart4All(false);
 
           // Charger les données pour un seul robot
           const data = await fetchDataReportingByProgram(selectedProgramData.nom_programme, selectedProgramData.bareme);
           setProgramData(data);
-          // console.log('-*1 programData:', programData);
-          // console.log('-*2 data:', data);
+          console.log('-*1 programData:', programData);
+          console.log('-*2 data:', data);
 
           const historique = await fetchEvolutionsByProgram(selectedProgramData.nom_programme);
           setHistoriqueData(historique);
         }
+
+        //console.log('++ setProgramData :', programData);
+        //console.log('++ setHistoriqueData :', historiqueData);
       }
     };
 
@@ -341,7 +348,7 @@ export default function Dashboard() {
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
                   </div>
                 ) : programData ? (
-                  useChart4All ? (
+                  selectedAgency?.idAgence === '1' ? (
                     <Chart4All robotType={selectedProgram?.type_gain} data={programData[0]} />
                   ) : (
                     <Chart robotType={selectedProgram?.type_gain} data={programData[0]} />

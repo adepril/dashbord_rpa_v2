@@ -36,7 +36,7 @@ const CustomizedAxisTick: React.FC<CustomizedAxisTickProps> = (props) => {
 }
 
 export default function Chart({ robotType,data }: ChartProps) {
-  console.log("Chart.tsx - data:", data);
+  //nsole.log("Chart.tsx - data:", data);
   if (!data) {
     return (
       <div className="flex justify-center items-center h-[400px] text-gray-500">
@@ -55,11 +55,16 @@ export default function Chart({ robotType,data }: ChartProps) {
     let value = 0;
     let gain = 0;
     //console.log("Chart.tsx",data[dateKey]);
-    const [num1, num2] = data[dateKey] .split('¤').map(Number);
-    value = num1;
-    gain = num2;
-    // console.log("value",value);
-    // console.log("gain",gain);
+    if (data && data[dateKey]) {
+      const [num1, num2] = data[dateKey].split('¤').map(Number);
+      // Reste du code
+          value = num1;
+        gain = num2;
+        // console.log("value",value);
+        // console.log("gain",gain);
+    } else {
+      //console.log('data[dateKey] is undefined');
+    }
 
     return {
       date: dateKey,
@@ -77,7 +82,6 @@ export default function Chart({ robotType,data }: ChartProps) {
   }
 
   return (
-    
     <>
     <div className="w-full flex justify-center items-center ">
 
@@ -157,12 +161,12 @@ export default function Chart({ robotType,data }: ChartProps) {
               </div>
             </div>
             <div className="w-1/4 mr-5 ml-5">
-            <div className={robotType?.toLowerCase() === 'temps' ? ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2' ) : ( 'bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2')}>
+              <div className={robotType?.toLowerCase() === 'temps' ? ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2' ) : ( 'bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2')}>
                 <div className="ml-4 text-xs ">M-3</div>
                 <div className="ml-4 text-xl ">{data['NB UNITES MOIS N-3']} h</div>
               </div>
             </div>
-          </div>
+        </div>
           
       </div>
    
