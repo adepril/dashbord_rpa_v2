@@ -69,8 +69,6 @@ export default function Dashboard() {
   const [selectedProgramData, setSelectedProgramData] = useState<Program | null>(null);
   const [historiqueData, setHistoriqueData] = useState<any[]>([]);
   const [programData, setProgramData] = useState<any>(null);
-  const [robotData1, setRobotData1] = useState<any>(null);
-  const [robotData2, setRobotData2] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [OpenFormNewOrder, setIsFormOpen] = useState(false);
@@ -90,10 +88,10 @@ export default function Dashboard() {
     const loadUserData = async () => {
       try {
         setIsLoading(true);
-        //console.log('Loading data for username:', username);
+        console.log('Loading data for username:', username);
         
         const userData = await fetchUserIdByUsername(username);
-        //console.log('User data loaded:', userData);
+        console.log('User data loaded:', userData);
         
         if (!userData) {
           setError('Utilisateur non trouvé');
@@ -101,11 +99,11 @@ export default function Dashboard() {
         }
 
         const userAgencies = await fetchAgenciesByIds(userData.userAgenceIds);
-        //console.log('User agencies loaded:', userAgencies);
+        console.log('User agencies loaded:', userAgencies);
         setAgencies(userAgencies);
         
         if (userAgencies.length > 0) {
-          //console.log('Setting default agency:', userAgencies[0]);
+          console.log('Setting default agency:', userAgencies[0]);
           setSelectedAgency(userAgencies[0]);
         }
         
@@ -118,7 +116,7 @@ export default function Dashboard() {
     };
 
     if (username) {
-      //console.log('Starting data load for username:', username);
+      console.log('Starting data load for username:', username);
       loadUserData();
     }
   }, [username]);
@@ -127,14 +125,14 @@ export default function Dashboard() {
   useEffect(() => {
     const loadPrograms = async () => {
       if (selectedAgency) {
-        //console.log('Loading programs for agency:', selectedAgency);
+        console.log('Loading programs for agency:', selectedAgency);
         const agencyPrograms = await fetchAllRobotsByAgency(selectedAgency.idAgence);
         console.log('Programs loaded:', agencyPrograms);
         setPrograms(agencyPrograms);
         
         if (agencyPrograms.length > 0) {
           const defaultProgram = agencyPrograms[0];
-          //console.log('Setting default program:', defaultProgram);
+          console.log('Setting default program:', defaultProgram);
           setSelectedProgram(defaultProgram);
           // Use the exact program name for searching in Firebase
           console.log('Setting program data with name:', defaultProgram.nom_programme);
@@ -151,6 +149,7 @@ export default function Dashboard() {
     loadPrograms();
   }, [selectedAgency]);
 
+  // Load program data when selectedProgramData changes
   useEffect(() => {
   /**
    * Loads data for the selected program (robot). If the selected program is "TOUT",
@@ -196,8 +195,8 @@ export default function Dashboard() {
               console.log('(Dashboard) Bot:', robot.nom_programme, ' - currentProgramName: ', currentProgramName, ' - type:', robotType, ' - rawData: ', rawData);
 
               // Créer des tableaux séparés pour chaque type de robot
-              // arrJoursDuMoisType1 = [...arrJoursDuMois];
-              // arrJoursDuMoisType2 = [...arrJoursDuMois];
+              let arrJoursDuMoisType1 = [...arrJoursDuMois];
+              let arrJoursDuMoisType2 = [...arrJoursDuMois];
 
               // Parcourir chaque entrée de rawData
               for (const entry of rawData) {
@@ -218,9 +217,9 @@ export default function Dashboard() {
                     const newGain = oldGain; // + gain;
                     
                     // Mettre à jour le tableau selon le type de robot
-                    if (robotType === 'temps') {
+                    if (robotType === 'Type1') {
                       arrJoursDuMoisType1[idx] = `${newValue}¤${newGain}`;
-                    } else if (robotType === 'autre') {
+                    } else if (robotType === 'Type2') {
                       arrJoursDuMoisType2[idx] = `${newValue}¤${newGain}`;
                     }
                   }
@@ -234,10 +233,13 @@ export default function Dashboard() {
 
           // Créer des objets DataEntry séparés pour chaque type de robot
           const mergedDataType1: DataEntry = {
-            ...rawData[0],
+            ...rawData[0]
+            //'NOM PROGRAMME': 'Type1 - ' + selectedAgency?.nomAgence
           };
+          
           const mergedDataType2: DataEntry = {
-            ...rawData[0],
+            ...rawData[0] 
+            //'NOM PROGRAMME': 'Type2 - ' + selectedAgency?.nomAgence
           };
 
           // Remplir les dates avec les valeurs cumulées pour chaque type
@@ -248,14 +250,10 @@ export default function Dashboard() {
           }
           
           //setProgramData([mergedDataType1, mergedDataType2]);
-          setRobotData1(mergedDataType1);
-          setRobotData2(mergedDataType2);
-
+          setProgramData([mergedDataType1]);
           setHistoriqueData(allHistorique);
           setUseChart4All(true);
-          console.log('-TOUT- rawData reconstruit:', [mergedDataType1, mergedDataType2]);
-          console.log('robotData1:', mergedDataType1);
-          console.log('robotData2:', mergedDataType2);
+           console.log('-TOUT- rawData reconstruit:', [mergedDataType1, mergedDataType2]);
         } else {
           setUseChart4All(false);
 
@@ -367,12 +365,19 @@ export default function Dashboard() {
           <div className="p-4 bg-x-200">
             <div className="grid grid-cols-4 gap-4 bg-x-100">
               <div className="col-span-4 pb-8">
-               {useChart4All ? (
-                      <Chart4All robotType={selectedProgram?.type_gain} data1={robotData1} data2={robotData2} />
-                    ) : ('')}
-                {programData && !useChart4All? (  
-                  <Chart robotType={selectedProgram?.type_gain} data={programData[0]} />
-                ) : ('')}
+                {isLoading ? (
+                  <div className="flex justify-center items-center h-64">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+                  </div>
+                ) : programData ? (
+                  useChart4All ? (
+                    <Chart4All robotType={selectedProgram?.type_gain} data={programData[0]} />
+                  ) : (
+                    <Chart robotType={selectedProgram?.type_gain} data={programData[0]} />
+                  )
+                ) : (
+                  <div className="text-red-500">Aucune donnée disponible pour ce programme</div>
+                )}
               </div>
             </div>
 

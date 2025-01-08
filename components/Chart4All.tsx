@@ -5,7 +5,7 @@ import React from 'react';
 
 interface ChartProps {
   robotType: string
-  data: any
+  data1: any,data2: any
 }
 
 interface CustomizedAxisTickProps {
@@ -35,9 +35,9 @@ const CustomizedAxisTick: React.FC<CustomizedAxisTickProps> = (props) => {
   );
 }
 
-export default function Chart({ robotType,data }: ChartProps) {
-  //console.log("Chart4All.tsx",data);
-  if (!data) {
+export default function Chart({ robotType,data1,data2 }: ChartProps) {
+  //console.log("Chart4All.tsx",data1);
+  if (!data1) {
     return (
       <div className="flex justify-center items-center h-[400px] text-gray-500">
         L'histogramme ne peut être généré car aucune donnée disponible pour ce programme
@@ -49,16 +49,17 @@ export default function Chart({ robotType,data }: ChartProps) {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth() + 1;
   
-  const chartData = Array.from({ length: 31 }, (_, i) => {
+  // Chart 1
+  const chartData1 = Array.from({ length: 31 }, (_, i) => {
     const day = (i + 1).toString().padStart(2, '0');
     const dateKey = `${day}/${month.toString().padStart(2, '0')}/${year}`;
     let value = 0;
     let gain = 0;
     //console.log("Chart.tsx",data[dateKey]);
-    if (data && data[dateKey]) {
-      const [num1, num2] = data[dateKey].split('¤').map(Number);
+    if (data1 && data1[dateKey]) {
+      const [num1, num2] = data1[dateKey].split('¤').map(Number);
       // Reste du code
-          value = num1;
+        value = num1;
         gain = num2;
         // console.log("value",value);
         // console.log("gain",gain);
@@ -70,9 +71,31 @@ export default function Chart({ robotType,data }: ChartProps) {
       valeur: value,
       gain: gain
     };
-  });
+  }); // Chart 1
 
-  if (chartData.every(item => item.valeur === 0)) {
+  // Chart 2
+  const chartData2 = Array.from({ length: 31 }, (_, i) => {
+    const day = (i + 1).toString().padStart(2, '0');
+    const dateKey = `${day}/${month.toString().padStart(2, '0')}/${year}`;
+    let value = 0;
+    let gain = 0;
+    //console.log("Chart.tsx",data[dateKey]);
+    if (data2 && data2[dateKey]) {
+      const [num1, num2] = data2[dateKey].split('¤').map(Number);
+      // Reste du code
+        value = num1;
+        gain = num2;
+    } else {
+      //console.log('data[dateKey] is undefined');
+    }
+    return {
+      date: dateKey,
+      valeur: value,
+      gain: gain
+    };
+  }); // Chart 2
+
+  if (chartData1.every(item => item.valeur === 0)) {
     return (
       <div className="flex justify-center items-center h-[400px] text-gray-500">
         L'histogramme ne peut être généré car aucune donnée disponible pour ce programme
@@ -90,7 +113,7 @@ export default function Chart({ robotType,data }: ChartProps) {
 
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
-              data={chartData}
+              data={chartData1}
               margin={{ top: 10, right: 10, left: 5, bottom: 1 }}
             >
               <XAxis
@@ -142,26 +165,26 @@ export default function Chart({ robotType,data }: ChartProps) {
               <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
                 <div className="ml-4 text-xs ">Total du mois</div>
                 <div className="ml-4 text-xl ">
-                {data['NB UNITES DEPUIS DEBUT DU MOIS'] ? ( data['NB UNITES DEPUIS DEBUT DU MOIS'] ) : ('N/A') }
+                {data1['NB UNITES DEPUIS DEBUT DU MOIS'] ? ( data1['NB UNITES DEPUIS DEBUT DU MOIS'] ) : ('N/A') }
                 </div>
               </div>
             </div>
             <div className=" w-1/4 mr-5 ml-5">
             <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
                 <div className="ml-4 text-xs ">M-1</div>
-                <div className="ml-4 text-xl ">{data['NB UNITES MOIS N-1'] ? ( data['NB UNITES MOIS N-1'] ) : ('N/A') }</div>
+                <div className="ml-4 text-xl ">{data1['NB UNITES MOIS N-1'] ? ( data1['NB UNITES MOIS N-1'] ) : ('N/A') }</div>
               </div>
             </div>
             <div className=" w-1/4 mr-5 ml-5">
               <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
                 <div className="ml-4 text-xs ">M-2</div>
-                <div className="ml-4 text-xl">{data['NB UNITES MOIS N-2'] ? ( data['NB UNITES MOIS N-2'] ) : ('N/A') }</div>
+                <div className="ml-4 text-xl">{data1['NB UNITES MOIS N-2'] ? ( data1['NB UNITES MOIS N-2'] ) : ('N/A') }</div>
               </div>
             </div>
             <div className="w-1/4 mr-5 ml-5">
             <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
                 <div className="ml-4 text-xs ">M-3</div>
-                <div className="ml-4 text-xl ">{data['NB UNITES MOIS N-3'] ? ( data['NB UNITES MOIS N-3'] ) : ('N/A') }</div>
+                <div className="ml-4 text-xl ">{data1['NB UNITES MOIS N-3'] ? ( data1['NB UNITES MOIS N-3'] ) : ('N/A') }</div>
               </div>
             </div>
         </div>
@@ -173,7 +196,7 @@ export default function Chart({ robotType,data }: ChartProps) {
             <div className="absolute top-2 right-2 text-black px-2 py-1 rounded-md shadow-md">Nombre d'execution</div>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={chartData}
+                data={chartData2}
                 margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
               >
                 <XAxis
@@ -223,26 +246,26 @@ export default function Chart({ robotType,data }: ChartProps) {
             <div className='bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2'>
                 <div className="ml-4 text-xs ">Total du mois</div>
                 <div className="ml-4 text-xl ">
-                {data['NB UNITES DEPUIS DEBUT DU MOIS'] ? ( data['NB UNITES DEPUIS DEBUT DU MOIS'] ) : ('N/A') }
+                {data2['NB UNITES DEPUIS DEBUT DU MOIS'] ? ( data2['NB UNITES DEPUIS DEBUT DU MOIS'] ) : ('N/A') }
                 </div>
               </div>
             </div>
             <div className=" w-1/4 mr-5 ml-5">
             <div className='bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2'>
                 <div className="ml-4 text-xs ">M-1</div>
-                <div className="ml-4 text-xl ">{data['NB UNITES MOIS N-1'] ? ( data['NB UNITES MOIS N-1'] ) : ('N/A') }</div>
+                <div className="ml-4 text-xl ">{data2['NB UNITES MOIS N-1'] ? ( data2['NB UNITES MOIS N-1'] ) : ('N/A') }</div>
               </div>
             </div>
             <div className=" w-1/4 mr-5 ml-5">
             <div className='bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2'>
                 <div className="ml-4 text-xs ">M-2</div>
-                <div className="ml-4 text-xl">{data['NB UNITES MOIS N-2'] ? ( data['NB UNITES MOIS N-2'] ) : ('N/A') }</div>
+                <div className="ml-4 text-xl">{data2['NB UNITES MOIS N-2'] ? ( data2['NB UNITES MOIS N-2'] ) : ('N/A') }</div>
               </div>
             </div>
             <div className="w-1/4 mr-5 ml-5">
             <div className='bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2'>
                 <div className="ml-4 text-xs ">M-3</div>
-                <div className="ml-4 text-xl ">{data['NB UNITES MOIS N-3'] ? ( data['NB UNITES MOIS N-3'] ) : ('N/A') }</div>
+                <div className="ml-4 text-xl ">{data2['NB UNITES MOIS N-3'] ? ( data2['NB UNITES MOIS N-3'] ) : ('N/A') }</div>
               </div>
             </div>
         </div>
