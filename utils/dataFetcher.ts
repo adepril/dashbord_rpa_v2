@@ -258,8 +258,8 @@ export async function fetchDataReportingByProgram(programName: string, bareme: s
           'NB UNITES DEPUIS DEBUT DU MOIS': docData['NB UNITES DEPUIS DEBUT DU MOIS'] || '',
           'NB UNITES MOIS N-1': docData['NB UNITES MOIS N-1'] || '',
           'NB UNITES MOIS N-2': docData['NB UNITES MOIS N-2'] || '',
-          'NB UNITES MOIS N-3': docData['NB UNITES MOIS N-3'] || '',
-          gain // Ajouter l'attribut "gain" à l'objet de données
+          'NB UNITES MOIS N-3': docData['NB UNITES MOIS N-3'] || ''
+          //gain // Ajouter l'attribut "gain" à l'objet de données
         };
       })
       .filter(item => {

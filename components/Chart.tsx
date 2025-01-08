@@ -83,14 +83,28 @@ export default function Chart({ robotType,data }: ChartProps) {
 
   return (
     <>
-    <div className="w-full flex justify-center items-center ">
-
-      <div className="w-full p-4 bg-white rounded-lg shadow mr-4">
-        <div className="h-[300px] relative">
+    <div className="w-full flex justify-center items-center  bg-x-100">
+      <div className="w-full p-4 bg-white rounded-lg shadow mr-4 h-[450px]">
+        <div className="h-[300px] relative ">
+          <div className="ml-[10%] text-left text-xl font-bold mb-4">
+            {robotType?.toLowerCase() === 'temps' ? 'Gain de temps' : 'Sécurisation des processus'}
+          </div>
+          <div className="absolute top-2 right-2 text-black px-2 py-1 ">
+            {robotType?.toLowerCase() === "temps" ? (
+              "Échelle de temps en minutes"
+            ) : (
+              "Nombre d'execution"
+            )}
+          </div>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={chartData}
-              margin={{ top: 10, right: 10, left: 5, bottom: 1 }}
+              width={600}
+              height={600}
+              barSize={40}
+              barGap={15}
+              title=""
+              margin={{ top: 20, right: 10, left: 5, bottom: 1 }}
             >
               <XAxis
                 dataKey="date"
@@ -106,7 +120,8 @@ export default function Chart({ robotType,data }: ChartProps) {
                 stroke="#888888"
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(value: number) => `${value}`} />
+                tickFormatter={(value: number) => `${value}`}
+                fontSize={10} />
               <Tooltip
                 labelFormatter={(label: string) => label}
                 formatter={(value: any, name: string, props: any) => {
@@ -133,46 +148,38 @@ export default function Chart({ robotType,data }: ChartProps) {
                 />
             </BarChart>
           </ResponsiveContainer>
-          <div className="absolute top-2 right-2 text-black px-2 py-1 rounded-md shadow-md">
-            {robotType?.toLowerCase() === "temps" ? (
-              "Échelle de temps en minutes"
-            ) : (
-              "Nombre d'execution"
-            )}
-          </div>
+
         </div>
-        <div className="flex justify-around mt-2">
+        <div className="flex justify-around mt-10">
             <div className="w-1/4 mr-5 ml-5 ">
             <div className={robotType?.toLowerCase() === 'temps' ? ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2' ) : ( 'bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2')}>
                 <div className="ml-4 text-xs ">Total du mois</div>
-                <div className="ml-4 text-xl ">{data['NB UNITES DEPUIS DEBUT DU MOIS']} h</div>
+                <div className="ml-4 text-xl ">
+                {data['NB UNITES DEPUIS DEBUT DU MOIS'] ? ( data['NB UNITES DEPUIS DEBUT DU MOIS'] ) : ('N/A') }
+                </div>
               </div>
             </div>
             <div className=" w-1/4 mr-5 ml-5">
               <div className={robotType?.toLowerCase() === 'temps' ? ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2' ) : ( 'bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2')}>
                 <div className="ml-4 text-xs ">M-1</div>
-                <div className="ml-4 text-xl ">{data['NB UNITES MOIS N-1']} h</div>
+                <div className="ml-4 text-xl ">{data['NB UNITES MOIS N-1'] ? ( data['NB UNITES MOIS N-1'] ) : ('N/A') }</div>
               </div>
             </div>
             <div className=" w-1/4 mr-5 ml-5">
             <div className={robotType?.toLowerCase() === 'temps' ? ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2' ) : ( 'bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2')}>
                 <div className="ml-4 text-xs ">M-2</div>
-                <div className="ml-4 text-xl">{data['NB UNITES MOIS N-2']} h</div>
+                <div className="ml-4 text-xl">{data['NB UNITES MOIS N-2'] ? ( data['NB UNITES MOIS N-2'] ) : ('N/A') }</div>
               </div>
             </div>
             <div className="w-1/4 mr-5 ml-5">
               <div className={robotType?.toLowerCase() === 'temps' ? ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2' ) : ( 'bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2')}>
                 <div className="ml-4 text-xs ">M-3</div>
-                <div className="ml-4 text-xl ">{data['NB UNITES MOIS N-3']} h</div>
+                <div className="ml-4 text-xl ">{data['NB UNITES MOIS N-3'] ? ( data['NB UNITES MOIS N-3'] ) : ('N/A') }</div>
               </div>
             </div>
         </div>
-          
       </div>
-   
     </div>
-     
-     </>
-    
+    </>
   );
 }

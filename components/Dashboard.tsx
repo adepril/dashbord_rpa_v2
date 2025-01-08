@@ -35,7 +35,7 @@ interface DataEntry {
   'NB UNITES MOIS N-1': number;
   'NB UNITES MOIS N-2': number;
   'NB UNITES MOIS N-3': number;
-  gain: Record<string, number>;
+  //gain: Record<string, number>;
   [key: string]: any; // Permet d'accéder aux propriétés dynamiques (dates)
 }
 
@@ -151,6 +151,12 @@ export default function Dashboard() {
 
   // Load program data when selectedProgramData changes
   useEffect(() => {
+  /**
+   * Loads data for the selected program (robot). If the selected program is "TOUT",
+   * loads data for all robots of the selected agency and merges their values (day by day) into a single
+   * DataEntry object. Otherwise, loads data for the single selected program.
+   * @returns {Promise<void>}
+   */
     const loadProgramData = async () => {
       if (selectedProgramData) {
         console.log('Loading data for robot :', selectedProgramData);
@@ -158,79 +164,69 @@ export default function Dashboard() {
         // Si "TOUT" est sélectionné, charger les données de tous les robots
         if (selectedProgramData.nom_programme === "TOUT") {
           
-          const allData = [];
           const allHistorique = [];
           // Tableau de 31 jours initialisé à 0 (déclaré dans le state du composant)
           let arrJoursDuMois: string[] = new Array(31).fill("0¤0");
           let rawData: DataEntry[] = [];
-          let rawData_copy: DataEntry[] = [];
           console.log('Tableau des jours (arrJoursDuMois) initialisé');
 
           for (const robot of programs) {
 
             rawData = await fetchDataReportingByProgram(robot.nom_programme, robot.bareme);
-            rawData_copy = rawData;
 
             if (robot.id_agence === selectedAgency?.idAgence && robot.nom_programme !== "TOUT") {
-              console.log('Ligne 171 - Robot:', robot.nom_programme, 'Agence:', robot.id_agence);
-              allData.push(...rawData);
+              console.log('(Dashboard) Bot:', robot.nom_programme, ' - rawData: ', rawData);
 
-              // Remplir le tableau des jours avec les données
-              // Parcourir les 31 dates dans l'objet rawData
-              for (const entry of rawData) { //1
-                for (let i = 1; i <= 31; i++) {//2
-                  const dateKey = i.toString().padStart(2, '0') + '/01/2025'; // Format JJ/MM/AAAA
+              // Parcourir chaque entrée de rawData
+              for (const entry of rawData) {
+                // Parcourir chaque jour du mois
+                for (let i = 1; i <= 31; i++) {
+                  const dateKey = i.toString().padStart(2, '0') + '/01/2025';
                   
                   if (entry[dateKey]) {
-                    // Extraire la valeur avant le ¤
-                    const new_value = (entry[dateKey] as string).split('¤')[0];
+                    // Extraire valeur et gain
+                    const [value, gain] = entry[dateKey].split('¤').map(Number);
                     
-                    //console.log('entry[dateKey].value:', new_value);
-                    // Vérification de l'idx pour TypeScript
+                    // Récupérer les anciennes valeurs
                     const idx = i - 1;
-                    if (idx >= 0 && idx < arrJoursDuMois.length) {
-                      let old_value = arrJoursDuMois[idx].split('¤')[0];
-                      let old_gain = arrJoursDuMois[idx].split('¤')[1];
-                      old_value = (Number(old_value) + Number(new_value)).toString();
-                      const new_string = old_value.toString() + '¤' + old_gain;
-                      arrJoursDuMois[idx] = new_string;
-                      //console.log('arrJoursDuMois:', arrJoursDuMois);
-                    }
-                  } 
-                }//2
-              } //1
+                    const [oldValue, oldGain] = arrJoursDuMois[idx].split('¤').map(Number);
+                    
+                    // Calculer les nouvelles valeurs
+                    const newValue = oldValue + value;
+                    const newGain = oldGain; // + gain;
+                    
+                    // Mettre à jour le tableau
+                    arrJoursDuMois[idx] = `${newValue}¤${newGain}`;
+                  }
+                }
+              }
               
-              setProgramData(arrJoursDuMois);
               const historique = await fetchEvolutionsByProgram(robot.nom_programme);
               allHistorique.push(...historique);
             } //fin if
           } //fin itération sur les robots
 
-          // reconstruire rawData 
-          // Reconstruire rawData avec les nouvelles valeurs de arrJoursDuMois
-          for (let i = 0; i < rawData.length; i++) {
-            for (let j = 1; j <= 31; j++) {
-              const dateKey = j.toString().padStart(2, '0') + '/01/2025';
-              if (rawData[i][dateKey]) {
-                rawData[i][dateKey] = arrJoursDuMois[j-1];
-              }
-            }
+          // Créer un nouvel objet DataEntry avec les valeurs cumulées
+          const mergedData: DataEntry = {
+            ...rawData[0], // Copier les propriétés non-journalières
+          };
+          
+          // Remplir les dates avec les valeurs cumulées
+          for (let i = 1; i <= 31; i++) {
+            const dateKey = i.toString().padStart(2, '0') + '/01/2025';
+            mergedData[dateKey] = arrJoursDuMois[i-1];
           }
-          setProgramData(rawData);
+          
+          setProgramData([mergedData]);
           setHistoriqueData(allHistorique);
           setUseChart4All(true);
-          // console.log('-TOUT-*1 programData:', programData);
-          // console.log('-TOUT-*2 data (arrJoursDuMois)', arrJoursDuMois);
-           console.log('-TOUT-*3 rawData reconstruit:', rawData);
-           console.log('-TOUT-*4 rawData_copy:', rawData_copy);
+           console.log('-TOUT- rawData reconstruit:', [mergedData]);
         } else {
           setUseChart4All(false);
 
           // Charger les données pour un seul robot
           const data = await fetchDataReportingByProgram(selectedProgramData.nom_programme, selectedProgramData.bareme);
           setProgramData(data);
-          // console.log('-*1 programData:', programData);
-          // console.log('-*2 data:', data);
 
           const historique = await fetchEvolutionsByProgram(selectedProgramData.nom_programme);
           setHistoriqueData(historique);
@@ -335,7 +331,7 @@ export default function Dashboard() {
         {selectedProgram && (
           <div className="p-4 bg-x-200">
             <div className="grid grid-cols-4 gap-4 bg-x-100">
-              <div className="col-span-4">
+              <div className="col-span-4 pb-8">
                 {isLoading ? (
                   <div className="flex justify-center items-center h-64">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
