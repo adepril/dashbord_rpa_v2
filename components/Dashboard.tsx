@@ -204,46 +204,48 @@ export default function Dashboard() {
 
               console.log('(Dashboard) Bot:', robot.nom_programme, ' - currentProgramName: ', currentProgramName, ' - type:', robotType, ' - rawData: ', rawData);
 
-              // Parcourir chaque entrée de rawData pour additionner les valeurs
-              for (const entry of rawData) {
+                // Parcourir chaque entrée de rawData pour additionner les valeurs
+                for (const entry of rawData) {
+                  // Additionner les unités pour chaque mois (une seule fois par entrée)
+                  if (robotType === 'temps') {
+                    totalUnitesMoisCourant_Type1 += Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) || 0;
+                    totalUnitesMoisN1_Type1 += Number(entry['NB UNITES MOIS N-1']) || 0;
+                    totalUnitesMoisN2_Type1 += Number(entry['NB UNITES MOIS N-2']) || 0;
+                    totalUnitesMoisN3_Type1 += Number(entry['NB UNITES MOIS N-3']) || 0;
+                  } else if (robotType === 'autre') {
+                    totalUnitesMoisCourant_Type2 += Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) || 0;
+                    totalUnitesMoisN1_Type2 += Number(entry['NB UNITES MOIS N-1']) || 0;
+                    totalUnitesMoisN2_Type2 += Number(entry['NB UNITES MOIS N-2']) || 0;
+                    totalUnitesMoisN3_Type2 += Number(entry['NB UNITES MOIS N-3']) || 0;
+                  }
 
-                // Parcourir chaque jour du mois
-                for (let i = 1; i <= 31; i++) {
-                  const currentDate = new Date();
-                  const currentMonth = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // +1 because months are 0-based
-                  const currentYear = currentDate.getFullYear();
-                  const dateKey = i.toString().padStart(2, '0') + '/' + currentMonth + '/' + currentYear;
-            
-                  if (entry[dateKey]) {
-                    // Extraire valeur et gain
-                    const [value, gain] = entry[dateKey].split('¤').map(Number);
-                    
-                    // Récupérer les anciennes valeurs
-                    const idx = i - 1;
-                    const [oldValue, oldGain] = arrJoursDuMois[idx].split('¤').map(Number);
-                    
-                    // Calculer les nouvelles valeurs
-                    const newValue = oldValue + value;
-                    const newGain = oldGain; // + gain;
-                    
-                    // Mettre à jour le tableau selon le type de robot
-                    if (robotType === 'temps') {
-                      arrJoursDuMois_Type1[idx] = `${newValue}¤${newGain}`;
-                      // Additionner les unités pour chaque mois
-                      totalUnitesMoisCourant_Type1 += Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) || 0;
-                      totalUnitesMoisN1_Type1 += Number(entry['NB UNITES MOIS N-1']) || 0;
-                      totalUnitesMoisN2_Type1 += Number(entry['NB UNITES MOIS N-2']) || 0;
-                      totalUnitesMoisN3_Type1 += Number(entry['NB UNITES MOIS N-3']) || 0;
-                    } else if (robotType === 'autre') {
-                      arrJoursDuMois_Type2[idx] = `${newValue}¤${newGain}`;
-                      // Additionner les unités pour chaque mois
-                      totalUnitesMoisCourant_Type2 += Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) || 0;
-                      totalUnitesMoisN1_Type2 += Number(entry['NB UNITES MOIS N-1']) || 0;
-                      totalUnitesMoisN2_Type2 += Number(entry['NB UNITES MOIS N-2']) || 0;
-                      totalUnitesMoisN3_Type2 += Number(entry['NB UNITES MOIS N-3']) || 0;
+                  // Parcourir chaque jour du mois
+                  for (let i = 1; i <= 31; i++) {
+                    const currentDate = new Date();
+                    const currentMonth = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // +1 because months are 0-based
+                    const currentYear = currentDate.getFullYear();
+                    const dateKey = i.toString().padStart(2, '0') + '/' + currentMonth + '/' + currentYear;
+              
+                    if (entry[dateKey]) {
+                      // Extraire valeur et gain
+                      const [value, gain] = entry[dateKey].split('¤').map(Number);
+                      
+                      // Récupérer les anciennes valeurs
+                      const idx = i - 1;
+                      const [oldValue, oldGain] = arrJoursDuMois[idx].split('¤').map(Number);
+                      
+                      // Calculer les nouvelles valeurs
+                      const newValue = oldValue + value;
+                      const newGain = oldGain; // + gain;
+                      
+                      // Mettre à jour le tableau selon le type de robot
+                      if (robotType === 'temps') {
+                        arrJoursDuMois_Type1[idx] = `${newValue}¤${newGain}`;
+                      } else if (robotType === 'autre') {
+                        arrJoursDuMois_Type2[idx] = `${newValue}¤${newGain}`;
+                      }
                     }
                   }
-                }
               }
               
               const historique = await fetchEvolutionsByProgram(robot.nom_programme);
@@ -254,17 +256,17 @@ export default function Dashboard() {
           // Créer des objets DataEntry séparés pour chaque type de robot
           const mergedDataType1: DataEntry = {
             ...rawData[0],
-            // 'NB UNITES DEPUIS DEBUT DU MOIS': totalUnitesMoisCourant_Type1.toString(),
-            // 'NB UNITES MOIS N-1': totalUnitesMoisN1_Type1.toString(),
-            // 'NB UNITES MOIS N-2': totalUnitesMoisN2_Type1.toString(),
-            // 'NB UNITES MOIS N-3': totalUnitesMoisN3_Type1.toString()
+            'NB UNITES DEPUIS DEBUT DU MOIS': totalUnitesMoisCourant_Type1.toString(),
+            'NB UNITES MOIS N-1': totalUnitesMoisN1_Type1.toString(),
+            'NB UNITES MOIS N-2': totalUnitesMoisN2_Type1.toString(),
+            'NB UNITES MOIS N-3': totalUnitesMoisN3_Type1.toString()
           };
           const mergedDataType2: DataEntry = {
             ...rawData[0],
-            // 'NB UNITES DEPUIS DEBUT DU MOIS': totalUnitesMoisCourant_Type2.toString(),
-            // 'NB UNITES MOIS N-1': totalUnitesMoisN1_Type2.toString(),
-            // 'NB UNITES MOIS N-2': totalUnitesMoisN2_Type2.toString(),
-            // 'NB UNITES MOIS N-3': totalUnitesMoisN3_Type2.toString()
+            'NB UNITES DEPUIS DEBUT DU MOIS': totalUnitesMoisCourant_Type2.toString(),
+            'NB UNITES MOIS N-1': totalUnitesMoisN1_Type2.toString(),
+            'NB UNITES MOIS N-2': totalUnitesMoisN2_Type2.toString(),
+            'NB UNITES MOIS N-3': totalUnitesMoisN3_Type2.toString()
           };
 
           // Remplir les dates avec les valeurs cumulées pour chaque type
