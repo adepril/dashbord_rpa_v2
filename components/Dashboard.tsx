@@ -31,10 +31,10 @@ interface Program {
 interface DataEntry {
   AGENCE: string;
   'NOM PROGRAMME': string;
-  'NB UNITES DEPUIS DEBUT DU MOIS': number;
-  'NB UNITES MOIS N-1': number;
-  'NB UNITES MOIS N-2': number;
-  'NB UNITES MOIS N-3': number;
+  'NB UNITES DEPUIS DEBUT DU MOIS': string;
+  'NB UNITES MOIS N-1': string;
+  'NB UNITES MOIS N-2': string;
+  'NB UNITES MOIS N-3': string;
   //gain: Record<string, number>;
   [key: string]: any; // Permet d'accéder aux propriétés dynamiques (dates)
 }
@@ -168,10 +168,19 @@ export default function Dashboard() {
           const allHistorique = [];
           // Tableaux de 31 jours initialisés à 0 pour chaque type de robot
           const arrJoursDuMois: string[] = new Array(31).fill("0¤0");
-          const arrJoursDuMoisType1: string[] = [...arrJoursDuMois];
-          const arrJoursDuMoisType2: string[] = [...arrJoursDuMois];
+          const arrJoursDuMois_Type1: string[] = [...arrJoursDuMois];
+          const arrJoursDuMois_Type2: string[] = [...arrJoursDuMois];
           let rawData: DataEntry[] = [];
-          console.log('Tableaux des jours initialisés');
+          
+          // Variables pour stocker les totaux des unités
+          let totalUnitesMoisCourant_Type1 = 0;
+          let totalUnitesMoisN1_Type1 = 0;
+          let totalUnitesMoisN2_Type1 = 0;
+          let totalUnitesMoisN3_Type1 = 0;
+          let totalUnitesMoisCourant_Type2 = 0;
+          let totalUnitesMoisN1_Type2 = 0;
+          let totalUnitesMoisN2_Type2 = 0;
+          let totalUnitesMoisN3_Type2 = 0;
 
           for (const robot of programs) {
             // Récupère les données du robot
@@ -195,16 +204,16 @@ export default function Dashboard() {
 
               console.log('(Dashboard) Bot:', robot.nom_programme, ' - currentProgramName: ', currentProgramName, ' - type:', robotType, ' - rawData: ', rawData);
 
-              // Créer des tableaux séparés pour chaque type de robot
-              // arrJoursDuMoisType1 = [...arrJoursDuMois];
-              // arrJoursDuMoisType2 = [...arrJoursDuMois];
-
-              // Parcourir chaque entrée de rawData
+              // Parcourir chaque entrée de rawData pour additionner les valeurs
               for (const entry of rawData) {
+
                 // Parcourir chaque jour du mois
                 for (let i = 1; i <= 31; i++) {
-                  const dateKey = i.toString().padStart(2, '0') + '/01/2025';
-                  
+                  const currentDate = new Date();
+                  const currentMonth = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // +1 because months are 0-based
+                  const currentYear = currentDate.getFullYear();
+                  const dateKey = i.toString().padStart(2, '0') + '/' + currentMonth + '/' + currentYear;
+            
                   if (entry[dateKey]) {
                     // Extraire valeur et gain
                     const [value, gain] = entry[dateKey].split('¤').map(Number);
@@ -219,9 +228,19 @@ export default function Dashboard() {
                     
                     // Mettre à jour le tableau selon le type de robot
                     if (robotType === 'temps') {
-                      arrJoursDuMoisType1[idx] = `${newValue}¤${newGain}`;
+                      arrJoursDuMois_Type1[idx] = `${newValue}¤${newGain}`;
+                      // Additionner les unités pour chaque mois
+                      totalUnitesMoisCourant_Type1 += Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) || 0;
+                      totalUnitesMoisN1_Type1 += Number(entry['NB UNITES MOIS N-1']) || 0;
+                      totalUnitesMoisN2_Type1 += Number(entry['NB UNITES MOIS N-2']) || 0;
+                      totalUnitesMoisN3_Type1 += Number(entry['NB UNITES MOIS N-3']) || 0;
                     } else if (robotType === 'autre') {
-                      arrJoursDuMoisType2[idx] = `${newValue}¤${newGain}`;
+                      arrJoursDuMois_Type2[idx] = `${newValue}¤${newGain}`;
+                      // Additionner les unités pour chaque mois
+                      totalUnitesMoisCourant_Type2 += Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) || 0;
+                      totalUnitesMoisN1_Type2 += Number(entry['NB UNITES MOIS N-1']) || 0;
+                      totalUnitesMoisN2_Type2 += Number(entry['NB UNITES MOIS N-2']) || 0;
+                      totalUnitesMoisN3_Type2 += Number(entry['NB UNITES MOIS N-3']) || 0;
                     }
                   }
                 }
@@ -235,16 +254,24 @@ export default function Dashboard() {
           // Créer des objets DataEntry séparés pour chaque type de robot
           const mergedDataType1: DataEntry = {
             ...rawData[0],
+            // 'NB UNITES DEPUIS DEBUT DU MOIS': totalUnitesMoisCourant_Type1.toString(),
+            // 'NB UNITES MOIS N-1': totalUnitesMoisN1_Type1.toString(),
+            // 'NB UNITES MOIS N-2': totalUnitesMoisN2_Type1.toString(),
+            // 'NB UNITES MOIS N-3': totalUnitesMoisN3_Type1.toString()
           };
           const mergedDataType2: DataEntry = {
             ...rawData[0],
+            // 'NB UNITES DEPUIS DEBUT DU MOIS': totalUnitesMoisCourant_Type2.toString(),
+            // 'NB UNITES MOIS N-1': totalUnitesMoisN1_Type2.toString(),
+            // 'NB UNITES MOIS N-2': totalUnitesMoisN2_Type2.toString(),
+            // 'NB UNITES MOIS N-3': totalUnitesMoisN3_Type2.toString()
           };
 
           // Remplir les dates avec les valeurs cumulées pour chaque type
           for (let i = 1; i <= 31; i++) {
             const dateKey = i.toString().padStart(2, '0') + '/01/2025';
-            mergedDataType1[dateKey] = arrJoursDuMoisType1[i-1];
-            mergedDataType2[dateKey] = arrJoursDuMoisType2[i-1];
+            mergedDataType1[dateKey] = arrJoursDuMois_Type1[i-1];
+            mergedDataType2[dateKey] = arrJoursDuMois_Type2[i-1];
           }
           
           //setProgramData([mergedDataType1, mergedDataType2]);
@@ -252,11 +279,13 @@ export default function Dashboard() {
           setRobotData2(mergedDataType2);
 
           setHistoriqueData(allHistorique);
+          //Utiliser Chart4All.tsx pour les deux robots
           setUseChart4All(true);
           console.log('-TOUT- rawData reconstruit:', [mergedDataType1, mergedDataType2]);
           console.log('robotData1:', mergedDataType1);
           console.log('robotData2:', mergedDataType2);
         } else {
+          //Utiliser Chart.tsx pour un seul robot
           setUseChart4All(false);
 
           // Charger les données pour un seul robot

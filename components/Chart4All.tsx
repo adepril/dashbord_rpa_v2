@@ -107,9 +107,10 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
     <>
     <div className="w-full flex justify-center items-center ">
 
-      <div className="w-1/2 p-4 bg-white rounded-lg shadow mr-4">
+    <div className="w-1/2 pt-4 pb-12 bg-white rounded-lg shadow ml-2">
         <div className="h-[300px] relative">
         <div className="ml-[10%] text-left text-xl font-bold mb-4">Gain de temps</div>
+          <div className="absolute top-2 right-2 text-black px-2 py-1 ">Échelle de temps en minutes</div>
 
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
@@ -156,11 +157,8 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
                 />
             </BarChart>
           </ResponsiveContainer>
-          <div className="absolute top-2 right-2 text-black px-2 py-1 rounded-md shadow-md">
-            Échelle de temps en minutes
-          </div>
         </div>
-        <div className="flex justify-around mt-10">
+        {/* <div className="flex justify-around mt-10">
             <div className="w-1/4 mr-5 ml-5 ">
               <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
                 <div className="ml-4 text-xs ">Total du mois</div>
@@ -187,13 +185,13 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
                 <div className="ml-4 text-xl ">{data1['NB UNITES MOIS N-3'] ? ( data1['NB UNITES MOIS N-3'] ) : ('N/A') }</div>
               </div>
             </div>
-        </div>
+        </div> */}
       </div>
 
-      <div className="w-1/2 p-4 bg-white rounded-lg shadow ml-2">
+      <div className="w-1/2 pt-4 pb-12 bg-white rounded-lg shadow ml-2">
           <div className="h-[300px] relative">
-            <div className="ml-[10%] text-left text-xl font-bold mb-4">Sécurisation des processus</div>
-            <div className="absolute top-2 right-2 text-black px-2 py-1 rounded-md shadow-md">Nombre d'execution</div>
+          <div className="ml-[10%] text-left text-xl font-bold mb-4">Sécurisation des processus</div>
+          <div className="absolute top-2 right-2 text-black px-2 py-1 ">Nombre d'execution</div>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={chartData2}
@@ -241,7 +239,7 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
             </ResponsiveContainer>
             
           </div>
-        <div className="flex justify-around mt-10">
+        {/* <div className="flex justify-around mt-10">
             <div className="w-1/4 mr-5 ml-5 ">
             <div className='bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2'>
                 <div className="ml-4 text-xs ">Total du mois</div>
@@ -268,7 +266,7 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
                 <div className="ml-4 text-xl ">{data2['NB UNITES MOIS N-3'] ? ( data2['NB UNITES MOIS N-3'] ) : ('N/A') }</div>
               </div>
             </div>
-        </div>
+        </div> */}
       </div>
           
     </div>
