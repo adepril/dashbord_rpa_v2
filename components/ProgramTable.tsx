@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Table,
   TableBody,
@@ -15,7 +15,8 @@ import MergedRequestForm from './MergedRequestForm'
 
 interface ProgramTableProps {
   robot: string;
-  data: any[]
+  data: any[];
+  useChart4All: boolean;
 }
 
 interface MergedRequestFormProps {
@@ -33,7 +34,8 @@ interface MergedRequestFormProps {
   };
 }
 
-export default function ProgramTable({robot, data }: ProgramTableProps): JSX.Element {
+export default function ProgramTable({robot, data, useChart4All}: ProgramTableProps): JSX.Element {
+  //console.log('ProgramTable called with robot:', robot, 'and data:', data, ' and useChart4All:', useChart4All);
   const [showForm, setShowForm] = useState(false);
   const [popupInfo, setPopupInfo] = useState<{ row: any; position: { x: number; y: number } | null }>({ row: null, position: null });
   const [statuts, setStatuts] = useState<{ [key: string]: string }>({});
@@ -126,11 +128,13 @@ export default function ProgramTable({robot, data }: ProgramTableProps): JSX.Ele
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold">Evolutions du robot</h2>
+          {robot != 'TOUT' && (  
           <button onClick={handleOpenForm_Evolution}
             className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-lg hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
             <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-lg opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
             Demande d'évolution
           </button>
+          )}
         </div>
 
         <div className="rounded-lg shadow-lg overflow-hidden border border-gray-200">
@@ -138,7 +142,7 @@ export default function ProgramTable({robot, data }: ProgramTableProps): JSX.Ele
           <TableHeader>
             <TableRow className="bg-gray-50">
               <TableHead className="py-2 px-3 text-sm font-bold text-gray-700 border-b">Intitulé</TableHead>
-              <TableHead className="py-2 px-3 text-sm font-bold text-gray-700 border-b">Type</TableHead>
+              {/* <TableHead className="py-2 px-3 text-sm font-bold text-gray-700 border-b">Type</TableHead> */}
               <TableHead className="py-2 px-3 text-sm font-bold text-gray-700 border-b">Statut</TableHead>
               <TableHead className="py-2 px-3 text-sm font-bold text-gray-700 border-b">Gains quotidiens</TableHead>
               <TableHead className="py-2 px-3 text-sm font-bold text-gray-700 border-b">Dernière mise à jour</TableHead>
@@ -178,12 +182,15 @@ export default function ProgramTable({robot, data }: ProgramTableProps): JSX.Ele
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center h-[40px]">
-        <h2 className="text-2xl font-bold">Evolutions du robot</h2>     
+        <h2 className="text-2xl font-bold">Evolutions du robot</h2> 
+
+        {robot != 'TOUT' && (  
         <button onClick={handleOpenForm_Evolution}
           className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-lg hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
           <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-lg opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_5px_5px_rgba(0,0,0,0.3)]"></span>
           Demande d'évolution
         </button>
+        )}
       </div>
 
       <div className="rounded-lg shadow-lg overflow-hidden border border-gray-200">
@@ -191,7 +198,7 @@ export default function ProgramTable({robot, data }: ProgramTableProps): JSX.Ele
           <TableHeader>
             <TableRow className="bg-gray-50">
               <TableHead className="py-2 px-3 text-sm font-bold text-gray-700 border-b">Intitulé</TableHead>
-              <TableHead className="py-2 px-3 text-sm font-bold text-gray-700 border-b">Type</TableHead>
+              {/* <TableHead className="py-2 px-3 text-sm font-bold text-gray-700 border-b">Type</TableHead> */}
               <TableHead className="py-2 px-3 text-sm font-bold text-gray-700 border-b">Statut</TableHead>
               <TableHead className="py-2 px-3 text-sm font-bold text-gray-700 border-b">Gains quotidiens</TableHead>
               <TableHead className="py-2 px-3 text-sm font-bold text-gray-700 border-b">Dernière mise à jour</TableHead>
@@ -205,7 +212,7 @@ export default function ProgramTable({robot, data }: ProgramTableProps): JSX.Ele
                 className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 h-[49px]`}
               >
                 <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">{row.Intitulé}</TableCell>
-                <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">Nouveau</TableCell>
+                {/* <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">Nouveau</TableCell> */}
                 <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">
                   {getStatutLabel(row.Statut)}
                 </TableCell>

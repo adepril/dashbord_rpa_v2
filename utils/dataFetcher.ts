@@ -1,4 +1,5 @@
 import { collection, getDocs, query, where } from 'firebase/firestore';
+//import { formatNumber } from '../components/Dashboard';
 import { db } from '../lib/firebase';
 
 // Variable globale pour stocker tous les programmes
@@ -205,22 +206,13 @@ export async function fetchAllRobotsByAgency(agencyId: string): Promise<Program[
   }
 }
 
-/**
- * Fetches data from the 'DataReportingMoisCourant' collection in the database,
- * filtered by the specified program name. The function retrieves all documents,
- * processes their date fields to create a comprehensive date object for each
- * entry, and filters the results based on the normalized combination of 'AGENCE'
- * and 'NOM PROGRAMME' matching the provided program name.
- *
- * @param programName - The name of the program to filter the data by.
- * @returns An array of objects containing the date data and other relevant fields
- *          for the matching program, or an empty array if no matches are found.
- */
-export async function fetchDataReportingByProgram(programName: string, bareme: string) {
-  //console.log('Fetching DataReportingMoisCourant for the robot named:', programName);
+
+export async function fetchDataReportingByRobot(robotName: string, bareme: string, type_gain: string) {
+  bareme = bareme.replace(',', '.');
+  console.log('Fetching DataReportingMoisCourant for the robot:', robotName, "bareme:", bareme, 'type_gain:', type_gain);
   try {
     const querySnapshot = await getDocs(collection(db, 'DataReportingMoisCourant'));
-    //console.log('(fetchDataReportingByProgram) Nb robots:', querySnapshot.size);
+    console.log('(fetchDataReportingByProgram) Nb robots:', querySnapshot.size);
     
     const documents = querySnapshot.docs.map(doc => doc.data());
     //console.log('All documents:', JSON.stringify(documents, null, 2));
@@ -228,7 +220,6 @@ export async function fetchDataReportingByProgram(programName: string, bareme: s
     const data = querySnapshot.docs
       .map(doc => {
         const docData = doc.data();
-        //console.log('docData :', docData);
         // Créer un objet avec toutes les dates du mois et leurs valeurs
         const dateData: { [key: string]: string } = {};
         const currentDate = new Date();
@@ -241,33 +232,28 @@ export async function fetchDataReportingByProgram(programName: string, bareme: s
           const dateKey = `${day}/${month.toString().padStart(2, '0')}/${year}`;
           dateData[dateKey] = '';
           if (docData[dateKey] && docData[dateKey] !== '') {
-            dateData[dateKey] = docData[dateKey] +"¤"+ (Number(docData[dateKey]) * Number(bareme));
+            console.log('dateKey:', dateKey, 'docData[dateKey]:', docData[dateKey], ' Robot: ', docData['AGENCE'] +"_"+docData['NOM PROGRAMME']);
+            dateData[dateKey] = bareme !== '0' && (Number(docData[dateKey])) ? (Number(docData[dateKey]) * Number(bareme)) : docData[dateKey].replace(',', '.');
           }
         }
 
-        // Calculer le gain de temps gagné par unité produite
-        const gain: Record<string, number> = Object.keys(dateData).reduce((acc: Record<string, number>, dateKey: string) => {
-          acc[dateKey] = (Number(dateData[dateKey]) * Number(bareme));
-          return acc;
-        }, {});
-
         return {
           ...dateData,
-          AGENCE: docData.AGENCE || '',
-          'NOM PROGRAMME': docData['NOM PROGRAMME'] || '',
-          'NB UNITES DEPUIS DEBUT DU MOIS': docData['NB UNITES DEPUIS DEBUT DU MOIS'] || '',
-          'NB UNITES MOIS N-1': docData['NB UNITES MOIS N-1'] || '',
-          'NB UNITES MOIS N-2': docData['NB UNITES MOIS N-2'] || '',
-          'NB UNITES MOIS N-3': docData['NB UNITES MOIS N-3'] || ''
-          //gain // Ajouter l'attribut "gain" à l'objet de données
+          AGENCE: docData.AGENCE || 'N/A',
+          'NOM PROGRAMME': docData['NOM PROGRAMME'] || 'N/A',
+          
+          'NB UNITES DEPUIS DEBUT DU MOIS': bareme === '0' || isNaN(Number(docData['NB UNITES DEPUIS DEBUT DU MOIS'])) ? docData['NB UNITES DEPUIS DEBUT DU MOIS'] : (Number(docData['NB UNITES DEPUIS DEBUT DU MOIS']) * Number(bareme)) || '0',
+          'NB UNITES MOIS N-1': bareme === '0' || isNaN(Number(docData['NB UNITES MOIS N-1'])) ? docData['NB UNITES MOIS N-1'] : (Number(docData['NB UNITES MOIS N-1']) * Number(bareme)) || '0',
+          'NB UNITES MOIS N-2': bareme === '0' || isNaN(Number(docData['NB UNITES MOIS N-2'])) ? docData['NB UNITES MOIS N-2'] : (Number(docData['NB UNITES MOIS N-2']) * Number(bareme)) || '0',
+          'NB UNITES MOIS N-3': bareme === '0' || isNaN(Number(docData['NB UNITES MOIS N-3'])) ? docData['NB UNITES MOIS N-3'] : (Number(docData['NB UNITES MOIS N-3'].replace(',', '.')) * Number(bareme)) || '0',
         };
       })
       .filter(item => {
         //console.log('Comparing:', {'Item AGENCE + NOM PROGRAMME': item['AGENCE'] +"_"+item['NOM PROGRAMME'], });
-        return item['AGENCE'] +"_"+item['NOM PROGRAMME'] === programName;
+        return item['AGENCE'] +"_"+item['NOM PROGRAMME'] === robotName;
       });
 
-    //console.log('Processed data:', data);
+    console.log('return  data :', data);
     return data;
   } catch (error) {
     console.error('Error fetching data:', error);
@@ -324,69 +310,13 @@ export async function fetchRandomQuote(): Promise<string | null> {
   }
 }
 
-/**
- * Fetches and aggregates data for all robots when "TOUT" is selected
- * @returns A matrix of daily totals for all robots (31 days)
- */
-export async function fetchAllRobotsData(): Promise<number[][]> {
-  console.log('Fetching data for all robots');
-  try {
-    // Get all robots
-    const robots = await fetchAllRobotsByAgency("1"); // "1" = ALL agencies
-    if (robots.length === 0) {
-      console.log('No robots found');
-      return [];
-    }
-
-    // Initialize matrix: robots x 31 days
-    const matrix: number[][] = Array.from({ length: robots.length }, () => 
-      Array.from({ length: 31 }, () => 0)
-    );
-
-    // Fetch data for each robot
-    for (let i = 0; i < robots.length; i++) {
-      const robot = robots[i];
-      const data = await fetchDataReportingByProgram(
-        robot.id_agence + "_" + robot.nom_programme,
-        robot.bareme
-      );
-
-      if (data.length > 0) {
-        const robotData = data[0];
-        
-        // Fill matrix with daily values
-        Object.entries(robotData).forEach(([date, value]) => {
-          if (date.includes('/')) { // Check if it's a date key
-            const day = parseInt(date.split('/')[0]) - 1; // Convert to 0-based index
-            if (!isNaN(day) && day >= 0 && day < 31) {
-              const [units] = String(value).split('¤');
-              matrix[i][day] = parseFloat(units) || 0;
-            }
-          }
-        });
-      }
-    }
-
-    // Calculate daily totals
-    const totals = Array.from({ length: 31 }, () => 0);
-    for (let day = 0; day < 31; day++) {
-      totals[day] = matrix.reduce((sum, robot) => sum + robot[day], 0);
-    }
-
-    console.log('All robots data processed');
-    return matrix;
-  } catch (error) {
-    console.error('Error fetching all robots data:', error);
-    return [];
-  }
-}
-
 export async function fetchStatuts() {
   console.log('Fetching statuts...');
   try {
     const querySnapshot = await getDocs(collection(db, 'statut')); 
     const data = querySnapshot.docs.map(doc => {
       const docData = doc.data();
+      console.log('Statut document data:', docData);
       return {
         numero: docData.numero,
         label: docData.name || docData.label || ''
@@ -398,7 +328,7 @@ export async function fetchStatuts() {
     console.log('Statuts fetched:', data);
     return data;
   } catch (error) {
-    console.error('Error fetching statuts:', error);
+    console.log('Error fetching statuts:', error);
     return [];
   }
 }

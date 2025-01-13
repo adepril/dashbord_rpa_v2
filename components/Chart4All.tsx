@@ -54,22 +54,15 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
     const day = (i + 1).toString().padStart(2, '0');
     const dateKey = `${day}/${month.toString().padStart(2, '0')}/${year}`;
     let value = 0;
-    let gain = 0;
     //console.log("Chart.tsx",data[dateKey]);
     if (data1 && data1[dateKey]) {
-      const [num1, num2] = data1[dateKey].split('¤').map(Number);
-      // Reste du code
-        value = num1;
-        gain = num2;
-        // console.log("value",value);
-        // console.log("gain",gain);
+      value = Number(data1[dateKey]);
     } else {
       //console.log('data[dateKey] is undefined');
     }
     return {
       date: dateKey,
-      valeur: value,
-      gain: gain
+      valeur: value
     };
   }); // Chart 1
 
@@ -78,20 +71,15 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
     const day = (i + 1).toString().padStart(2, '0');
     const dateKey = `${day}/${month.toString().padStart(2, '0')}/${year}`;
     let value = 0;
-    let gain = 0;
     //console.log("Chart.tsx",data[dateKey]);
     if (data2 && data2[dateKey]) {
-      const [num1, num2] = data2[dateKey].split('¤').map(Number);
-      // Reste du code
-        value = num1;
-        gain = num2;
+      value = Number(data2[dateKey]);
     } else {
       //console.log('data[dateKey] is undefined');
     }
     return {
       date: dateKey,
-      valeur: value,
-      gain: gain
+      valeur: value
     };
   }); // Chart 2
 
@@ -107,7 +95,8 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
     <>
     <div className="w-full flex justify-center gap-4 items-center ">
 
-    <div className="w-1/2 pt-4 pb-12 bg-white rounded-lg shadow ml-2">
+    <div className="w-1/2 pt-4 pb-12 bg-white rounded-lg shadow ml-2"> 
+    
         <div className="h-[300px] relative">
         <div className="ml-[10%] text-left text-xl font-bold mb-4">Gain de temps</div>
           <div className="absolute top-2 right-2 text-black px-2 py-1 ">Échelle de temps en minutes</div>
@@ -115,7 +104,12 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={chartData1}
-              margin={{ top: 10, right: 10, left: 5, bottom: 1 }}
+              width={600}
+              height={600}
+              barSize={40}
+              barGap={15}
+              title=""
+              margin={{ top: 20, right: 10, left: 5, bottom: 1 }}
             >
               <XAxis
                 dataKey="date"
@@ -136,11 +130,11 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
               <Tooltip
                 labelFormatter={(label: string) => label}
                 formatter={(value: any, name: string, props: any) => {
-                  const { valeur, gain } = props.payload;
-                  if ((valeur === undefined || valeur === 0) && (gain === undefined || gain === 0)) {
+                  const valeur  = props.payload;
+                  if ((valeur === undefined || valeur === 0) ) {
                     return [''];
                   }
-                  return [`Gain : ${gain} min`];
+                  return [`Gain : ${valeur.valeur} min`];
                 } } />
               <Bar
                 dataKey="valeur"
@@ -153,7 +147,7 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
                   fontSize: 12,
                   formatter: (value: number) => value === 0 ? '' : `${value}`
                 }}
-                activeBar={{ fill: robotType?.toLowerCase() === "temps" ? '#3333db' : '#c24a0a' }}
+                activeBar={{ fill: robotType?.toLowerCase() === "temps" ? '#3498db' : '#3333db' }}
                 />
             </BarChart>
           </ResponsiveContainer>
@@ -216,11 +210,11 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
                 <Tooltip
                   labelFormatter={(label: string) => label}
                   formatter={(value: any, name: string, props: any) => {
-                    const { valeur, gain } = props.payload;
-                    if ((valeur === undefined || valeur === 0) && (gain === undefined || gain === 0)) {
+                    const valeur = props.payload.valeur;
+                    if (valeur === undefined || valeur === 0) {
                       return [''];
                     }
-                    return [`Gain : ${gain} min`];
+                    return valeur > 1 ? [`Gain : ${valeur} éxecutions`] : [`Gain : ${valeur} éxecution`];
                   } } />
                 <Bar
                   dataKey="valeur"

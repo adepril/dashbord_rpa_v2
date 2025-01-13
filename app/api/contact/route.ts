@@ -28,8 +28,13 @@ export async function POST(request: Request) {
     }
 
     console.error('Email error:', error);
+    console.log('EMAIL_USER:', process.env.EMAIL_USER);
+    console.log('EMAIL_PASS:', process.env.EMAIL_PASS);
     return NextResponse.json(
-      { message: 'Failed to send email' },
+      { 
+        message: 'Failed to send email',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

@@ -53,23 +53,17 @@ export default function Chart({ robotType,data }: ChartProps) {
     const day = (i + 1).toString().padStart(2, '0');
     const dateKey = `${day}/${month.toString().padStart(2, '0')}/${year}`;
     let value = 0;
-    let gain = 0;
     //console.log("Chart.tsx",data[dateKey]);
     if (data && data[dateKey]) {
-      const [num1, num2] = data[dateKey].split('¤').map(Number);
-      // Reste du code
-          value = num1;
-        gain = num2;
-        // console.log("value",value);
-        // console.log("gain",gain);
+      value = Number(data[dateKey]);
+      console.log("value",value);
     } else {
-      //console.log('data[dateKey] is undefined');
+      console.log('data[dateKey] is undefined');
     }
 
     return {
       date: dateKey,
-      valeur: value,
-      gain: gain
+      valeur: value
     };
   });
 
@@ -115,7 +109,7 @@ export default function Chart({ robotType,data }: ChartProps) {
                   value: ""
                 }} />}
                 height={60}
-                tickFormatter={(t) => `${t} min`} />
+                tickFormatter={(t) => `${t}`} />
               <YAxis
                 stroke="#888888"
                 tickLine={false}
@@ -125,11 +119,14 @@ export default function Chart({ robotType,data }: ChartProps) {
               <Tooltip
                 labelFormatter={(label: string) => label}
                 formatter={(value: any, name: string, props: any) => {
-                  const { valeur, gain } = props.payload;
-                  if ((valeur === undefined || valeur === 0) && (gain === undefined || gain === 0)) {
+                  const { valeur } = props.payload;
+                  if ((valeur === undefined || valeur === 0)) {
                     return [''];
                   }
-                  return [`Gain : ${gain} min`];
+                  if (robotType?.toLowerCase() === "temps") {
+                    return [`Gain : ${valeur} min`];
+                  }
+                  return  valeur > 1 ? [`Gain : ${valeur} éxecutions`] : [`Gain : ${valeur} éxecution`];
                 } } />
               <Bar
                 dataKey="valeur"

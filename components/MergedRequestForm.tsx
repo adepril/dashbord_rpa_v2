@@ -1,4 +1,5 @@
 'use client'
+import React from 'react';
 
 import { useState, useEffect } from 'react'
 import { Button } from "./ui/button"
@@ -43,12 +44,12 @@ export default function MergedRequestForm({
     type: 'new'
   }
 }: MergedRequestFormProps) {
-  console.log('MergedRequestForm called with type:', type, 'and formData:', formData); 
-  
+  //console.log('MergedRequestForm called with type:', type, 'and formData:', formData); 
+
   const { toast } = useToast();
   const [formDataState, setFormData] = useState(formData);
-
   const [statuts, setStatuts] = useState<{numero: string, label: string}[]>([]);
+  console.log('MergedRequestForm called with type:', type, 'and formDataState:', formDataState); 
 
   useEffect(() => {
     const loadStatuts = async () => {
@@ -75,6 +76,15 @@ export default function MergedRequestForm({
     setFormData(prev => ({ ...prev, Statut: value }))
   }
 
+  /**
+   * Gère l'envoi du formulaire de demande.
+   * @param {React.FormEvent<HTMLFormElement>} e - L'événement de soumission du formulaire
+   * 
+   * Valide les champs obligatoires puis envoie les données à Firebase.
+   * Si l'envoi est un succès, envoie un e-mail via le serveur Next.js.
+   * Si l'envoi est un échec, affiche un toast d'erreur.
+   * Puis ferme le formulaire.
+   */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -114,11 +124,12 @@ export default function MergedRequestForm({
         });
         if (matchingDoc) {
           await updateDoc(matchingDoc.ref, formDataState);
+          console.log('Données mise à jour avec succès !');
         } else {
           await addDoc(evolutionCollection, formDataState);
+          console.log('Données envoyées avec succès !');
         }
       }
-      console.error('Envoi des données avec succès !');
     } catch (error) {
       console.error('Erreur lors de l\'envoi des données:', error);
     }
@@ -131,15 +142,18 @@ export default function MergedRequestForm({
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            name: "Demande via formulaire",
-            email: "noreply@bbl-groupe.fr",
-            subject: `Nouvelle demande: ${formData.Intitulé}`,
-            message: `Programme: ${formData.Robot}\n\n
-            <br>Description: ${formData.Description}\n\n
-            <br>Temps consommé: ${formData.Temps_consommé}\n\n
-            <br>Statut: ${formData.Statut}\n\n
-            <br>${formDataState.type === 'new' ? "Date de création de la demande" : "Date de mise à jour de la demande"} : ${new Date().toLocaleString()}
-            `
+            name: "Utilisateur BBL", 
+            email: "contact@bbl-groupe.fr", 
+            subject: (formDataState.type === 'new' ? "Nouvelle demande" : "Demande d'évolution"),
+            message: `
+            ${formDataState.Robot === 'TOUT' ? '' : " <br>Robot :" + formDataState.Robot}
+            Intitulé: ${formDataState.Intitulé}
+            Description: ${formDataState.Description}
+            Temps consommé: ${formDataState.Temps_consommé}
+            Nb. operations mensuelles: ${formDataState.Nb_operations_mensuelles}
+            ${formDataState.type === 'new' ? "Date de création de la demande" : "Date de mise à jour de la demande"} : ${new Date().toLocaleString()}
+            `.trim() // Supprime les espaces inutiles
+            //<br>Statut: ${formData.Statut}
           }),
         });
   
@@ -152,15 +166,26 @@ export default function MergedRequestForm({
           description: 'Votre demande a été envoyée avec succès.',
           id: ''
         });
+
         onClose();
-      } catch (error) {
-        toast({
-          title: 'Erreur',
-          description: 'Échec de l\'envoi de la demande.',
-          variant: 'destructive',
-          id: ''
-        });
+
+    } catch (error: unknown) {
+      let errorData: { error: string };
+      if (error instanceof Response) {
+        errorData = await error.json();
+      } else if (error instanceof Error) {
+        errorData = { error: error.message };
+      } else {
+        errorData = { error: 'Échec de l\'envoi de la demande' };
       }
+      console.error('!! Erreur lors de l\'envoi de mail:', errorData.error);
+      toast({
+        title: 'Erreur d\'envoi de mail',
+        description: errorData.error || 'Échec de l\'envoi de la demande',
+        variant: 'destructive',
+        id: ''
+      });
+    }
 
   }
 
@@ -186,6 +211,7 @@ export default function MergedRequestForm({
             </TooltipProvider>
           </DialogHeader>
           <form onSubmit={handleSubmit}>
+            <div>robot: {formDataState.Robot}</div>
             <div>
               <Label htmlFor="intitulé">Intitulé</Label>
               <Input 
