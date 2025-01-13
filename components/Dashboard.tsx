@@ -35,7 +35,6 @@ import {
 // Fonction pour formater les nombres 
 export const formatNumber = (num: number) => {
   if (Number.isInteger(num)) {
-    console.log('num:', num);
     return num.toString();
   } else {
     // Séparer partie entière et décimale
@@ -251,7 +250,7 @@ export default function Dashboard() {
                     const sommeDeCetteDate = arrJoursDuMois[idx];
                     
                     if (robotType === 'temps') {
-                      arrJoursDuMois_Type1[idx] = `${Number(sommeDeCetteDate.replace(',', '.')) + Number(value.replace(',', '.'))}`;
+                      arrJoursDuMois_Type1[idx] = `${Number(sommeDeCetteDate) + Number(value)}`;
                     } else if (robotType === 'autre') {
                       arrJoursDuMois_Type2[idx] = `${Number(sommeDeCetteDate) + Number(value)}`;
                     }
@@ -338,43 +337,51 @@ export default function Dashboard() {
 
   return (
     <>
-      <div>
-        <Image src="/logo_bbl-groupe2.png" alt="Logo BBL Groupe" width={100} height={70} />
-        <div className="flex bg-x-100 container mx-auto">
-          <div className="ml-5  bg-x-100">
-            <span className="text-black flex">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
-                stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user w-5 h-5 mr-2 text-gray-600">
-              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>
-            </svg> {user}</span>
-            <div className="flex space-x-8 mt-2">
-              <div className="flex items-center space-x-2">
-                <span>Agence:</span>
-                <AgencySelector
-                  agencies={agencies}
-                  selectedAgencyId={selectedAgency?.idAgence || ''}
-                  onAgencyChange={handleAgencyChange}
-                />
-              </div>
-              <div className="flex items-center space-x-2">
-                <span>Robot:</span>
-                <ProgramSelector
-                  programs={programs}
-                  selectedProgramId={selectedRobot?.id_programme || ''}
-                  onProgramChange={handleProgramChange}
-                />
-                <div className=" bg-red-100"></div>    
-                <div className="flex justify-end bg-x-100 h-[40px]">
-                  <button onClick={handleOpenForm} className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium overflow-hidden relative px-4 py-1 rounded-lg hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
-                    <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] roundedlg opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_5px_5px_rgba(0,0,0,0.3)]"></span>
-                    Nouvelle Demande
-                  </button>
-                </div>               
-              </div>
+      <div className='w-full pl-0'>
+      <div className="max-w-7xl">
+        <div className='flex items-center pl-0'>
+          <div className="flex-none">
+              <Image src="/logo_bbl-groupe.svg" alt="Logo BBL Groupe" width={100} height={70} />
+            </div>
+            <div className="flex-1"></div>
+            <div className="flex-none bg-x-300">
+            <div className="px-4">
+                <span className="text-black justify-end flex">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
+                    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user w-5 h-5 mr-2 text-gray-600">
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>
+                </svg> {user}</span>
+                <div className="flex space-x-8 mt-2">
+                  <div className="flex items-center space-x-2">
+                    <span>Agence:</span>
+                    <AgencySelector
+                      agencies={agencies}
+                      selectedAgencyId={selectedAgency?.idAgence || ''}
+                      onAgencyChange={handleAgencyChange}
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span>Robot:</span>
+                    <ProgramSelector
+                      programs={programs}
+                      selectedProgramId={selectedRobot?.id_programme || ''}
+                      onProgramChange={handleProgramChange}
+                    />
+                    <div className="w-[50px]"></div>    
+                    <div className="flex justify-end bg-x-100 h-[40px]">
+                      <button onClick={handleOpenForm} className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium overflow-hidden relative px-4 py-1 rounded-lg hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
+                        <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] roundedlg opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_5px_5px_rgba(0,0,0,0.3)]"></span>
+                        Nouvelle Demande
+                      </button>
+                    </div>               
+                  </div>
+                </div>
             </div>
           </div>
         </div>
+        </div>
       </div>
+      
 
       {OpenFormNewOrder &&  
             <MergedRequestForm

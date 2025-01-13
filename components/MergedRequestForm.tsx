@@ -211,7 +211,9 @@ export default function MergedRequestForm({
             </TooltipProvider>
           </DialogHeader>
           <form onSubmit={handleSubmit}>
-            <div>robot: {formDataState.Robot}</div>
+            {formDataState.Robot === 'TOUT' && (
+            <div>Erreur ! robot: {formDataState.Robot}</div>
+            )}
             <div>
               <Label htmlFor="intitulé">Intitulé</Label>
               <Input 

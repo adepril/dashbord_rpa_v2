@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { contactFormSchema } from '@/lib/schemas/contact';
-import { createMailTransporter, createMailOptions } from '@/lib/mail/nodemailer';
+import { contactFormSchema } from '../../../lib/schemas/contact';
+import { createMailTransporter, createMailOptions } from '../../../lib/mail/nodemailer';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';

@@ -40,7 +40,7 @@ export async function fetchUserIdByUsername(username: string): Promise<UserData 
     console.log('Formatted user data:', userDataFormatted);
     return userDataFormatted;
   } catch (error) {
-    console.error('Error fetching user data:', error);
+    console.log('Error fetching user data:', error);
     return null;
   }
 }
@@ -86,7 +86,7 @@ export async function fetchAgenciesByIds(agencyIds: string[]): Promise<Agency[]>
     //console.log('All agencies fetched:', agencies);
     return agencies;
   } catch (error) {
-    console.error('Error fetching agencies:', error);
+    console.log('Error fetching agencies:', error);
     return [];
   }
 }
@@ -136,7 +136,7 @@ export async function fetchProgramsByAgencyId(agencyId: string): Promise<Program
     console.log('fetchProgramsByAgencyId(): ', programs);
     return programs;
   } catch (error) {
-    console.error('Error fetching programs:', error);
+    console.log('Error fetching programs:', error);
     return [];
   }
 }
@@ -201,7 +201,7 @@ export async function fetchAllRobotsByAgency(agencyId: string): Promise<Program[
     console.log('All programs fetched and stored globally:', allRobotsByAgency);
     return robots;
   } catch (error) {
-    console.error('Error fetching all programs:', error);
+    console.log('Error fetching all programs:', error);
     return [];
   }
 }
@@ -256,7 +256,7 @@ export async function fetchDataReportingByRobot(robotName: string, bareme: strin
     console.log('return  data :', data);
     return data;
   } catch (error) {
-    console.error('Error fetching data:', error);
+    console.log('Error fetching data:', error);
     return [];
   }
 }
@@ -283,7 +283,7 @@ export async function fetchEvolutionsByProgram(programId: string) {
     //console.log('Processed evolutions data:', data);
     return data;
   } catch (error) {
-    console.error('Error fetching evolutions:', error);
+    console.log('Error fetching evolutions:', error);
     return [];
   }
 }
@@ -305,7 +305,7 @@ export async function fetchRandomQuote(): Promise<string | null> {
     console.log('Random quote fetched:', randomQuote);
     return randomQuote;
   } catch (error) {
-    console.error('Error fetching random quote:', error);
+    console.log('Error fetching random quote:', error);
     return null;
   }
 }
