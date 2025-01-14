@@ -232,7 +232,7 @@ export async function fetchDataReportingByRobot(robotName: string, bareme: strin
           const dateKey = `${day}/${month.toString().padStart(2, '0')}/${year}`;
           dateData[dateKey] = '';
           if (docData[dateKey] && docData[dateKey] !== '') {
-            console.log('dateKey:', dateKey, 'docData[dateKey]:', docData[dateKey], ' Robot: ', docData['AGENCE'] +"_"+docData['NOM PROGRAMME']);
+            //console.log('dateKey:', dateKey, 'docData[dateKey]:', docData[dateKey], ' Robot: ', docData['AGENCE'] +"_"+docData['NOM PROGRAMME']);
             dateData[dateKey] = bareme !== '0' && (Number(docData[dateKey])) ? (Number(docData[dateKey]) * Number(bareme)) : docData[dateKey].replace(',', '.');
           }
         }

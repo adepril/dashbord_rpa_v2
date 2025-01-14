@@ -415,7 +415,7 @@ export default function Dashboard() {
 
             <div className="grid grid-cols-4 gap-4 bg-x-300 mt-5" >
               <div className="col-span-4 w-full">
-                <ProgramTable robot={selectedRobot?.nom_programme || ''} data={historiqueData} useChart4All={useChart4All}/>
+                <ProgramTable robot={selectedRobot?.nom_programme || ''} data={historiqueData} typeGain={selectedRobot?.type_gain}  useChart4All={useChart4All}/>
               </div>
             </div>
           </div>

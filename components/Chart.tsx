@@ -56,9 +56,9 @@ export default function Chart({ robotType,data }: ChartProps) {
     //console.log("Chart.tsx",data[dateKey]);
     if (data && data[dateKey]) {
       value = Number(data[dateKey]);
-      console.log("value",value);
+      //console.log("value",value);
     } else {
-      console.log('data[dateKey] is undefined');
+     // console.log('data[dateKey] is undefined');
     }
 
     return {

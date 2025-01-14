@@ -14,10 +14,12 @@ import { ClientWrapper } from "./ui/client-wrapper"
 import { collection, addDoc, getDocs, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { fetchStatuts } from '../utils/dataFetcher';
+import { stat } from 'fs';
 
 interface MergedRequestFormProps {
   onClose: () => void;
   type?: 'evolution' | 'new' | 'edit';
+  typeGain?: string;
   formData?: {
     Intitulé: string;
     Description: string;
@@ -33,6 +35,7 @@ interface MergedRequestFormProps {
 export default function MergedRequestForm({
   onClose,
   type,
+  typeGain,
   formData = {
     Intitulé: '',
     Description: '',
@@ -40,16 +43,21 @@ export default function MergedRequestForm({
     Temps_consommé: '',
     Nb_operations_mensuelles: '',
     Statut: '1', // Par défaut "En attente de validation"
-    Date: new Date().toLocaleString(),
+    Date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
     type: 'new'
   }
 }: MergedRequestFormProps) {
   //console.log('MergedRequestForm called with type:', type, 'and formData:', formData); 
 
   const { toast } = useToast();
-  const [formDataState, setFormData] = useState(formData);
+  const [formDataState, setFormData] = useState({
+    ...formData,
+    Nb_operations_mensuelles: formData.Nb_operations_mensuelles || '',
+    Temps_consommé: formData.Temps_consommé || ''
+  });
   const [statuts, setStatuts] = useState<{numero: string, label: string}[]>([]);
-  console.log('MergedRequestForm called with type:', type, 'and formDataState:', formDataState); 
+  const [isEditing, setIsEditing] = useState(false);
+  console.log('MergedRequestForm called with type:', type, 'and formDataState:', formDataState);
 
   useEffect(() => {
     const loadStatuts = async () => {
@@ -85,8 +93,32 @@ export default function MergedRequestForm({
    * Si l'envoi est un échec, affiche un toast d'erreur.
    * Puis ferme le formulaire.
    */
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent<HTMLFormElement>) => {
+    if (e) {
+      e.preventDefault();
+    }
+
+    // Vérifier si des modifications ont été apportées
+    const hasChanges = Object.keys(formDataState).some(key => {
+      const originalValue = formData[key as keyof typeof formData];
+      const currentValue = formDataState[key as keyof typeof formDataState];
+      return originalValue !== currentValue;
+    });
+
+    if (!hasChanges) {
+      console.log('Aucune modification apportée !');
+      onClose();
+      return;
+    }
+
+    await submitForm();
+  };
+
+  const handleSubmitButton = async () => {
+    await submitForm();
+  };
+
+  const submitForm = async () => {
 
     console.log('handleSubmit called with formDataState:', formDataState); 
 
@@ -113,25 +145,19 @@ export default function MergedRequestForm({
     try {
       // Envoi à Firebase
       const evolutionCollection = collection(db, 'evolutions');
-      if (formDataState.type === 'new') {
-        await addDoc(evolutionCollection, formDataState);
-      } else {
-        // Trouver l'enregistrement existant et le mettre à jour
-        const querySnapshot = await getDocs(evolutionCollection);
-        const matchingDoc = querySnapshot.docs.find((doc) => {
-          const data = doc.data();
-          return data.Intitulé === formDataState.Intitulé && data.Date === formDataState.Date;
-        });
-        if (matchingDoc) {
-          await updateDoc(matchingDoc.ref, formDataState);
-          console.log('Données mise à jour avec succès !');
-        } else {
-          await addDoc(evolutionCollection, formDataState);
-          console.log('Données envoyées avec succès !');
-        }
-      }
+      
+      // S'assurer que la date est définie
+      const dataToSend = {
+        ...formDataState,
+        Date: formDataState.Date || new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+      };
+      
+      const querySnapshot = await addDoc(evolutionCollection, dataToSend);
+
+      console.log('Données enregistrés dans Firebase avec succès (ID:', querySnapshot.id, ')');
+      
     } catch (error) {
-      console.error('Erreur lors de l\'envoi des données:', error);
+      console.log('Erreur lors de l\'envoi des données:', error);
     }
 
      // Envoi par email
@@ -191,93 +217,241 @@ export default function MergedRequestForm({
 
   return (
     <ClientWrapper>
-      <Dialog open={true} onOpenChange={onClose}>
-        <DialogContent>
-          <DialogHeader>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <DialogTitle>Formulaire de demande</DialogTitle>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {formDataState.type === 'new' ? (
-                    <p>Nouvelle demande</p>
-                  ) : (
-                    <p>Demande d'évolution du robot {formData.Robot}</p>
-                  )}
-                  
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </DialogHeader>
-          <form onSubmit={handleSubmit}>
-            {formDataState.Robot === 'TOUT' && (
-            <div>Erreur ! robot: {formDataState.Robot}</div>
-            )}
-            <div>
-              <Label htmlFor="intitulé">Intitulé</Label>
-              <Input 
-                id="intitulé" 
-                name="Intitulé" 
-                value={formDataState.Intitulé} 
+      {formDataState.type === 'new' ? (
+        //  Formulaire de nouvelle demande 
+        <Dialog open={true} onOpenChange={onClose}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Nouvelle demande</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit}>
+              {formDataState.Robot === 'TOUT' && (
+                <div>Erreur ! robot: {formDataState.Robot}</div>
+              )}
+              {typeGain && <div>typeGain: {typeGain}</div>}
+              <div>
+                <Label htmlFor="intitulé">Intitulé</Label>
+                <Input
+                  id="intitulé"
+                  name="Intitulé"
+                  value={formDataState.Intitulé}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  name="Description"
+                  value={formDataState.Description}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <Label htmlFor="Nombre d'opérations mensuelles">Nombre d'opérations mensuelles</Label>
+                <Input
+                  id="Nombre d'opérations mensuelles"
+                  name="Nb_operations_mensuelles"
+                  value={formDataState.Nb_operations_mensuelles}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <Label htmlFor="Temps consommé">Temps consommé (minutes par opération)</Label>
+                <Input
+                  id="Temps consommé"
+                  name="Temps_consommé"
+                  value={formDataState.Temps_consommé}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="flex justify-end space-x-2 mt-4">
+                <Button type="button" className="bg-red-500 hover:bg-red-700 text-white" onClick={onClose}>
+                  Annuler
+                </Button>
+                <Button type="submit" className="bg-green-500 hover:bg-green-700 text-white">
+                  Envoyer
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      ) : formDataState.type === 'edit' ? (
+        // Formulaire de détail
+        <Dialog open={true} onOpenChange={onClose}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Détails de {formDataState.Robot}</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit}>
+            {typeGain && <div> typeGain: {typeGain}</div>}
+              <div>
+                <Label htmlFor="intitulé">Intitulé</Label>
+                <Input
+                  id="intitulé"
+                  name="Intitulé"
+                  value={formDataState.Intitulé}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                />
+              </div>
+              <div>
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  name="Description"
+                  value={formDataState.Description}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                />
+              </div>
+              <div>
+                <Label htmlFor="statut">Statut</Label>
+                {isEditing ? (
+                  <Select
+                    value={formDataState.Statut}
+                    onValueChange={handleStatusChange}
+                  >
+                    <SelectTrigger className="bg-white border border-gray-300 rounded py-2 px-4">
+                      <SelectValue placeholder="Sélectionnez un statut" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border border-gray-300 rounded py-2 px-4">
+                      {statuts && statuts.length > 0 ? (
+                        statuts.map((statut, index) => (
+                          <SelectItem
+                            key={`${statut.numero}-${index}`}
+                            value={statut.numero}
+                          >
+                            {statut.label}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="loading" disabled>
+                          Chargement des statuts...
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    id="statut"
+                    name="Statut"
+                    value={statuts.find(s => s.numero === formDataState.Statut)?.label || formDataState.Statut}
+                    disabled
+                  />
+                )}
+              </div>
+              {typeGain === 'temps' ? (
+              <div>
+                <Label htmlFor="Temps consommé">Temps consommé (minutes par opération)</Label>
+                <Input
+                  id="Temps consommé"
+                  name="Temps_consommé"
+                  value={formDataState.Temps_consommé}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                />
+              </div>
+              ) : (
+              <div>
+                <Label htmlFor="Nombre d'opérations mensuelles">Nombre d'opérations mensuelles</Label>
+                <Input
+                  id="Nombre d'opérations mensuelles"
+                  name="Nb_operations_mensuelles"
+                  value={formDataState.Nb_operations_mensuelles}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                />
+              </div>
+              )}  
+              <div className="flex justify-end space-x-2 mt-4">
+                {isEditing ? (
+                  <>
+                    <Button type="button"
+                      className="bg-red-500 hover:bg-red-700 text-white" onClick={() => setIsEditing(false)}  >Annuler</Button>
+                    <Button
+                      type="button"
+                      className="bg-green-500 hover:bg-green-700 text-white"
+                      onClick={() => handleSubmit()}
+                    >
+                      Envoyer
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                  <Button type="button"
+                      className="bg-red-500 hover:bg-red-700 text-white" onClick={onClose} >Annuler</Button>
+                  <Button
+                    type="button"
+                    className="bg-green-500 hover:bg-green-700 text-white"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    Edition
+                  </Button>
+                  </>
+                )}
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      ) : (
+        // // Formulaire de demande d'évolution // //
+        <Dialog open={true} onOpenChange={onClose}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Demande d'évolution du robot {formDataState.Robot}</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit}>
+            {typeGain && <div>typeGain: {typeGain}</div>}
+              <div>
+                <Label htmlFor="intitulé">Intitulé</Label>
+                <Input
+                  id="intitulé"
+                  name="Intitulé"
+                  value={formDataState.Intitulé}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  name="Description"
+                  value={formDataState.Description}
+                  onChange={handleChange}
+                />
+              </div>
+              {typeGain === 'temps' ? (
+              <div>
+              <Label htmlFor="Temps consommé">Temps consommé (minutes par opération)</Label>
+              <Input
+                id="Temps consommé"
+                name="Temps_consommé"
+                value={formDataState.Temps_consommé}
                 onChange={handleChange}
               />
             </div>
-            <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea 
-                id="description" 
-                name="Description" 
-                value={formDataState.Description} 
-                onChange={handleChange}
-              />
-            </div>
-            {formDataState.type === 'edit' && (
-              <>
-            <div>
-              <Label htmlFor="statut">Statut</Label>
-              <Select 
-                value={formDataState.Statut} 
-                onValueChange={handleStatusChange}
-              >
-                <SelectTrigger className="bg-white border border-gray-300 rounded py-2 px-4">
-                  <SelectValue placeholder="Sélectionnez un statut" />
-                </SelectTrigger>
-                <SelectContent className="bg-white border border-gray-300 rounded py-2 px-4">
-                  {statuts && statuts.length > 0 ? (
-                    statuts.map((statut, index) => (
-                      <SelectItem 
-                        key={`${statut.numero}-${index}`} 
-                        value={statut.numero}
-                      >
-                        {statut.label}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem value="loading" disabled>
-                      Chargement des statuts...
-                    </SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-              </>
-            )}
-            <div>
-              <Label htmlFor="Nombre d'opérations mensuelles">Nombre d'opérations mensuelles</Label>
-              <Input id="Nombre d'opérations mensuelles" name="Nb_operations_mensuelles" value={formDataState.Nb_operations_mensuelles} onChange={handleChange} />
-            </div>
-            <div>
-              <Label htmlFor="Temps consommé">Temps consommé (minutes par opération</Label>
-              <Input id="Temps consommé" name="Temps_consommé" value={formDataState.Temps_consommé} onChange={handleChange} />
-            </div>
-            <div className="flex justify-end space-x-2 mt-4">
-            <Button type="button" className="bg-red-500 hover:bg-red-700 text-white" onClick={onClose}>Annuler</Button>
-            <Button type="submit" className="bg-green-500 hover:bg-green-700 text-white">Envoyer</Button>
-          </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+              ) : (
+              <div>
+                <Label htmlFor="Nombre d'opérations mensuelles">Nombre d'opérations mensuelles</Label>
+                <Input
+                  id="Nombre d'opérations mensuelles"
+                  name="Nb_operations_mensuelles"
+                  value={formDataState.Nb_operations_mensuelles}
+                  onChange={handleChange}
+                />
+              </div>
+              )}  
+
+              <div className="flex justify-end space-x-2 mt-4">
+                <Button type="button" className="bg-red-500 hover:bg-red-700 text-white" onClick={onClose}>Annuler</Button>
+                <Button type="submit" className="bg-green-500 hover:bg-green-700 text-white">Envoyer</Button>
+              </div>
+
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
     </ClientWrapper>
   )
 }

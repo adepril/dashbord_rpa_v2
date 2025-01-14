@@ -16,12 +16,14 @@ import MergedRequestForm from './MergedRequestForm'
 interface ProgramTableProps {
   robot: string;
   data: any[];
+  typeGain: string;  
   useChart4All: boolean;
 }
 
 interface MergedRequestFormProps {
   onClose: () => void;
   type?: 'evolution' | 'new' | 'edit';
+  typeGain?: string;
   formData?: {
     Intitulé: string;
     Description: string;
@@ -34,7 +36,7 @@ interface MergedRequestFormProps {
   };
 }
 
-export default function ProgramTable({robot, data, useChart4All}: ProgramTableProps): JSX.Element {
+export default function ProgramTable({robot, data, typeGain, useChart4All}: ProgramTableProps): JSX.Element {
   //console.log('ProgramTable called with robot:', robot, 'and data:', data, ' and useChart4All:', useChart4All);
   const [showForm, setShowForm] = useState(false);
   const [popupInfo, setPopupInfo] = useState<{ row: any; position: { x: number; y: number } | null }>({ row: null, position: null });
@@ -163,6 +165,7 @@ export default function ProgramTable({robot, data, useChart4All}: ProgramTablePr
           <MergedRequestForm
             onClose={handleCloseForm}
             type="evolution"
+            typeGain={typeGain}
             formData={{
               Intitulé: '',
               Description: '',
@@ -182,7 +185,7 @@ export default function ProgramTable({robot, data, useChart4All}: ProgramTablePr
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center h-[40px]">
-        <h2 className="text-2xl font-bold">Evolutions du robot</h2> 
+        <h2 className="text-2xl font-bold">Evolutions du robot</h2>Gain: {typeGain}
 
         {robot != 'TOUT' && (  
         <button onClick={handleOpenForm_Evolution}
@@ -235,6 +238,7 @@ export default function ProgramTable({robot, data, useChart4All}: ProgramTablePr
         <MergedRequestForm
           onClose={handleCloseForm}
           type="evolution"
+          typeGain={typeGain}
           formData={{
             Intitulé: '',
             Description: '',
@@ -252,6 +256,7 @@ export default function ProgramTable({robot, data, useChart4All}: ProgramTablePr
         <MergedRequestForm
           onClose={handleCloseForm}
           type="edit"
+          typeGain={typeGain}
           formData={{
             Intitulé: selectedRobot.Intitulé,
             Description: selectedRobot.Description,
