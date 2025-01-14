@@ -1,7 +1,8 @@
 'use client'
 
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, ReferenceLine } from "recharts"
 import React from 'react';
+import { formatDuration } from '../lib/utils'
 
 interface ChartProps {
   robotType: string
@@ -94,11 +95,11 @@ export default function Chart({ robotType,data }: ChartProps) {
             <BarChart
               data={chartData}
               width={600}
-              height={600}
+              height={500}
               barSize={40}
               barGap={15}
               title=""
-              margin={{ top: 20, right: 10, left: 5, bottom: 1 }}
+              margin={{ top: 30, right: 10, left: 5, bottom: 1 }}
             >
               <XAxis
                 dataKey="date"
@@ -106,15 +107,19 @@ export default function Chart({ robotType,data }: ChartProps) {
                 tickLine={false}
                 axisLine={false}
                 tick={<CustomizedAxisTick x={0} y={0} payload={{
-                  value: ""
+                  value: "--"
                 }} />}
                 height={60}
                 tickFormatter={(t) => `${t}`} />
+              <ReferenceLine 
+                y={0} 
+                stroke="#888888" 
+                strokeWidth={1} />
               <YAxis
                 stroke="#888888"
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(value: number) => `${value}`}
+                tickFormatter={(value: number) => (robotType?.toLowerCase() === "temps" ? formatDuration(value) : `${value}`)}
                 fontSize={10} />
               <Tooltip
                 labelFormatter={(label: string) => label}
@@ -124,7 +129,8 @@ export default function Chart({ robotType,data }: ChartProps) {
                     return [''];
                   }
                   if (robotType?.toLowerCase() === "temps") {
-                    return [`Gain : ${valeur} min`];
+                    const gain ='Gain : ' + (robotType?.toLowerCase() === "temps" ? formatDuration(value) : `${value}`)
+                    return [gain];
                   }
                   return  valeur > 1 ? [`Gain : ${valeur} éxecutions`] : [`Gain : ${valeur} éxecution`];
                 } } />
@@ -138,7 +144,7 @@ export default function Chart({ robotType,data }: ChartProps) {
                   position: 'top',
                   fill: '#000',
                   fontSize: 12,
-                  formatter: (value: number) => value === 0 ? '' : `${value}`
+                  formatter: (value: number) => value === 0 ? '' : (robotType?.toLowerCase() === "temps" ? formatDuration(value) : `${value}`)
                 }}
                 //activeBar={{ fill: '#3333db' }}
                 activeBar={{ fill: robotType?.toLowerCase() === "temps" ? '#3333db' : '#c24a0a' }}
@@ -151,27 +157,40 @@ export default function Chart({ robotType,data }: ChartProps) {
             <div className="w-1/4 mr-5 ml-5 ">
             <div className={robotType?.toLowerCase() === 'temps' ? ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2' ) : ( 'bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2')}>
                 <div className="ml-4 text-xs ">Total du mois</div>
-                <div className="ml-4 text-xl ">
-                {data['NB UNITES DEPUIS DEBUT DU MOIS'] ? ( data['NB UNITES DEPUIS DEBUT DU MOIS'] ) : ('N/A') }
+                <div className="ml-4 text-xl" title={data['NB UNITES DEPUIS DEBUT DU MOIS'] ? data['NB UNITES DEPUIS DEBUT DU MOIS']+' minutes' : 'N/A'}>
+                {data['NB UNITES DEPUIS DEBUT DU MOIS'] ? ( 
+                  (robotType?.toLowerCase() === 'temps' ? formatDuration(data['NB UNITES DEPUIS DEBUT DU MOIS']) : `${data['NB UNITES DEPUIS DEBUT DU MOIS']}`)
+                  ) : ('N/A') }
                 </div>
               </div>
             </div>
             <div className=" w-1/4 mr-5 ml-5">
               <div className={robotType?.toLowerCase() === 'temps' ? ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2' ) : ( 'bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2')}>
                 <div className="ml-4 text-xs ">M-1</div>
-                <div className="ml-4 text-xl ">{data['NB UNITES MOIS N-1'] ? ( data['NB UNITES MOIS N-1'] ) : ('N/A') }</div>
+                <div className="ml-4 text-xl" title={data['NB UNITES MOIS N-1'] ? data['NB UNITES MOIS N-1'] +' minutes' : 'N/A'}>
+                {data['NB UNITES MOIS N-1'] ? ( 
+                  (robotType?.toLowerCase() === 'temps' ? formatDuration(data['NB UNITES MOIS N-1']) : `${data['NB UNITES MOIS N-1']}`)
+                  ) : ('N/A') }
+                </div>
               </div>
             </div>
             <div className=" w-1/4 mr-5 ml-5">
             <div className={robotType?.toLowerCase() === 'temps' ? ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2' ) : ( 'bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2')}>
                 <div className="ml-4 text-xs ">M-2</div>
-                <div className="ml-4 text-xl">{data['NB UNITES MOIS N-2'] ? ( data['NB UNITES MOIS N-2'] ) : ('N/A') }</div>
+                <div className="ml-4 text-xl" title={data['NB UNITES MOIS N-2'] ? data['NB UNITES MOIS N-2'] +' minutes' : 'N/A'}>
+                {data['NB UNITES MOIS N-2'] ? (
+                  (robotType?.toLowerCase() === 'temps' ? formatDuration(data['NB UNITES MOIS N-2']) : `${data['NB UNITES MOIS N-2']}`)) : ('N/A') }
+                </div>
               </div>
             </div>
             <div className="w-1/4 mr-5 ml-5">
               <div className={robotType?.toLowerCase() === 'temps' ? ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2' ) : ( 'bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2')}>
                 <div className="ml-4 text-xs ">M-3</div>
-                <div className="ml-4 text-xl ">{data['NB UNITES MOIS N-3'] ? ( data['NB UNITES MOIS N-3'] ) : ('N/A') }</div>
+                <div className="ml-4 text-xl" title={data['NB UNITES MOIS N-3'] ? data['NB UNITES MOIS N-3'] +' minutes' : 'N/A'}>
+                {data['NB UNITES MOIS N-3'] ? ( 
+                  (robotType?.toLowerCase() === 'temps' ? formatDuration(data['NB UNITES MOIS N-3']) : `${data['NB UNITES MOIS N-3']}`)
+                  ) : ('N/A') }
+                </div>
               </div>
             </div>
         </div>

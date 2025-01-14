@@ -2,6 +2,7 @@
 
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
 import React from 'react';
+import { formatDuration } from '../lib/utils'
 
 interface ChartProps {
   robotType: string
@@ -99,7 +100,7 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
     
         <div className="h-[300px] relative">
         <div className="ml-[10%] text-left text-xl font-bold mb-4">Gain de temps</div>
-          <div className="absolute top-2 right-2 text-black px-2 py-1 ">Échelle de temps en minutes</div>
+          {/* <div className="absolute top-2 right-2 text-black px-2 py-1 ">Échelle de temps en heures:minutes</div> */}
 
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
@@ -120,12 +121,12 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
                   value: ""
                 }} />}
                 height={60}
-                tickFormatter={(t) => `${t} min`} />
+                tickFormatter={(t) => `${t}`} />
               <YAxis
                 stroke="#888888"
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(value: number) => `${value}`}
+                tickFormatter={(value: number) => formatDuration(value)}
                 fontSize={10} />
               <Tooltip
                 labelFormatter={(label: string) => label}
@@ -134,7 +135,8 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
                   if ((valeur === undefined || valeur === 0) ) {
                     return [''];
                   }
-                  return [`Gain : ${valeur.valeur} min`];
+                  const gain = `Gain : ${formatDuration(valeur.valeur)}`;
+                  return [gain];
                 } } />
               <Bar
                 dataKey="valeur"
@@ -145,7 +147,7 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
                   position: 'top',
                   fill: '#000',
                   fontSize: 12,
-                  formatter: (value: number) => value === 0 ? '' : `${value}`
+                  formatter: (value: number) => value === 0 ? '' : formatDuration(value)
                 }}
                 activeBar={{ fill: robotType?.toLowerCase() === "temps" ? '#3498db' : '#3333db' }}
                 />
@@ -156,27 +158,27 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
             <div className="w-1/4 mr-5 ml-5 ">
               <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
                 <div className="ml-4 text-xs ">Total du mois</div>
-                <div className="ml-4 text-xl ">
-                {data1['NB UNITES DEPUIS DEBUT DU MOIS'] ? ( data1['NB UNITES DEPUIS DEBUT DU MOIS'] ) : ('N/A') }
+                <div className="ml-4 text-xl " title={data1['NB UNITES DEPUIS DEBUT DU MOIS'] ? data1['NB UNITES DEPUIS DEBUT DU MOIS'] +' minutes' : 'N/A'}>
+                {data1['NB UNITES DEPUIS DEBUT DU MOIS'] ? ( formatDuration(data1['NB UNITES DEPUIS DEBUT DU MOIS'])) : ('N/A') }
                 </div>
               </div>
             </div>
             <div className=" w-1/4 mr-5 ml-5">
             <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
                 <div className="ml-4 text-xs ">M-1</div>
-                <div className="ml-4 text-xl ">{data1['NB UNITES MOIS N-1'] ? ( data1['NB UNITES MOIS N-1'] ) : ('N/A') }</div>
+                <div className="ml-4 text-xl" title={data1['NB UNITES MOIS N-1'] ? data1['NB UNITES MOIS N-1'] +' minutes' : 'N/A'}>{data1['NB UNITES MOIS N-1'] ? ( formatDuration(data1['NB UNITES MOIS N-1'])) : ('N/A') }</div>
               </div>
             </div>
             <div className=" w-1/4 mr-5 ml-5">
               <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
-                <div className="ml-4 text-xs ">M-2</div>
-                <div className="ml-4 text-xl">{data1['NB UNITES MOIS N-2'] ? ( data1['NB UNITES MOIS N-2'] ) : ('N/A') }</div>
+                <div className="ml-4 text-xs">M-2</div>
+                <div className="ml-4 text-xl" title={data1['NB UNITES MOIS N-2'] ? data1['NB UNITES MOIS N-2'] +' minutes' : 'N/A'}>{data1['NB UNITES MOIS N-2'] ? ( formatDuration(data1['NB UNITES MOIS N-2'])) : ('N/A') }</div>
               </div>
             </div>
             <div className="w-1/4 mr-5 ml-5">
             <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
                 <div className="ml-4 text-xs ">M-3</div>
-                <div className="ml-4 text-xl ">{data1['NB UNITES MOIS N-3'] ? ( data1['NB UNITES MOIS N-3'] ) : ('N/A') }</div>
+                <div className="ml-4 text-xl" title={data1['NB UNITES MOIS N-3'] ? data1['NB UNITES MOIS N-3'] +' minutes' : 'N/A'}>{data1['NB UNITES MOIS N-3'] ? ( formatDuration(data1['NB UNITES MOIS N-3'])) : ('N/A') }</div>
               </div>
             </div>
         </div> 
@@ -200,7 +202,7 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
                     value: ""
                   }} />}
                   height={60}
-                  tickFormatter={(t) => `${t} min`} />
+                  tickFormatter={(t) => `${t}`} />
                 <YAxis
                   stroke="#888888"
                   tickLine={false}

@@ -225,10 +225,7 @@ export default function MergedRequestForm({
               <DialogTitle>Nouvelle demande</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit}>
-              {formDataState.Robot === 'TOUT' && (
-                <div>Erreur ! robot: {formDataState.Robot}</div>
-              )}
-              {typeGain && <div>typeGain: {typeGain}</div>}
+              {formDataState.Robot === 'TOUT' && ( <div>Erreur ! robot: {formDataState.Robot}</div> )}
               <div>
                 <Label htmlFor="intitulé">Intitulé</Label>
                 <Input

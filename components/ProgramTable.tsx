@@ -185,7 +185,7 @@ export default function ProgramTable({robot, data, typeGain, useChart4All}: Prog
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center h-[40px]">
-        <h2 className="text-2xl font-bold">Evolutions du robot</h2>Gain: {typeGain}
+        <h2 className="text-2xl font-bold">Evolutions du robot</h2>
 
         {robot != 'TOUT' && (  
         <button onClick={handleOpenForm_Evolution}
