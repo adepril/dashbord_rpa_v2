@@ -3,7 +3,7 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 // Variable globale pour stocker tous les programmes
-let allRobotsByAgency: Program[] = [];
+export let allRobotsByAgency: Program[] = [];
 
 interface UserData {
   userId: string;

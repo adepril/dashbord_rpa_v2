@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "./ui/table"
 import { Button } from "./ui/button"
-import { fetchStatuts } from '../utils/dataFetcher'
+import { fetchStatuts, allRobotsByAgency, fetchEvolutionsByProgram } from '../utils/dataFetcher'
 import MergedRequestForm from './MergedRequestForm'
 
 interface ProgramTableProps {
@@ -173,7 +173,7 @@ export default function ProgramTable({robot, data, typeGain, useChart4All}: Prog
               Temps_consommé: '',
               Nb_operations_mensuelles: '',
               Statut: '1', 
-              Date: new Date().toISOString(),
+            Date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
               type: 'evolution'
             }}
           />
@@ -201,7 +201,6 @@ export default function ProgramTable({robot, data, typeGain, useChart4All}: Prog
           <TableHeader>
             <TableRow className="bg-gray-50">
               <TableHead className="py-2 px-3 text-sm font-bold text-gray-700 border-b">Intitulé</TableHead>
-              {/* <TableHead className="py-2 px-3 text-sm font-bold text-gray-700 border-b">Type</TableHead> */}
               <TableHead className="py-2 px-3 text-sm font-bold text-gray-700 border-b">Statut</TableHead>
               <TableHead className="py-2 px-3 text-sm font-bold text-gray-700 border-b">Gains quotidiens</TableHead>
               <TableHead className="py-2 px-3 text-sm font-bold text-gray-700 border-b">Dernière mise à jour</TableHead>
@@ -215,14 +214,26 @@ export default function ProgramTable({robot, data, typeGain, useChart4All}: Prog
                 className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 h-[49px]`}
               >
                 <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">{row.Intitulé}</TableCell>
-                {/* <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">Nouveau</TableCell> */}
                 <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">
                   {getStatutLabel(row.Statut)}
                 </TableCell>
-                <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">{row['Temps consommé']}</TableCell>
+                      {/* <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">
+                        {typeGain === 'temps' ? row.Temps_consommé : row.Nb_operations_mensuelles}
+                      </TableCell> */}
+                {row.Nb_operations_mensuelles === '' ? (
+                  <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">
+                    {row.Temps_consommé}
+                  </TableCell>
+                ) : (
+                <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">
+                  {row.Nb_operations_mensuelles}
+                </TableCell>
+                )}
+                
+                
                 <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">{row.Date}</TableCell>
                 <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">
-                  <button onClick={() => handleOpenForm_Edit(row.Intitulé, row.Description, row.Robot, row['Temps consommé'], row.Statut, row.Nb_operations_mensuelles, row.data)} 
+                  <button onClick={() => handleOpenForm_Edit(row.Intitulé, row.Description, row.Robot, row.Temps_consommé, row.Statut, row.Nb_operations_mensuelles, row.Date)} 
                     className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium overflow-hidden relative px-3 py-1 rounded-lg hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
                     <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-lg opacity-50 group-hover:top-[150%] duration-500 "></span>
                     Détails

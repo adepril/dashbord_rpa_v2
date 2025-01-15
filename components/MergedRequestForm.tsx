@@ -149,7 +149,7 @@ export default function MergedRequestForm({
       // S'assurer que la date est définie
       const dataToSend = {
         ...formDataState,
-        Date: formDataState.Date || new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+        Date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
       };
       
       const querySnapshot = await addDoc(evolutionCollection, dataToSend);
@@ -194,6 +194,7 @@ export default function MergedRequestForm({
         });
 
         onClose();
+        window.location.reload(); // Recharge la page pour récupérer les nouvelles données
 
     } catch (error: unknown) {
       let errorData: { error: string };

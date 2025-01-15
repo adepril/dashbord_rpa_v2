@@ -153,14 +153,26 @@ export default function Dashboard() {
     const loadPrograms = async () => {
       if (selectedAgency) {
         const agencyPrograms = await fetchAllRobotsByAgency(selectedAgency.idAgence);
-        console.log('Programs loaded:', agencyPrograms);
+        console.log('@@ Programs loaded:', agencyPrograms);
         setPrograms(agencyPrograms);
+
+        // Récupérer l'ID du robot depuis la sessionStorage
+        // const storedRobotId = sessionStorage.getItem('selectedRobotId');
+        // if (storedRobotId) {
+        //   const robotFromStorage = agencyPrograms.find(p => p.id_programme === storedRobotId);
+        //   if (robotFromStorage) {
+        //     setSelectedRobot(robotFromStorage);
+        //     console.log('@ Robot sélectionné depuis sessionStorage:', robotFromStorage.nom_programme);
+        //     setSelectedRobotData(robotFromStorage);
+        //     return; // Ne pas sélectionner le premier robot par défaut
+        //   }
+        // }
         
         if (agencyPrograms.length > 0) {
           const defaultProgram = agencyPrograms[0];
           setSelectedRobot(defaultProgram);
           // Use the exact program name for searching in Firebase
-          console.log('Setting program data with name:', defaultProgram.nom_programme);
+          console.log('@Setting program data with name:', defaultProgram.nom_programme);
           setSelectedRobotData(defaultProgram);
         }
       } else {
@@ -173,6 +185,18 @@ export default function Dashboard() {
 
     loadPrograms();
   }, [selectedAgency]);
+
+  // Pré-sélectionner l'agence depuis la sessionStorage au chargement
+  useEffect(() => {
+    const storedAgencyId = sessionStorage.getItem('selectedAgencyId');
+    if (storedAgencyId && agencies.length > 0) {
+      const agencyFromStorage = agencies.find(a => a.idAgence === storedAgencyId);
+      if (agencyFromStorage) {
+        setSelectedAgency(agencyFromStorage);
+        console.log('@ selectedAgency:', selectedAgency?.nomAgence);
+      }
+    }
+  }, [agencies]);
 
   useEffect(() => {
   /**
@@ -307,6 +331,33 @@ export default function Dashboard() {
   const handleAgencyChange = (agencyId: string) => {
     const agency = agencies.find(a => a.idAgence === agencyId);
     setSelectedAgency(agency || null);
+    // Sauvegarder l'agence sélectionnée
+    sessionStorage.setItem('selectedAgencyId', agencyId);
+    // Réinitialiser les états liés aux robots
+    setPrograms([]);
+    setSelectedRobot(null);
+    setSelectedRobotData(null);
+    setRobotData(null);
+    setRobotData1(null);
+    setRobotData2(null);
+    setHistoriqueData([]);
+
+    // Après le chargement des robots, forcer la sélection de "TOUT"
+    const loadPrograms = async () => {
+      if (agency) {
+        const agencyPrograms = await fetchAllRobotsByAgency(agency.idAgence);
+        setPrograms(agencyPrograms);
+        
+        // Sélectionner "TOUT" si disponible
+        const toutProgram = agencyPrograms.find(p => p.nom_programme === "TOUT");
+        if (toutProgram) {
+          setSelectedRobot(toutProgram);
+          setSelectedRobotData(toutProgram);
+        }
+      }
+    };
+    
+    loadPrograms();
   };
 
   const handleProgramChange = (programId: string) => {
@@ -314,7 +365,7 @@ export default function Dashboard() {
     if (program && selectedAgency) {
       setSelectedRobot(program);
       // Use the exact program name for searching in Firebase
-      console.log('(Dashboard.tsx) Setting program data with name:', program.nom_programme);
+      console.log('@@@ (Dashboard.tsx) Setting program data with name:', program.nom_programme);
       setSelectedRobotData(program);
     }
   };
@@ -373,6 +424,22 @@ export default function Dashboard() {
                         <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] roundedlg opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_5px_5px_rgba(0,0,0,0.3)]"></span>
                         Nouvelle Demande
                       </button>
+{/* 
+                      <Button 
+                      type="button" 
+                      className="bg-blue-500 hover:bg-blue-700 text-white"
+                      onClick={() => {
+                        if (selectedAgency) {
+                          sessionStorage.setItem('selectedAgencyId', selectedAgency.idAgence);
+                        }
+                        if (selectedRobot) {
+                          sessionStorage.setItem('selectedRobotId', selectedRobot.id_programme);
+                        }
+                        window.location.reload();
+                      }}
+                    >
+                      Ok
+                    </Button> */}
                     </div>               
                   </div>
                 </div>
