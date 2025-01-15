@@ -15,6 +15,11 @@ export default function LoginForm() {
     const router = useRouter();
 
     useEffect(() => {
+        /**
+         * Récupère une citation aléatoire via l'API `fetchRandomQuote`
+         * et la stocke dans l'état `quote`.
+         * Si la citation n'est pas trouvée, un message par défaut est stocké.
+         */
         const getQuote = async () => {
             const randomQuote = await fetchRandomQuote();
             setQuote(randomQuote || "Aucune citation disponible."); // Message par défaut si aucune citation n'est trouvée
@@ -127,11 +132,13 @@ export default function LoginForm() {
         <div className="text-center h-12 ">
             <span className="text-black "></span> 
         </div>  
-        <div className="text-center bg-x-100  w-full" >
-            <span className="text-black italic text-sm">{quote}</span>
-        </div>  
-    
  
+        <div className="text-center w-full flex justify-center">
+            <div className="text-black text-sm bg-x-100 inline-block">
+                <div className="text-black italic text-sm pb-0 mb-0">{quote}</div>
+                <div className="text-black font-bold text-xs mt-0 justify-end bg-x-300">- Antoine de Saint-Exupéry</div>
+            </div>
+        </div>
     </>
     );
 }
