@@ -29,6 +29,7 @@ interface MergedRequestFormProps {
     Statut: string;
     Date: string;
     type: 'new' | 'evolution' | 'edit';
+    type_gain?: string;
   };
 }
 
@@ -44,7 +45,8 @@ export default function MergedRequestForm({
     Nb_operations_mensuelles: '',
     Statut: '1', // Par défaut "En attente de validation"
     Date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
-    type: 'new'
+    type: 'new',
+    type_gain: '',
   }
 }: MergedRequestFormProps) {
   //console.log('MergedRequestForm called with type:', type, 'and formData:', formData); 
@@ -226,7 +228,7 @@ export default function MergedRequestForm({
               <DialogTitle>Nouvelle demande</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit}>
-              {formDataState.Robot === 'TOUT' && ( <div>Erreur ! robot: {formDataState.Robot}</div> )}
+              {/* {formDataState.Robot === 'TOUT' && ( <div>Erreur ! robot: {formDataState.Robot}</div> )} */}
               <div>
                 <Label htmlFor="intitulé">Intitulé</Label>
                 <Input
@@ -282,7 +284,7 @@ export default function MergedRequestForm({
               <DialogTitle>Détails de {formDataState.Robot}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit}>
-            {typeGain && <div> typeGain: {typeGain}</div>}
+            {/* {formDataState && <div>typeGain: {formDataState.type_gain}</div>} */}
               <div>
                 <Label htmlFor="intitulé">Intitulé</Label>
                 <Input
@@ -339,7 +341,7 @@ export default function MergedRequestForm({
                   />
                 )}
               </div>
-              {typeGain === 'temps' ? (
+              {formDataState.type_gain  === 'temps' ? (
               <div>
                 <Label htmlFor="Temps consommé">Temps consommé (minutes par opération)</Label>
                 <Input
@@ -400,7 +402,7 @@ export default function MergedRequestForm({
               <DialogTitle>Demande d'évolution du robot {formDataState.Robot}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit}>
-            {typeGain && <div>typeGain: {typeGain}</div>}
+            {/* {formDataState && <div>typeGain: {formDataState.type_gain}</div>} */}
               <div>
                 <Label htmlFor="intitulé">Intitulé</Label>
                 <Input
@@ -419,7 +421,7 @@ export default function MergedRequestForm({
                   onChange={handleChange}
                 />
               </div>
-              {typeGain === 'temps' ? (
+              {formDataState.type_gain === 'temps' ? (
               <div>
               <Label htmlFor="Temps consommé">Temps consommé (minutes par opération)</Label>
               <Input

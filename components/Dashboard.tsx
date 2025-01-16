@@ -13,9 +13,8 @@ import { Button } from './ui/button';
 import { 
   fetchUserIdByUsername, 
   fetchAgenciesByIds,
-  //fetchProgramsByAgencyId,
-  //fetchDataReportingByProgram,
   fetchDataReportingByRobot,
+  fetchAllEvolutions,
   fetchEvolutionsByProgram,
   fetchAllRobotsByAgency
 } from '../utils/dataFetcher'
@@ -39,8 +38,8 @@ export const formatNumber = (num: number) => {
   } else {
     // Séparer partie entière et décimale
     const [entier, decimal] = num.toFixed(2).split('.');
-    console.log('entier:', entier);
-    console.log('decimal:', decimal);
+    //console.log('entier:', entier);
+    //console.log('decimal:', decimal);
     // Convertir la partie décimale en base 60 (minutes)
     const minutes = Math.round(Number(decimal) * 0.6);
     
@@ -153,7 +152,8 @@ export default function Dashboard() {
     const loadPrograms = async () => {
       if (selectedAgency) {
         const agencyPrograms = await fetchAllRobotsByAgency(selectedAgency.idAgence);
-        console.log('@@ Programs loaded:', agencyPrograms);
+        console.log('@@ selectedAgency :', selectedAgency);
+        console.log('@@ agencyPrograms :', agencyPrograms);
         setPrograms(agencyPrograms);
 
         // Récupérer l'ID du robot depuis la sessionStorage
@@ -172,7 +172,7 @@ export default function Dashboard() {
           const defaultProgram = agencyPrograms[0];
           setSelectedRobot(defaultProgram);
           // Use the exact program name for searching in Firebase
-          console.log('@Setting program data with name:', defaultProgram.nom_programme);
+          console.log('(loadPrograms) defaultProgram.nom_programme:', defaultProgram.nom_programme);
           setSelectedRobotData(defaultProgram);
         }
       } else {
@@ -189,6 +189,7 @@ export default function Dashboard() {
   // Pré-sélectionner l'agence depuis la sessionStorage au chargement
   useEffect(() => {
     const storedAgencyId = sessionStorage.getItem('selectedAgencyId');
+    console.log('@@ sessionStorage.getItem("selectedAgencyId"):', storedAgencyId);
     if (storedAgencyId && agencies.length > 0) {
       const agencyFromStorage = agencies.find(a => a.idAgence === storedAgencyId);
       if (agencyFromStorage) {
@@ -207,11 +208,16 @@ export default function Dashboard() {
    */
     const loadProgramData = async () => {
       if (selectedRobotData) {
-        console.log('Loading data for robot :', selectedRobotData);
+        console.log('@@ 1 (loadProgramData) selectedAgency :', selectedAgency);
+        console.log('@@ 1 (loadProgramData) selectedRobotData :', selectedRobotData);
         
         // Si "TOUT" est sélectionné, charger les données de tous les robots
         if (selectedRobotData.nom_programme === "TOUT") {
-          const allHistorique = [];
+          const allRobotsEvolution = [];
+          const allMergedDataType1 = [];
+          const allMergedDataType2 = [];
+
+          let oneRobotEvolution: any[] = [];
           // Tableaux de 31 jours initialisés à 0 pour chaque type de robot
           const arrJoursDuMois: string[] = new Array(31).fill("0");
           const arrJoursDuMois_Type1: string[] = [...arrJoursDuMois];
@@ -234,7 +240,6 @@ export default function Dashboard() {
 
           for (const robot of programs) {
             // Récupère les données du robot
-            //rawData = await fetchDataReportingByProgram(robot.nom_programme, robot.bareme);
             rawData = (await fetchDataReportingByRobot(robot.nom_programme, robot.bareme, robot.type_gain)).map((entry: any) => ({
               ...entry,
               'NB UNITES DEPUIS DEBUT DU MOIS': String(entry['NB UNITES DEPUIS DEBUT DU MOIS']),
@@ -248,9 +253,12 @@ export default function Dashboard() {
               continue;
             }
 
-            if (robot.id_agence === selectedAgency?.idAgence && robot.nom_programme !== "TOUT") {
+            if ((robot.id_agence === selectedAgency?.idAgence || selectedAgency?.nomAgence === "TOUTES") && robot.nom_programme !== "TOUT") {
+              // console.log('@@ 2 (loadProgramData) selectedAgency :', selectedAgency);
+              // console.log('@@ 2 (loadProgramData) selectedRobotData :', selectedRobotData);
               const currentProgram = programs.find(p => p.nom_programme === robot.nom_programme);
               const robotType = currentProgram?.type_gain;
+              //console.log('@@ 3 (loadProgramData) currentProgram :', currentProgram);
 
               for (const entry of rawData) {
                 if (robotType === 'temps') {
@@ -271,19 +279,21 @@ export default function Dashboard() {
                   if (entry[dateKey]) {
                     const value = entry[dateKey];
                     const idx = i - 1;
-                    const sommeDeCetteDate = arrJoursDuMois[idx];
-                    
                     if (robotType === 'temps') {
-                      arrJoursDuMois_Type1[idx] = `${Number(sommeDeCetteDate) + Number(value)}`;
+                      arrJoursDuMois_Type1[idx] = `${Number(arrJoursDuMois_Type1[idx]) + Number(value)}`;
                     } else if (robotType === 'autre') {
-                      arrJoursDuMois_Type2[idx] = `${Number(sommeDeCetteDate) + Number(value)}`;
+                      arrJoursDuMois_Type2[idx] = `${Number(arrJoursDuMois_Type2[idx]) + Number(value)}`;
                     }
                   }
                 }
               }
               
-              const historique = await fetchEvolutionsByProgram(robot.nom_programme);
-              allHistorique.push(...historique);
+              //let oneRobotEvolution: any[] = [];
+              if(selectedAgency.nomAgence !== 'TOUTES') {
+                oneRobotEvolution = await fetchEvolutionsByProgram(robot.nom_programme);
+                //console.log('all oneRobotEvolution', oneRobotEvolution);
+                allRobotsEvolution.push(...oneRobotEvolution);
+              }
             }
           }
 
@@ -307,10 +317,15 @@ export default function Dashboard() {
             mergedDataType1[dateKey] = arrJoursDuMois_Type1[i-1];
             mergedDataType2[dateKey] = arrJoursDuMois_Type2[i-1];
           }
-          
+
+          if(selectedAgency && selectedAgency.nomAgence === 'TOUTES') {
+            oneRobotEvolution = await fetchAllEvolutions();
+            allRobotsEvolution.push(...oneRobotEvolution);
+          }
+
           setRobotData1(mergedDataType1);
-          setRobotData2(mergedDataType2);
-          setHistoriqueData(allHistorique);
+          setRobotData2(mergedDataType2);     
+          setHistoriqueData(allRobotsEvolution);
           setUseChart4All(true);
         
         } else {
@@ -319,8 +334,8 @@ export default function Dashboard() {
           const data = await fetchDataReportingByRobot(selectedRobotData.nom_programme, baremeValue, selectedRobotData.type_gain);
           setRobotData(data[0]);
 
-          const historique = await fetchEvolutionsByProgram(selectedRobotData.nom_programme);
-          setHistoriqueData(historique);
+          const oneRobotEvolution = await fetchEvolutionsByProgram(selectedRobotData.nom_programme);
+          setHistoriqueData(oneRobotEvolution);
         }
       }
     };
@@ -365,7 +380,7 @@ export default function Dashboard() {
     if (program && selectedAgency) {
       setSelectedRobot(program);
       // Use the exact program name for searching in Firebase
-      console.log('@@@ (Dashboard.tsx) Setting program data with name:', program.nom_programme);
+      //console.log('@@@ (Dashboard.tsx) Setting program data with name:', program.nom_programme);
       setSelectedRobotData(program);
     }
   };

@@ -206,13 +206,12 @@ export async function fetchAllRobotsByAgency(agencyId: string): Promise<Program[
   }
 }
 
-
 export async function fetchDataReportingByRobot(robotName: string, bareme: string, type_gain: string) {
   bareme = bareme.replace(',', '.');
-  console.log('Fetching DataReportingMoisCourant for the robot:', robotName, "bareme:", bareme, 'type_gain:', type_gain);
+  //console.log('Fetching DataReportingMoisCourant for the robot:', robotName, "bareme:", bareme, 'type_gain:', type_gain);
   try {
     const querySnapshot = await getDocs(collection(db, 'DataReportingMoisCourant'));
-    console.log('(fetchDataReportingByProgram) Nb robots:', querySnapshot.size);
+    //console.log('(fetchDataReportingByProgram) Nb robots:', querySnapshot.size);
     
     const documents = querySnapshot.docs.map(doc => doc.data());
     //console.log('All documents:', JSON.stringify(documents, null, 2));
@@ -230,6 +229,7 @@ export async function fetchDataReportingByRobot(robotName: string, bareme: strin
         for (let i = 1; i <= 31; i++) {
           const day = i.toString().padStart(2, '0');
           const dateKey = `${day}/${month.toString().padStart(2, '0')}/${year}`;
+          dateData[dateKey] = '';
           dateData[dateKey] = '';
           if (docData[dateKey] && docData[dateKey] !== '') {
             //console.log('dateKey:', dateKey, 'docData[dateKey]:', docData[dateKey], ' Robot: ', docData['AGENCE'] +"_"+docData['NOM PROGRAMME']);
@@ -253,7 +253,7 @@ export async function fetchDataReportingByRobot(robotName: string, bareme: strin
         return item['AGENCE'] +"_"+item['NOM PROGRAMME'] === robotName;
       });
 
-    console.log('return  data :', data);
+    //console.log('return  data :', data);
     return data;
   } catch (error) {
     console.log('Error fetching data:', error);
@@ -261,8 +261,22 @@ export async function fetchDataReportingByRobot(robotName: string, bareme: strin
   }
 }
 
+export async function fetchAllEvolutions() {
+  console.log('fetchAllEvolutions');
+  try {
+    const evolutionsRef = collection(db, 'evolutions');
+    const q = query(evolutionsRef);
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => doc.data());
+  } catch (error) {
+    console.log('Error fetching evolutions:', error);
+    return [];
+  }
+}
+
+
 export async function fetchEvolutionsByProgram(programId: string) {
-  //console.log('Fetching evolutions for Programme with ID:', programId);
+  console.log('Fetching evolutions for Programme with name:', programId);
   try {
     const evolutionsRef = collection(db, 'evolutions');
     const q = query(evolutionsRef, where('Robot', '==', programId));
@@ -290,7 +304,7 @@ export async function fetchEvolutionsByProgram(programId: string) {
 
 
 export async function fetchRandomQuote(): Promise<string | null> {
-  console.log('Fetching a random quote...');
+  //console.log('Fetching a random quote...');
   try {
     const quotesRef = collection(db, 'citations');
     const querySnapshot = await getDocs(quotesRef);
@@ -302,7 +316,7 @@ export async function fetchRandomQuote(): Promise<string | null> {
 
     const quotes = querySnapshot.docs.map(doc => doc.data().phrase); // Le champ de la citation s'appelle "phrase"
     const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-    console.log('Random quote fetched:', randomQuote);
+    //console.log('Random quote fetched:', randomQuote);
     return randomQuote;
   } catch (error) {
     console.log('Error fetching random quote:', error);
@@ -311,12 +325,12 @@ export async function fetchRandomQuote(): Promise<string | null> {
 }
 
 export async function fetchStatuts() {
-  console.log('Fetching statuts...');
+  //console.log('Fetching statuts...');
   try {
     const querySnapshot = await getDocs(collection(db, 'statut')); 
     const data = querySnapshot.docs.map(doc => {
       const docData = doc.data();
-      console.log('Statut document data:', docData);
+      //console.log('Statut document data:', docData);
       return {
         numero: docData.numero,
         label: docData.name || docData.label || ''

@@ -135,7 +135,7 @@ export default function LoginForm() {
  
         <div className="text-center w-full flex justify-center">
             <div className="text-black text-sm bg-x-100 inline-block">
-                <div className="text-black italic text-sm pb-0 mb-0">{quote}</div>
+                <div className="text-black italic text-xl pb-0 mb-0">{quote}</div>
                 <div className="text-black font-bold text-xs mt-0 justify-end bg-x-300">- Antoine de Saint-Exupéry</div>
             </div>
         </div>

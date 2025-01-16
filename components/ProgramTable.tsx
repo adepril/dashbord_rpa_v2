@@ -33,6 +33,7 @@ interface MergedRequestFormProps {
     Statut: string;
     Date: string;
     type: 'new' | 'evolution' | 'edit';
+    type_gain?: string;
   };
 }
 
@@ -48,7 +49,8 @@ export default function ProgramTable({robot, data, typeGain, useChart4All}: Prog
     Temps_consommé: '',
     Statut: '',
     Nb_operations_mensuelles: '' ,
-    Date: ''
+    Date: '',
+    type_gain: ''
   });
 
   // État pour contrôler l'ouverture du formulaire de demande d'évolution
@@ -111,7 +113,8 @@ export default function ProgramTable({robot, data, typeGain, useChart4All}: Prog
     Temps_consommé: string,
     Statut: string,
     Nb_operations_mensuelles: string,
-    Date: string
+    Date: string,
+    type_gain: string
   ) => {
     setselectedRobot({
       Intitulé,
@@ -120,7 +123,8 @@ export default function ProgramTable({robot, data, typeGain, useChart4All}: Prog
       Temps_consommé,
       Statut,
       Nb_operations_mensuelles,
-      Date
+      Date,
+      type_gain
     });
     setIsFormOpen_Edit(true);
   };
@@ -233,7 +237,7 @@ export default function ProgramTable({robot, data, typeGain, useChart4All}: Prog
                 
                 <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">{row.Date}</TableCell>
                 <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">
-                  <button onClick={() => handleOpenForm_Edit(row.Intitulé, row.Description, row.Robot, row.Temps_consommé, row.Statut, row.Nb_operations_mensuelles, row.Date)} 
+                  <button onClick={() => handleOpenForm_Edit(row.Intitulé, row.Description, row.Robot, row.Temps_consommé, row.Statut, row.Nb_operations_mensuelles, row.Date, row.Nb_operations_mensuelles === '' ? 'temps' : 'autre') }
                     className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium overflow-hidden relative px-3 py-1 rounded-lg hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
                     <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-lg opacity-50 group-hover:top-[150%] duration-500 "></span>
                     Détails
@@ -258,7 +262,8 @@ export default function ProgramTable({robot, data, typeGain, useChart4All}: Prog
             Nb_operations_mensuelles: '',
             Statut: '1', 
             Date: new Date().toISOString(),
-            type: 'evolution'
+            type: 'evolution',
+            type_gain: typeGain
           }}
         />
       )}
@@ -276,7 +281,8 @@ export default function ProgramTable({robot, data, typeGain, useChart4All}: Prog
             Statut: selectedRobot.Statut,
             Nb_operations_mensuelles: selectedRobot.Nb_operations_mensuelles,
             Date: selectedRobot.Date,
-            type: 'edit'
+            type: 'edit',
+            type_gain: selectedRobot.type_gain
           }}
         />
       )}
