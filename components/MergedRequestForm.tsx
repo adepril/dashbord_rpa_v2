@@ -49,24 +49,23 @@ export default function MergedRequestForm({
     type_gain: '',
   }
 }: MergedRequestFormProps) {
-  //console.log('MergedRequestForm called with type:', type, 'and formData:', formData); 
-
   const { toast } = useToast();
   const [formDataState, setFormData] = useState({
     ...formData,
     Nb_operations_mensuelles: formData.Nb_operations_mensuelles || '',
     Temps_consommé: formData.Temps_consommé || ''
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [statuts, setStatuts] = useState<{numero: string, label: string}[]>([]);
   const [isEditing, setIsEditing] = useState(false);
-  console.log('MergedRequestForm called with type:', type, 'and formDataState:', formDataState);
 
   useEffect(() => {
     const loadStatuts = async () => {
       try {
         const statutsData = await fetchStatuts();
         if (!Array.isArray(statutsData) || statutsData.length === 0) {
-          console.warn('No statuts data received or invalid format');
+          console.log('No statuts data received or invalid format');
           return;
         }
         setStatuts(statutsData);
@@ -99,6 +98,7 @@ export default function MergedRequestForm({
     if (e) {
       e.preventDefault();
     }
+    setIsLoading(true);
 
     // Vérifier si des modifications ont été apportées
     const hasChanges = Object.keys(formDataState).some(key => {
@@ -121,9 +121,6 @@ export default function MergedRequestForm({
   };
 
   const submitForm = async () => {
-
-    console.log('handleSubmit called with formDataState:', formDataState); 
-
     // Validation des champs obligatoires
     if (!formDataState.Intitulé.trim()) {
       toast({
@@ -153,52 +150,46 @@ export default function MergedRequestForm({
         ...formDataState,
         Date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
       };
-      
-      const querySnapshot = await addDoc(evolutionCollection, dataToSend);
+      await addDoc(evolutionCollection, dataToSend);
 
-      console.log('Données enregistrés dans Firebase avec succès (ID:', querySnapshot.id, ')');
-      
-    } catch (error) {
-      console.log('Erreur lors de l\'envoi des données:', error);
-    }
+      // Envoi par email
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: "Utilisateur BBL", 
+          email: "contact@bbl-groupe.fr",
+          subject: (formDataState.type === 'new' ? "Nouvelle demande" : "Demande d'évolution"),
+          message: `
+          ${formDataState.Robot === 'TOUT' ? '' : " <br>Robot :" + formDataState.Robot}
+          Intitulé: ${formDataState.Intitulé}
+          Description: ${formDataState.Description}
+          Temps consommé: ${formDataState.Temps_consommé}
+          Nb. operations mensuelles: ${formDataState.Nb_operations_mensuelles}
+          ${formDataState.type === 'new' ? "Date de création de la demande" : "Date de mise à jour de la demande"} : ${new Date().toLocaleString()}
+          `.trim()
+        }),
+      });
 
-     // Envoi par email
-      try {
-        const response = await fetch('/api/contact', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            name: "Utilisateur BBL", 
-            email: "contact@bbl-groupe.fr", 
-            subject: (formDataState.type === 'new' ? "Nouvelle demande" : "Demande d'évolution"),
-            message: `
-            ${formDataState.Robot === 'TOUT' ? '' : " <br>Robot :" + formDataState.Robot}
-            Intitulé: ${formDataState.Intitulé}
-            Description: ${formDataState.Description}
-            Temps consommé: ${formDataState.Temps_consommé}
-            Nb. operations mensuelles: ${formDataState.Nb_operations_mensuelles}
-            ${formDataState.type === 'new' ? "Date de création de la demande" : "Date de mise à jour de la demande"} : ${new Date().toLocaleString()}
-            `.trim() // Supprime les espaces inutiles
-            //<br>Statut: ${formData.Statut}
-          }),
-        });
-  
-        if (!response.ok) {
-          throw new Error('Failed to send message');
-        }
-  
-        toast({
-          title: 'Succès !',
-          description: 'Votre demande a été envoyée avec succès.',
-          id: ''
-        });
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
+      setIsLoading(false);
+      setIsSuccess(true);
 
-        onClose();
-        window.location.reload(); // Recharge la page pour récupérer les nouvelles données
+      toast({
+        title: 'Succès !',
+        description: 'Votre demande a été envoyée avec succès.',
+        id: ''
+      });
+
+      onClose();
+      window.location.reload();
 
     } catch (error: unknown) {
+      setIsLoading(false);
       let errorData: { error: string };
       if (error instanceof Response) {
         errorData = await error.json();
@@ -207,7 +198,6 @@ export default function MergedRequestForm({
       } else {
         errorData = { error: 'Échec de l\'envoi de la demande' };
       }
-      console.error('!! Erreur lors de l\'envoi de mail:', errorData.error);
       toast({
         title: 'Erreur d\'envoi de mail',
         description: errorData.error || 'Échec de l\'envoi de la demande',
@@ -215,7 +205,6 @@ export default function MergedRequestForm({
         id: ''
       });
     }
-
   }
 
   return (
@@ -269,8 +258,16 @@ export default function MergedRequestForm({
                 <Button type="button" className="bg-red-500 hover:bg-red-700 text-white" onClick={onClose}>
                   Annuler
                 </Button>
-                <Button type="submit" className="bg-green-500 hover:bg-green-700 text-white">
-                  Envoyer
+                <Button type="submit" className="bg-green-500 hover:bg-green-700 text-white" disabled={isLoading}>
+                  {isLoading ? (
+                    <div className="flex items-center">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Envoi en cours...
+                    </div>
+                  ) : 'Envoyer'}
                 </Button>
               </div>
             </form>
@@ -369,12 +366,16 @@ export default function MergedRequestForm({
                   <>
                     <Button type="button"
                       className="bg-red-500 hover:bg-red-700 text-white" onClick={() => setIsEditing(false)}  >Annuler</Button>
-                    <Button
-                      type="button"
-                      className="bg-green-500 hover:bg-green-700 text-white"
-                      onClick={() => handleSubmit()}
-                    >
-                      Envoyer
+                    <Button type="submit" className="bg-green-500 hover:bg-green-700 text-white" disabled={isLoading}>
+                      {isLoading ? (
+                        <div className="flex items-center">
+                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Envoi en cours...
+                        </div>
+                      ) : 'Envoyer'}
                     </Button>
                   </>
                 ) : (
@@ -382,12 +383,13 @@ export default function MergedRequestForm({
                   <Button type="button"
                       className="bg-red-500 hover:bg-red-700 text-white" onClick={onClose} >Annuler</Button>
                   <Button
-                    type="button"
+                    type="button" 
                     className="bg-green-500 hover:bg-green-700 text-white"
-                    onClick={() => setIsEditing(true)}
-                  >
-                    Edition
-                  </Button>
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setIsEditing(true);
+                      setIsLoading(false);
+                    }} >Edition</Button>
                   </>
                 )}
               </div>
@@ -442,12 +444,20 @@ export default function MergedRequestForm({
                 />
               </div>
               )}  
-
               <div className="flex justify-end space-x-2 mt-4">
                 <Button type="button" className="bg-red-500 hover:bg-red-700 text-white" onClick={onClose}>Annuler</Button>
-                <Button type="submit" className="bg-green-500 hover:bg-green-700 text-white">Envoyer</Button>
+                <Button type="submit" className="bg-green-500 hover:bg-green-700 text-white" disabled={isLoading}>
+                  {isLoading ? (
+                    <div className="flex items-center">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Envoi en cours...
+                    </div>
+                  ) : 'Envoyer'}
+                </Button>
               </div>
-
             </form>
           </DialogContent>
         </Dialog>

@@ -17,9 +17,10 @@ export const createMailOptions = (data: ContactFormData) => {
   
   return {
     from: data.email,
-    to: 'groupebbl.rpa@gmail.com',
+    to: 'hal-support@groupe-bbl.com',
     subject: `${data.subject}`,
     html: `
+      <h2>Tableau de bord des robots RPA</h2>
       <p>${formattedMessage}</p>
     `,
   };

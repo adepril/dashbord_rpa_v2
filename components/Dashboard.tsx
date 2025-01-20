@@ -152,8 +152,8 @@ export default function Dashboard() {
     const loadPrograms = async () => {
       if (selectedAgency) {
         const agencyPrograms = await fetchAllRobotsByAgency(selectedAgency.idAgence);
-        console.log('@@ selectedAgency :', selectedAgency);
-        console.log('@@ agencyPrograms :', agencyPrograms);
+        // console.log('@@ selectedAgency :', selectedAgency);
+        // console.log('@@ agencyPrograms :', agencyPrograms);
         setPrograms(agencyPrograms);
 
         // Récupérer l'ID du robot depuis la sessionStorage
@@ -208,8 +208,8 @@ export default function Dashboard() {
    */
     const loadProgramData = async () => {
       if (selectedRobotData) {
-        console.log('@@ 1 (loadProgramData) selectedAgency :', selectedAgency);
-        console.log('@@ 1 (loadProgramData) selectedRobotData :', selectedRobotData);
+        // console.log('@@ 1 (combo robot changed:loadProgramData) selectedAgency :', selectedAgency);
+        // console.log('@@ 1 (combo robot changed:loadProgramData) selectedRobotData :', selectedRobotData);
         
         // Si "TOUT" est sélectionné, charger les données de tous les robots
         if (selectedRobotData.nom_programme === "TOUT") {
@@ -254,8 +254,8 @@ export default function Dashboard() {
             }
 
             if ((robot.id_agence === selectedAgency?.idAgence || selectedAgency?.nomAgence === "TOUTES") && robot.nom_programme !== "TOUT") {
-              // console.log('@@ 2 (loadProgramData) selectedAgency :', selectedAgency);
-              // console.log('@@ 2 (loadProgramData) selectedRobotData :', selectedRobotData);
+              // console.log('@@ 2 (lcombo robot changed:oadProgramData) selectedAgency :', selectedAgency);
+              // console.log('@@ 2 (combo robot changed:loadProgramData) selectedRobotData :', selectedRobotData);
               const currentProgram = programs.find(p => p.nom_programme === robot.nom_programme);
               const robotType = currentProgram?.type_gain;
               //console.log('@@ 3 (loadProgramData) currentProgram :', currentProgram);
@@ -335,6 +335,7 @@ export default function Dashboard() {
           setRobotData(data[0]);
 
           const oneRobotEvolution = await fetchEvolutionsByProgram(selectedRobotData.nom_programme);
+          console.log('oneRobotEvolution', oneRobotEvolution);
           setHistoriqueData(oneRobotEvolution);
         }
       }

@@ -59,14 +59,14 @@ interface Agency {
    * @returns an array of agency objects
    */
 export async function fetchAgenciesByIds(agencyIds: string[]): Promise<Agency[]> {
-  console.log('Fetching agencies for IDs:', agencyIds);
+  console.log('Retrieve agencies for IDs:', agencyIds);
   try {
     const agenciesRef = collection(db, 'agences');
     const agencies: Agency[] = [];
 
     for (const agencyId of agencyIds) {
       if (agencyId!="-") {
-          console.log('Fetching agency with ID:', agencyId);
+          //console.log('Fetching agency with ID:', agencyId);
           const q = query(agenciesRef, where('idAgence', '==', agencyId));
           const querySnapshot = await getDocs(q);
           
@@ -261,32 +261,84 @@ export async function fetchDataReportingByRobot(robotName: string, bareme: strin
   }
 }
 
-export async function fetchAllEvolutions() {
+// export async function fetchAllEvolutions() {
+//   console.log('fetchAllEvolutions');
+//   try {
+//     const evolutionsRef = collection(db, 'evolutions');
+//     const q = query(evolutionsRef);
+//     const querySnapshot = await getDocs(q);
+//     return querySnapshot.docs.map(doc => doc.data());
+//   } catch (error) {
+//     console.log('Error fetching evolutions:', error);
+//     return [];
+//   }
+// }
+
+interface Evolution {
+  Robot: string;
+  statut: number;
+  [key: string]: any; // Pour les autres propriétés dynamiques
+}
+
+/**
+ * Fetches all evolution documents from the Firestore collection and processes them.
+ * 
+ * - Groups the documents by the 'Robot' field.
+ * - For each group, retains only the document with the highest 'statut' value.
+ * 
+ * @returns A Promise that resolves to an array of Evolution objects,
+ *          each representing the document with the highest status for each robot.
+ *          If an error occurs during fetching, an empty array is returned.
+ */
+
+export async function fetchAllEvolutions(): Promise<Evolution[]> {
   console.log('fetchAllEvolutions');
   try {
     const evolutionsRef = collection(db, 'evolutions');
     const q = query(evolutionsRef);
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => doc.data());
+    
+    // Grouper les documents par Robot
+    const groupedByRobot = querySnapshot.docs.reduce<Record<string, Evolution[]>>((acc, doc) => {
+      const data = doc.data() as Evolution;
+      const robot = data.Robot;
+      if (!acc[robot]) {
+        acc[robot] = [];
+      }
+      acc[robot].push(data);
+      return acc;
+    }, {});
+
+    // Pour chaque Robot, garder uniquement le document avec le statut le plus élevé
+    const filteredResults = Object.values(groupedByRobot).map((robotDocs) => {
+      return robotDocs.reduce((maxDoc, currentDoc) => {
+        return (currentDoc.statut > maxDoc.statut) ? currentDoc : maxDoc;
+      });
+    });
+
+    return filteredResults;
   } catch (error) {
     console.log('Error fetching evolutions:', error);
     return [];
   }
 }
 
-
+/**
+ * Fetches evolution documents from the Firestore collection for a given program name.
+ * 
+ * @param programId The name of the program to fetch evolutions for.
+ * @returns A Promise that resolves to an array of objects,
+ *          each representing an evolution document that matches the program name.
+ *          If an error occurs during fetching, an empty array is returned.
+ */
 export async function fetchEvolutionsByProgram(programId: string) {
-  console.log('Fetching evolutions for Programme with name:', programId);
+  //console.log('Fetching evolutions for Programme with name:', programId);
   try {
     const evolutionsRef = collection(db, 'evolutions');
     const q = query(evolutionsRef, where('Robot', '==', programId));
     const querySnapshot = await getDocs(q);
-    
-    //console.log('Raw evolutions documents fetched:', querySnapshot.size);
-    
     const data = querySnapshot.docs.map(doc => {
-      const docData = doc.data();
-      //console.log('Evolution document data:', docData);
+    const docData = doc.data();
       return {
         id: doc.id,
         ...docData,
@@ -324,13 +376,19 @@ export async function fetchRandomQuote(): Promise<string | null> {
   }
 }
 
+  /**
+   * Fetches statut documents from the Firestore collection "statut".
+   * 
+   * @returns A Promise that resolves to an array of objects,
+   *          each representing a statut document with `numero` and `label` properties.
+   *          If an error occurs during fetching, an empty array is returned.
+   */
 export async function fetchStatuts() {
   //console.log('Fetching statuts...');
   try {
     const querySnapshot = await getDocs(collection(db, 'statut')); 
     const data = querySnapshot.docs.map(doc => {
       const docData = doc.data();
-      //console.log('Statut document data:', docData);
       return {
         numero: docData.numero,
         label: docData.name || docData.label || ''
@@ -339,7 +397,7 @@ export async function fetchStatuts() {
     // Trier les statuts par ordre ascendant selon le champ "numero"
     data.sort((a, b) => a.numero - b.numero);
 
-    console.log('Statuts fetched:', data);
+    //console.log('Statuts fetched:', data);
     return data;
   } catch (error) {
     console.log('Error fetching statuts:', error);
