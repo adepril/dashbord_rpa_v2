@@ -5,13 +5,13 @@ import { useRouter } from 'next/navigation';
 import { db } from '../lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import Image from 'next/image'; 
-import { fetchRandomQuote } from '../utils/dataFetcher'; 
+import { fetchRandomQuote, Quote } from '../utils/dataFetcher'; 
 
 export default function LoginForm() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const [quote, setQuote] = useState(''); // État pour stocker la citation
+    const [quote, setQuote] = useState<Quote | null>(null); // État pour stocker la citation
     const router = useRouter();
 
     useEffect(() => {
@@ -22,7 +22,8 @@ export default function LoginForm() {
          */
         const getQuote = async () => {
             const randomQuote = await fetchRandomQuote();
-            setQuote(randomQuote || "Aucune citation disponible."); // Message par défaut si aucune citation n'est trouvée
+            console.log('Random quote:', randomQuote);
+            setQuote(randomQuote || null);
         };
         getQuote();
     }, []);
@@ -34,19 +35,21 @@ export default function LoginForm() {
         try {
             const usersRef = collection(db, 'utilisateurs');
             console.log('User collection:', usersRef);
-            const q = query(usersRef, where('userName', '==', username));
+            const q = query(usersRef, where('userName', '==', username), where('password', '==', password));
             const querySnapshot = await getDocs(q);
 
             if (querySnapshot.empty) {
-                setError('Utilisateur non trouvé');
+                setError('Identifiant ou mot de passe incorrect');
                 return;
             }
 
             const userDoc = querySnapshot.docs[0];
             const userData = userDoc.data();
-            const userId = userData.userId;
-            console.log('User data loaded:', userData);
-            router.push(`/dashboard?user=${encodeURIComponent(username)}`);
+
+            // Stocker les informations de l'utilisateur en session
+            sessionStorage.setItem('userInfo', JSON.stringify(userData));
+
+            router.push(`/dashboard?user=${encodeURIComponent(userData.userId)}`);
         } catch (err) {
             console.error('Erreur lors de la connexion:', err);
             setError('Une erreur est survenue lors de la connexion');
@@ -55,17 +58,18 @@ export default function LoginForm() {
 
     return (
         <>
-        <div className="flex items-center space-x-10 bg-x-100">
+        <div className="flex items-center">
             <div style={{ position: 'relative', top: 5, left: 10 }}>
                 <Image src="/logo_bbl-groupe2.png" alt="Logo BBL Groupe" width={100} height={70} />
-                
             </div>
-                <div className="bg-x-100 " style={{ position: 'absolute', top: 5, left: 130}}>
-                    <span className="text-black text-sm">Bienvenue à bord du Spacecraft Discovery One !</span>
-                </div>            
+            <div className="w-full flex absolute justify-center top-1">
+                <span className="text-black text-sm ">Bienvenue à bord du Spacecraft Discovery One !</span>
+            </div>
         </div>
 
-        <div className="text-center h-20 ">
+
+
+        <div className="text-center h-10 ">
             <span className="text-black "></span> 
         </div>  
         <div className="text-center h-20 ">
@@ -133,12 +137,14 @@ export default function LoginForm() {
             <span className="text-black "></span> 
         </div>  
  
-        <div className="text-center w-full flex justify-center">
-            <div className="text-black text-sm bg-x-100 inline-block">
-                <div className="text-black italic text-xl pb-0 mb-0">{quote}</div>
-                <div className="text-black font-bold text-xs mt-0 justify-end bg-x-300">- Antoine de Saint-Exupéry</div>
+        {quote && (
+            <div className="text-center w-full flex justify-center">
+                <div className="text-black text-sm bg-x-100 inline-block p-4 rounded-lg">
+                    <div className="text-black italic text-xl pb-0 mb-0">"{quote.citation}"</div>
+                    <div className="text-black font-bold text-xs mt-2 mr-[20%] text-right">- {quote.auteur}</div>
+                </div>
             </div>
-        </div>
+        )}
     </>
     );
 }

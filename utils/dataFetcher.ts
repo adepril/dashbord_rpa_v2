@@ -12,19 +12,19 @@ interface UserData {
 }
 
 /**
- * Fetches the user data for the given username from Firestore.
- * @param {string} username - The username to search for.
+ * Fetches the user data for the given userIs from Firestore.
+ * @param {string} userId - The userIs to search for.
  * @returns {Promise<UserData | null>} - The user data if found, or null if not found.
  */
-export async function fetchUserIdByUsername(username: string): Promise<UserData | null> {
-  console.log('Fetching user data for username:', username);
+export async function fetchUserIdByUserId(userId: string): Promise<UserData | null> {
+  console.log('Fetching user data for userId:', userId);
   try {
     const usersRef = collection(db, 'utilisateurs');
-    const q = query(usersRef, where('userName', '==', username));
+    const q = query(usersRef, where('userId', '==', userId));
     const querySnapshot = await getDocs(q);
     
     if (querySnapshot.empty) {
-      console.log('No user found with username:', username);
+      console.log('No user found with userId:', userId);
       return null;
     }
 
@@ -355,21 +355,38 @@ export async function fetchEvolutionsByProgram(programId: string) {
 }
 
 
-export async function fetchRandomQuote(): Promise<string | null> {
-  //console.log('Fetching a random quote...');
+interface FirestoreQuote {
+  citation: string;
+  auteur: string;
+}
+
+export interface Quote {
+  id: string;
+  citation: string;
+  auteur: string;
+}
+
+export async function fetchRandomQuote(): Promise<Quote | null> {
+  console.log('Fetching a random quote...');
   try {
     const quotesRef = collection(db, 'citations');
     const querySnapshot = await getDocs(quotesRef);
-    //console.log('Quotes fetched:', querySnapshot.docs);
     if (querySnapshot.empty) {
       console.log('No quotes found.');
       return null;
     }
 
-    const quotes = querySnapshot.docs.map(doc => doc.data().phrase); // Le champ de la citation s'appelle "phrase"
+    const quotes = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data() as FirestoreQuote
+    })); 
     const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-    //console.log('Random quote fetched:', randomQuote);
-    return randomQuote;
+    console.log('Random quote fetched:', randomQuote);
+    return {
+      id: randomQuote.id,
+      citation: randomQuote.citation,
+      auteur: randomQuote.auteur
+    };
   } catch (error) {
     console.log('Error fetching random quote:', error);
     return null;
@@ -404,3 +421,23 @@ export async function fetchStatuts() {
     return [];
   }
 }
+
+// Fonction pour formater les nombres 
+export const formatNumber = (num: number) => {
+  if (Number.isInteger(num)) {
+    return num.toString();
+  } else {
+    // Séparer partie entière et décimale
+    const [entier, decimal] = num.toFixed(2).split('.');
+    //console.log('entier:', entier);
+    //console.log('decimal:', decimal);
+    // Convertir la partie décimale en base 60 (minutes)
+    const minutes = Math.round(Number(decimal) * 0.6);
+    
+    // Formater les minutes avec 2 chiffres
+    const formattedMinutes = String(minutes).padStart(2, '0');
+    
+    //return `${entier}.${formattedMinutes}`;
+    return `${entier}`;
+  }
+};

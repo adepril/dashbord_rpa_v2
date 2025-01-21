@@ -11,12 +11,13 @@ import AgencySelector from './AgencySelector'
 import Image from 'next/image';
 import { Button } from './ui/button';
 import { 
-  fetchUserIdByUsername, 
+  fetchUserIdByUserId, 
   fetchAgenciesByIds,
   fetchDataReportingByRobot,
   fetchAllEvolutions,
   fetchEvolutionsByProgram,
-  fetchAllRobotsByAgency
+  fetchAllRobotsByAgency,
+  formatNumber
 } from '../utils/dataFetcher'
 
 // Fonction pour formater les nombres 
@@ -31,25 +32,7 @@ import {
 //   }
 // };
 
-// Fonction pour formater les nombres 
-export const formatNumber = (num: number) => {
-  if (Number.isInteger(num)) {
-    return num.toString();
-  } else {
-    // Séparer partie entière et décimale
-    const [entier, decimal] = num.toFixed(2).split('.');
-    //console.log('entier:', entier);
-    //console.log('decimal:', decimal);
-    // Convertir la partie décimale en base 60 (minutes)
-    const minutes = Math.round(Number(decimal) * 0.6);
-    
-    // Formater les minutes avec 2 chiffres
-    const formattedMinutes = String(minutes).padStart(2, '0');
-    
-    //return `${entier}.${formattedMinutes}`;
-    return `${entier}`;
-  }
-};
+
 
 interface Program {
   id_programme: string;
@@ -120,7 +103,12 @@ export default function Dashboard() {
     const loadUserData = async () => {
       try {
         setIsLoading(true);
-        const userData = await fetchUserIdByUsername(username);
+        if (!user) {
+          setError('Utilisateur non trouvé');
+          setIsLoading(false);
+          return;
+        }
+        const userData = await fetchUserIdByUserId(user);
         
         if (!userData) {
           setError('Utilisateur non trouvé');
