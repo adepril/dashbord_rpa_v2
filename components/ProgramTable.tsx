@@ -18,27 +18,33 @@ interface ProgramTableProps {
   data: any[];
   typeGain: string;  
   useChart4All: boolean;
-}
-
-interface MergedRequestFormProps {
-  onClose: () => void;
-  type?: 'evolution' | 'new' | 'edit';
-  typeGain?: string;
-  formData?: {
-    Intitulé: string;
-    Description: string;
-    Programme: string;
-    Nb_operations_mensuelles: string; 
-    Temps_consommé: string;
-    Statut: string;
-    Date: string;
-    type: 'new' | 'evolution' | 'edit';
-    type_gain?: string;
+  user: {
+    userId: string;
+    userName: string;
+    password: string;
+    userAgenceIds: string[];
   };
 }
 
-export default function ProgramTable({robot, data, typeGain, useChart4All}: ProgramTableProps): JSX.Element {
-  //console.log('ProgramTable called with robot:', robot, 'and data:', data, ' and useChart4All:', useChart4All);
+// interface MergedRequestFormProps {
+//   onClose: () => void;
+//   type?: 'evolution' | 'new' | 'edit';
+//   typeGain?: string;
+//   formData?: {
+//     Intitulé: string;
+//     Description: string;
+//     Programme: string;
+//     Nb_operations_mensuelles: string; 
+//     Temps_consommé: string;
+//     Statut: string;
+//     Date: string;
+//     type: 'new' | 'evolution' | 'edit';
+//     type_gain?: string;
+//   };
+// }
+
+export default function ProgramTable({robot, data, typeGain, useChart4All, user}: ProgramTableProps): JSX.Element {
+  console.log('ProgramTable with robot:', robot, 'and data:', data, ' and useChart4All:', useChart4All, ' and user:', user);
   const [showForm, setShowForm] = useState(false);
   const [popupInfo, setPopupInfo] = useState<{ row: any; position: { x: number; y: number } | null }>({ row: null, position: null });
   const [statuts, setStatuts] = useState<{ [key: string]: string }>({});
@@ -254,6 +260,7 @@ export default function ProgramTable({robot, data, typeGain, useChart4All}: Prog
           onClose={handleCloseForm}
           type="evolution"
           typeGain={typeGain}
+          user={user}
           formData={{
             Intitulé: '',
             Description: '',
@@ -273,6 +280,7 @@ export default function ProgramTable({robot, data, typeGain, useChart4All}: Prog
           onClose={handleCloseForm}
           type="edit"
           typeGain={typeGain}
+          user={user}
           formData={{
             Intitulé: selectedRobot.Intitulé,
             Description: selectedRobot.Description,

@@ -20,19 +20,6 @@ import {
   formatNumber
 } from '../utils/dataFetcher'
 
-// Fonction pour formater les nombres 
-// export const formatNumber = (num: number) => {
-//   if (Number.isInteger(num)) {
-//     return num.toString();
-//   } else {
-//     let formatted = num.toFixed(2);
-//     //console.log('formatted:', formatted);
-//     formatted = formatted.endsWith('.00') ? formatted.slice(0, -3) : formatted;
-//     return formatted;
-//   }
-// };
-
-
 
 interface Program {
   id_programme: string;
@@ -73,9 +60,9 @@ interface MergedRequestFormProps {
 }
 
 export default function Dashboard() {
-  const searchParams = useSearchParams();
-  const username = searchParams.get('user') || '';
   const [agencies, setAgencies] = useState<Agency[]>([]);
+  const userData = JSON.parse(localStorage.getItem('userData') || 'null');
+  const username = userData?.userId || '';
   const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [selectedRobot, setSelectedRobot] = useState<Program | null>(null);
@@ -90,26 +77,23 @@ export default function Dashboard() {
   const [useChart4All, setUseChart4All] = useState(true);
 
   const router = useRouter();
-  const user = searchParams.get('user');
 
   useEffect(() => {
-    if (!user) {
+    if (!userData) {
       router.replace('/');
     }
-  }, [user, router]);
+  }, [userData, router]);
 
   // Fetch user data and agencies
   useEffect(() => {
     const loadUserData = async () => {
       try {
         setIsLoading(true);
-        if (!user) {
+        if (!username) {
           setError('Utilisateur non trouvé');
           setIsLoading(false);
           return;
         }
-        const userData = await fetchUserIdByUserId(user);
-        
         if (!userData) {
           setError('Utilisateur non trouvé');
           return;
@@ -140,27 +124,13 @@ export default function Dashboard() {
     const loadPrograms = async () => {
       if (selectedAgency) {
         const agencyPrograms = await fetchAllRobotsByAgency(selectedAgency.idAgence);
-        // console.log('@@ selectedAgency :', selectedAgency);
-        // console.log('@@ agencyPrograms :', agencyPrograms);
         setPrograms(agencyPrograms);
-
-        // Récupérer l'ID du robot depuis la sessionStorage
-        // const storedRobotId = sessionStorage.getItem('selectedRobotId');
-        // if (storedRobotId) {
-        //   const robotFromStorage = agencyPrograms.find(p => p.id_programme === storedRobotId);
-        //   if (robotFromStorage) {
-        //     setSelectedRobot(robotFromStorage);
-        //     console.log('@ Robot sélectionné depuis sessionStorage:', robotFromStorage.nom_programme);
-        //     setSelectedRobotData(robotFromStorage);
-        //     return; // Ne pas sélectionner le premier robot par défaut
-        //   }
-        // }
         
         if (agencyPrograms.length > 0) {
           const defaultProgram = agencyPrograms[0];
           setSelectedRobot(defaultProgram);
           // Use the exact program name for searching in Firebase
-          console.log('(loadPrograms) defaultProgram.nom_programme:', defaultProgram.nom_programme);
+          //console.log('(loadPrograms) defaultProgram.nom_programme:', defaultProgram.nom_programme);
           setSelectedRobotData(defaultProgram);
         }
       } else {
@@ -177,12 +147,12 @@ export default function Dashboard() {
   // Pré-sélectionner l'agence depuis la sessionStorage au chargement
   useEffect(() => {
     const storedAgencyId = sessionStorage.getItem('selectedAgencyId');
-    console.log('@@ sessionStorage.getItem("selectedAgencyId"):', storedAgencyId);
+    //console.log('@@ sessionStorage.getItem("selectedAgencyId"):', storedAgencyId);
     if (storedAgencyId && agencies.length > 0) {
       const agencyFromStorage = agencies.find(a => a.idAgence === storedAgencyId);
       if (agencyFromStorage) {
         setSelectedAgency(agencyFromStorage);
-        console.log('@ selectedAgency:', selectedAgency?.nomAgence);
+        //console.log('@ selectedAgency:', selectedAgency?.nomAgence);
       }
     }
   }, [agencies]);
@@ -323,7 +293,7 @@ export default function Dashboard() {
           setRobotData(data[0]);
 
           const oneRobotEvolution = await fetchEvolutionsByProgram(selectedRobotData.nom_programme);
-          console.log('oneRobotEvolution', oneRobotEvolution);
+          //console.log('oneRobotEvolution', oneRobotEvolution);
           setHistoriqueData(oneRobotEvolution);
         }
       }
@@ -386,8 +356,8 @@ export default function Dashboard() {
     return <div className="text-red-500">{error}</div>;
   }
 
-  if (!user) {
-    return null;
+  if (!username) {
+    return <div className="text-red-500">Pas d'utilisateur connecté</div>;
   }
 
   return (
@@ -405,7 +375,7 @@ export default function Dashboard() {
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
                     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user w-5 h-5 mr-2 text-gray-600">
                   <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>
-                </svg> {user}</span>
+                </svg> {userData?.username}</span>
                 <div className="flex space-x-8 mt-2">
                   <div className="flex items-center space-x-2">
                     <span>Agence:</span>
@@ -425,11 +395,10 @@ export default function Dashboard() {
                     <div className="w-[50px]"></div>    
                     <div className="flex justify-end bg-x-100 h-[40px]">
                       <button onClick={handleOpenForm} className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium overflow-hidden relative px-4 py-1 rounded-lg hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
-                        <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] roundedlg opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_5px_5px_rgba(0,0,0,0.3)]"></span>
+                        <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] roundedlg opacity-50 group-hover:top-[250%] duration-500 shadow-[0_0_5px_5px_rgba(0,0,0,0.3)]"></span>
                         Nouvelle Demande
                       </button>
-{/* 
-                      <Button 
+                    {/*<Button 
                       type="button" 
                       className="bg-blue-500 hover:bg-blue-700 text-white"
                       onClick={() => {
@@ -441,8 +410,7 @@ export default function Dashboard() {
                         }
                         window.location.reload();
                       }}
-                    >
-                      Ok
+                    > Ok
                     </Button> */}
                     </div>               
                   </div>
@@ -486,7 +454,7 @@ export default function Dashboard() {
 
             <div className="grid grid-cols-4 gap-4 bg-x-300 mt-5" >
               <div className="col-span-4 w-full">
-                <ProgramTable robot={selectedRobot?.nom_programme || ''} data={historiqueData} typeGain={selectedRobot?.type_gain}  useChart4All={useChart4All}/>
+                <ProgramTable robot={selectedRobot?.nom_programme || ''} data={historiqueData} typeGain={selectedRobot?.type_gain}  useChart4All={useChart4All} user={userData}/>
               </div>
             </div>
           </div>

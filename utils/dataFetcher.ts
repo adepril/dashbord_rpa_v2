@@ -146,7 +146,7 @@ export async function fetchProgramsByAgencyId(agencyId: string): Promise<Program
  * @returns An array of all programs
  */
 export async function fetchAllRobotsByAgency(agencyId: string): Promise<Program[]> {
-  console.log('-- fetchAllRobotsByAgency: id_agence= ', agencyId);
+  //console.log('-- fetchAllRobotsByAgency: id_agence= ', agencyId);
   try {
     const programsRef = collection(db, 'programmes');
     let q;
@@ -206,6 +206,14 @@ export async function fetchAllRobotsByAgency(agencyId: string): Promise<Program[
   }
 }
 
+
+  /**
+   * Récupère les données de reporting mensuel pour un robot
+   * @param {string} robotName - nom du robot
+   * @param {string} bareme - bareme du robot
+   * @param {string} type_gain - type de gain du robot
+   * @returns {Promise<{[key: string]: string}[]>} - Données de reporting mensuel pour le robot
+   */
 export async function fetchDataReportingByRobot(robotName: string, bareme: string, type_gain: string) {
   bareme = bareme.replace(',', '.');
   //console.log('Fetching DataReportingMoisCourant for the robot:', robotName, "bareme:", bareme, 'type_gain:', type_gain);
@@ -290,7 +298,6 @@ interface Evolution {
  *          each representing the document with the highest status for each robot.
  *          If an error occurs during fetching, an empty array is returned.
  */
-
 export async function fetchAllEvolutions(): Promise<Evolution[]> {
   console.log('fetchAllEvolutions');
   try {
@@ -366,8 +373,12 @@ export interface Quote {
   auteur: string;
 }
 
+/**
+ * Fetches a random quote from Firestore.
+ * @returns A Promise that resolves to a random `Quote` object, or null if an error occurs or no quotes are found.
+ */
 export async function fetchRandomQuote(): Promise<Quote | null> {
-  console.log('Fetching a random quote...');
+  //console.log('Fetching a random quote...');
   try {
     const quotesRef = collection(db, 'citations');
     const querySnapshot = await getDocs(quotesRef);
@@ -381,7 +392,7 @@ export async function fetchRandomQuote(): Promise<Quote | null> {
       ...doc.data() as FirestoreQuote
     })); 
     const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-    console.log('Random quote fetched:', randomQuote);
+    //console.log('Random quote fetched:', randomQuote);
     return {
       id: randomQuote.id,
       citation: randomQuote.citation,
@@ -441,3 +452,15 @@ export const formatNumber = (num: number) => {
     return `${entier}`;
   }
 };
+
+// Fonction pour formater les nombres 
+// export const formatNumber = (num: number) => {
+//   if (Number.isInteger(num)) {
+//     return num.toString();
+//   } else {
+//     let formatted = num.toFixed(2);
+//     //console.log('formatted:', formatted);
+//     formatted = formatted.endsWith('.00') ? formatted.slice(0, -3) : formatted;
+//     return formatted;
+//   }
+// };

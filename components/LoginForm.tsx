@@ -1,6 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+declare global {
+  interface Window {
+    userData: any;
+  }
+}
+
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { db } from '../lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
@@ -22,7 +28,7 @@ export default function LoginForm() {
          */
         const getQuote = async () => {
             const randomQuote = await fetchRandomQuote();
-            console.log('Random quote:', randomQuote);
+            //console.log('Random quote:', randomQuote);
             setQuote(randomQuote || null);
         };
         getQuote();
@@ -34,10 +40,9 @@ export default function LoginForm() {
 
         try {
             const usersRef = collection(db, 'utilisateurs');
-            console.log('User collection:', usersRef);
             const q = query(usersRef, where('userName', '==', username), where('password', '==', password));
             const querySnapshot = await getDocs(q);
-
+            
             if (querySnapshot.empty) {
                 setError('Identifiant ou mot de passe incorrect');
                 return;
@@ -45,11 +50,12 @@ export default function LoginForm() {
 
             const userDoc = querySnapshot.docs[0];
             const userData = userDoc.data();
+            console.log('(loginForm) utilisateur :', userData);
 
-            // Stocker les informations de l'utilisateur en session
-            sessionStorage.setItem('userInfo', JSON.stringify(userData));
+            // Stocker les informations de l'utilisateur dans localStorage
+            localStorage.setItem('userData', JSON.stringify(userData));
 
-            router.push(`/dashboard?user=${encodeURIComponent(userData.userId)}`);
+            router.push('/dashboard');
         } catch (err) {
             console.error('Erreur lors de la connexion:', err);
             setError('Une erreur est survenue lors de la connexion');
