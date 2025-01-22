@@ -92,9 +92,10 @@ export async function fetchAgenciesByIds(agencyIds: string[]): Promise<Agency[]>
 }
 
 interface Program {
-  id_programme: string;
-  nom_programme: string;
+  id_robot: string;
+  nom_robot: string;
   id_agence: string;
+  service: string;
   type_gain: string;
   bareme: string;
 }
@@ -125,9 +126,10 @@ export async function fetchProgramsByAgencyId(agencyId: string): Promise<Program
     const programs = querySnapshot.docs.map(doc => {
       const data = doc.data();
       return {
-        id_programme: data.id_programme,
-        nom_programme: data.nom_programme,
+        id_robot: data.id_robot,
+        nom_robot: data.nom_robot,
         id_agence: data.id_agence,
+        service: data.service,
         type_gain: data.type_gain,
         bareme: data.bareme
       };
@@ -145,28 +147,34 @@ export async function fetchProgramsByAgencyId(agencyId: string): Promise<Program
  * Fetches all robots from Firestore without agency filter
  * @returns An array of all programs
  */
-export async function fetchAllRobotsByAgency(agencyId: string): Promise<Program[]> {
-  //console.log('-- fetchAllRobotsByAgency: id_agence= ', agencyId);
+export async function fetchAllRobotsByAgency(agencyId: string, service?: string): Promise<Program[]> {
+  console.log('-- fetchAllRobotsByAgency: id_agence= ', agencyId, 'service=', service);
   try {
-    const programsRef = collection(db, 'programmes');
+    const programsRef = collection(db, 'robots');
     let q;
-    if (agencyId === "1") {
-      // l'agence est "ALL", on récupérer tous les programmes
-      console.log('All agency -> Fetching ALL programs');
-      q = query(programsRef);
+    
+    const conditions = [];
+    if (agencyId !== "1") {
+      conditions.push(where('id_agence', '==', agencyId));
+    }
+    if (service && service !== "TOUT") {
+      conditions.push(where('service', '==', service.toLowerCase()));
+    }
+    
+    if (conditions.length > 0) {
+      q = query(programsRef, ...conditions);
     } else {
-      // filtrer par id_agence
-      console.log('Fetching programs for agency ID:', agencyId);
-      q = query(programsRef, where('id_agence', '==', agencyId));
+      q = query(programsRef);
     }
     const querySnapshot = await getDocs(q);
     
     let robots = querySnapshot.docs.map(doc => {
       const data = doc.data();
       return {
-        id_programme: data.id_programme,
-        nom_programme: data.nom_programme,
+        id_robot: data.id_robot,
+        nom_robot: data.nom_robot,
         id_agence: data.id_agence,
+        service: data.service,
         type_gain: data.type_gain,
         bareme: data.bareme
       };
@@ -174,9 +182,9 @@ export async function fetchAllRobotsByAgency(agencyId: string): Promise<Program[
     
     // Trier les robots : "TOUT" en premier, puis par nom
     robots.sort((a, b) => {
-      if (a.nom_programme === "TOUT") return -1;
-      if (b.nom_programme === "TOUT") return 1;
-      return a.nom_programme.localeCompare(b.nom_programme);
+      if (a.nom_robot === "TOUT") return -1;
+      if (b.nom_robot === "TOUT") return 1;
+      return a.nom_robot.localeCompare(b.nom_robot);
     });
 
     function removeDuplicates(robots: Program[]) {
@@ -184,8 +192,8 @@ export async function fetchAllRobotsByAgency(agencyId: string): Promise<Program[
       const seenProgramNames = new Set();
 
       for (const robot of robots) {
-        if (!seenProgramNames.has(robot.nom_programme)) {
-          seenProgramNames.add(robot.nom_programme);
+        if (!seenProgramNames.has(robot.nom_robot)) {
+          seenProgramNames.add(robot.nom_robot);
           uniqueRobots.push(robot);
         }
       }

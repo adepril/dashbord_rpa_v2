@@ -1,6 +1,6 @@
 'use client'
 
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, ReferenceLine} from "recharts"
 import React from 'react';
 import { formatDuration } from '../lib/utils'
 
@@ -94,9 +94,9 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
 
   return (
     <>
-    <div className="w-full flex justify-center gap-4 items-center ">
+    <div className="w-full flex justify- gap-4 items-center ">
 
-    <div className="w-1/2 pt-4 pb-12 bg-white rounded-lg shadow ml-2"> 
+    <div className="w-2/3 pt-4 pb-12 bg-white rounded-lg shadow ml-2"> 
     
         <div className="h-[300px] relative">
         <div className="ml-[10%] text-left text-xl font-bold mb-4">Gain de temps</div>
@@ -122,6 +122,10 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
                 }} />}
                 height={60}
                 tickFormatter={(t) => `${t}`} />
+              <ReferenceLine 
+                y={0} 
+                stroke="#888888" 
+                strokeWidth={1} />
               <YAxis
                 stroke="#888888"
                 tickLine={false}
@@ -184,86 +188,15 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
         </div> 
       </div>
 
-      <div className="w-1/2 p-4 pb-12 bg-white rounded-lg shadow ml-2">
-          <div className="h-[300px] relative">
-          <div className="ml-[10%] text-left text-xl font-bold mb-4">Sécurisation des processus</div>
-          <div className="absolute top-2 right-2 text-black px-2 py-1 ">Nombre d'execution</div>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={chartData2}
-                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-              >
-                <XAxis
-                  dataKey="date"
-                  stroke="#888888"
-                  tickLine={false}
-                  axisLine={false}
-                  tick={<CustomizedAxisTick x={0} y={0} payload={{
-                    value: ""
-                  }} />}
-                  height={60}
-                  tickFormatter={(t) => `${t}`} />
-                <YAxis
-                  stroke="#888888"
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(value: number) => `${value}`}
-                  fontSize={10} />
-                <Tooltip
-                  labelFormatter={(label: string) => label}
-                  formatter={(value: any, name: string, props: any) => {
-                    const valeur = props.payload.valeur;
-                    if (valeur === undefined || valeur === 0) {
-                      return [''];
-                    }
-                    return valeur > 1 ? [`Gain : ${valeur} éxecutions`] : [`Gain : ${valeur} éxecution`];
-                  } } />
-                <Bar
-                  dataKey="valeur"
-                  fill="#EA580C"
-                  radius={[4, 4, 0, 0]}
-                  name="Quantité"
-                  label={{
-                    position: 'top',
-                    fill: '#000',
-                    fontSize: 12,
-                    formatter: (value: number) => value === 0 ? '' : `${value}`
-                  }}
-                  activeBar={{ fill: robotType?.toLowerCase() === "temps" ? '#3333db' : '#c24a0a' }}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-            
+     <div className="w-1/3 p-4 pb-12 bg-white rounded-lg shadow ml-2">
+          <div className="h-[400px] relative">
+  
+            <div className="flex justify-x items-center text-gray-500">
+             <span className="text-red-800 text-xl font-bold ml-10">Le saviez-vous ?</span>
+            </div>
+
           </div>
-        <div className="flex justify-around mt-10">
-            <div className="w-1/4 mr-5 ml-5 ">
-            <div className='bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2'>
-                <div className="ml-4 text-xs ">Total du mois</div>
-                <div className="ml-4 text-xl ">
-                {data2['NB UNITES DEPUIS DEBUT DU MOIS'] ? ( data2['NB UNITES DEPUIS DEBUT DU MOIS'] ) : ('N/A') }
-                </div>
-              </div>
-            </div>
-            <div className=" w-1/4 mr-5 ml-5">
-            <div className='bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2'>
-                <div className="ml-4 text-xs ">M-1</div>
-                <div className="ml-4 text-xl ">{data2['NB UNITES MOIS N-1'] ? ( data2['NB UNITES MOIS N-1'] ) : ('N/A') }</div>
-              </div>
-            </div>
-            <div className=" w-1/4 mr-5 ml-5">
-            <div className='bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2'>
-                <div className="ml-4 text-xs ">M-2</div>
-                <div className="ml-4 text-xl">{data2['NB UNITES MOIS N-2'] ? ( data2['NB UNITES MOIS N-2'] ) : ('N/A') }</div>
-              </div>
-            </div>
-            <div className="w-1/4 mr-5 ml-5">
-            <div className='bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2'>
-                <div className="ml-4 text-xs ">M-3</div>
-                <div className="ml-4 text-xl ">{data2['NB UNITES MOIS N-3'] ? ( data2['NB UNITES MOIS N-3'] ) : ('N/A') }</div>
-              </div>
-            </div>
-        </div> 
-      </div>
+      </div> 
           
     </div>
     </>

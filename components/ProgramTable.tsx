@@ -44,7 +44,7 @@ interface ProgramTableProps {
 // }
 
 export default function ProgramTable({robot, data, typeGain, useChart4All, user}: ProgramTableProps): JSX.Element {
-  console.log('ProgramTable with robot:', robot, 'and data:', data, ' and useChart4All:', useChart4All, ' and user:', user);
+ //console.log('ProgramTable with robot:', robot, 'and data:', data, ' and useChart4All:', useChart4All, ' and user:', user);
   const [showForm, setShowForm] = useState(false);
   const [popupInfo, setPopupInfo] = useState<{ row: any; position: { x: number; y: number } | null }>({ row: null, position: null });
   const [statuts, setStatuts] = useState<{ [key: string]: string }>({});

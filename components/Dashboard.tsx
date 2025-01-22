@@ -23,9 +23,10 @@ import {
 
 
 interface Program {
-  id_programme: string;
-  nom_programme: string;
+  id_robot: string;
+  nom_robot: string;
   id_agence: string;
+  service: string;
   type_gain: string;
   bareme: string;
 }
@@ -121,19 +122,17 @@ export default function Dashboard() {
     }
   }, [username]);
 
-  // Fetch programs when selected agency changes
+  // Fetch programs when selected agency or service changes
   useEffect(() => {
     const loadPrograms = async () => {
       if (selectedAgency) {
-        const agencyPrograms = await fetchAllRobotsByAgency(selectedAgency.idAgence);
-        setPrograms(agencyPrograms);
+        const allRobotsByAgency = await fetchAllRobotsByAgency(selectedAgency.idAgence, selectedService);
+        setPrograms(allRobotsByAgency);
         
-        if (agencyPrograms.length > 0) {
-          const defaultProgram = agencyPrograms[0];
-          setSelectedRobot(defaultProgram);
-          // Use the exact program name for searching in Firebase
-          //console.log('(loadPrograms) defaultProgram.nom_programme:', defaultProgram.nom_programme);
-          setSelectedRobotData(defaultProgram);
+        if (allRobotsByAgency.length > 0) {
+          const defaultRobot = allRobotsByAgency[0];
+          setSelectedRobot(defaultRobot);
+          setSelectedRobotData(defaultRobot);
         }
       } else {
         console.log('No agency selected, clearing programs');
@@ -144,7 +143,7 @@ export default function Dashboard() {
     };
 
     loadPrograms();
-  }, [selectedAgency]);
+  }, [selectedAgency, selectedService]);
 
   // Pré-sélectionner l'agence depuis la sessionStorage au chargement
   useEffect(() => {
@@ -172,7 +171,7 @@ export default function Dashboard() {
         // console.log('@@ 1 (combo robot changed:loadProgramData) selectedRobotData :', selectedRobotData);
         
         // Si "TOUT" est sélectionné, charger les données de tous les robots
-        if (selectedRobotData.nom_programme === "TOUT") {
+        if (selectedRobotData.nom_robot === "TOUT") {
           const allRobotsEvolution = [];
           const allMergedDataType1 = [];
           const allMergedDataType2 = [];
@@ -200,7 +199,7 @@ export default function Dashboard() {
 
           for (const robot of programs) {
             // Récupère les données du robot
-            rawData = (await fetchDataReportingByRobot(robot.nom_programme, robot.bareme, robot.type_gain)).map((entry: any) => ({
+            rawData = (await fetchDataReportingByRobot(robot.nom_robot, robot.bareme, robot.type_gain)).map((entry: any) => ({
               ...entry,
               'NB UNITES DEPUIS DEBUT DU MOIS': String(entry['NB UNITES DEPUIS DEBUT DU MOIS']),
               'NB UNITES MOIS N-1': String(entry['NB UNITES MOIS N-1']),
@@ -213,10 +212,10 @@ export default function Dashboard() {
               continue;
             }
 
-            if ((robot.id_agence === selectedAgency?.idAgence || selectedAgency?.nomAgence === "TOUTES") && robot.nom_programme !== "TOUT") {
+            if ((robot.id_agence === selectedAgency?.idAgence || selectedAgency?.nomAgence === "TOUTES") && robot.nom_robot !== "TOUT") {
               // console.log('@@ 2 (lcombo robot changed:oadProgramData) selectedAgency :', selectedAgency);
               // console.log('@@ 2 (combo robot changed:loadProgramData) selectedRobotData :', selectedRobotData);
-              const currentProgram = programs.find(p => p.nom_programme === robot.nom_programme);
+              const currentProgram = programs.find(p => p.nom_robot === robot.nom_robot);
               const robotType = currentProgram?.type_gain;
               //console.log('@@ 3 (loadProgramData) currentProgram :', currentProgram);
 
@@ -250,7 +249,7 @@ export default function Dashboard() {
               
               //let oneRobotEvolution: any[] = [];
               if(selectedAgency.nomAgence !== 'TOUTES') {
-                oneRobotEvolution = await fetchEvolutionsByProgram(robot.nom_programme);
+                oneRobotEvolution = await fetchEvolutionsByProgram(robot.nom_robot);
                 //console.log('all oneRobotEvolution', oneRobotEvolution);
                 allRobotsEvolution.push(...oneRobotEvolution);
               }
@@ -291,10 +290,10 @@ export default function Dashboard() {
         } else {
           setUseChart4All(false);
           const baremeValue = selectedRobotData.bareme === '' || selectedRobotData.bareme === '0' ? '0' : selectedRobotData.bareme;
-          const data = await fetchDataReportingByRobot(selectedRobotData.nom_programme, baremeValue, selectedRobotData.type_gain);
+          const data = await fetchDataReportingByRobot(selectedRobotData.nom_robot, baremeValue, selectedRobotData.type_gain);
           setRobotData(data[0]);
 
-          const oneRobotEvolution = await fetchEvolutionsByProgram(selectedRobotData.nom_programme);
+          const oneRobotEvolution = await fetchEvolutionsByProgram(selectedRobotData.nom_robot);
           //console.log('oneRobotEvolution', oneRobotEvolution);
           setHistoriqueData(oneRobotEvolution);
         }
@@ -318,14 +317,12 @@ export default function Dashboard() {
     setRobotData2(null);
     setHistoriqueData([]);
 
-    // Après le chargement des robots, forcer la sélection de "TOUT"
     const loadPrograms = async () => {
       if (agency) {
-        const agencyPrograms = await fetchAllRobotsByAgency(agency.idAgence);
-        setPrograms(agencyPrograms);
+        const allRobotsByAgency = await fetchAllRobotsByAgency(agency.idAgence, selectedService);
+        setPrograms(allRobotsByAgency);
         
-        // Sélectionner "TOUT" si disponible
-        const toutProgram = agencyPrograms.find(p => p.nom_programme === "TOUT");
+        const toutProgram = allRobotsByAgency.find(p => p.nom_robot === "TOUT");
         if (toutProgram) {
           setSelectedRobot(toutProgram);
           setSelectedRobotData(toutProgram);
@@ -337,11 +334,11 @@ export default function Dashboard() {
   };
 
   const handleProgramChange = (programId: string) => {
-    const program = programs.find(p => p.id_programme === programId);
+    const program = programs.find(p => p.id_robot === programId);
     if (program && selectedAgency) {
       setSelectedRobot(program);
       // Use the exact program name for searching in Firebase
-      //console.log('@@@ (Dashboard.tsx) Setting program data with name:', program.nom_programme);
+      //console.log('@@@ (Dashboard.tsx) Setting program data with name:', program.nom_robot);
       setSelectedRobotData(program);
     }
   };
@@ -399,8 +396,8 @@ export default function Dashboard() {
                     <div className="flex items-center space-x-2">
                       <span>Robot:</span>
                       <ProgramSelector
-                        programs={programs}
-                        selectedProgramId={selectedRobot?.id_programme || ''}
+                        robots={programs}
+                        selectedProgramId={selectedRobot?.id_robot || ''}
                         onProgramChange={handleProgramChange}
                       />
 
@@ -427,7 +424,7 @@ export default function Dashboard() {
                   formData={{
                     Intitulé: '',
                     Description: '',
-                    Robot: selectedRobot ? selectedRobot.nom_programme : '',
+                    Robot: selectedRobot ? selectedRobot.nom_robot : '',
                     Temps_consommé: '',
                     Nb_operations_mensuelles: '',
                     Statut: '1', // Par défaut "En attente de validation"
@@ -452,7 +449,7 @@ export default function Dashboard() {
 
               <div className="grid grid-cols-4 gap-4 bg-x-300 mt-5" >
                 <div className="col-span-4 w-full">
-                  <ProgramTable robot={selectedRobot?.nom_programme || ''} data={historiqueData} typeGain={selectedRobot?.type_gain}  useChart4All={useChart4All} user={userData}/>
+                  <ProgramTable robot={selectedRobot?.nom_robot || ''} data={historiqueData} typeGain={selectedRobot?.type_gain}  useChart4All={useChart4All} user={userData}/>
                 </div>
               </div>
             </div>
