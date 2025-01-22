@@ -8,6 +8,7 @@ import ProgramTable from './ProgramTable'
 import Chart4All from './Chart4All'
 import MergedRequestForm from './MergedRequestForm'
 import AgencySelector from './AgencySelector'
+import ServiceSelector from './ServiceSelector'
 import Image from 'next/image';
 import { Button } from './ui/button';
 import { 
@@ -64,6 +65,7 @@ export default function Dashboard() {
   const userData = JSON.parse(localStorage.getItem('userData') || 'null');
   const username = userData?.userId || '';
   const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null);
+  const [selectedService, setSelectedService] = useState<string>('');
   const [programs, setPrograms] = useState<Program[]>([]);
   const [selectedRobot, setSelectedRobot] = useState<Program | null>(null);
   const [selectedRobotData, setSelectedRobotData] = useState<Program | null>(null);
@@ -362,104 +364,100 @@ export default function Dashboard() {
 
   return (
     <>
-      <div className='w-full pl-0'>
-      <div className="max-w-7xl">
-        <div className='flex items-center pl-0'>
+    <div className='w-full pl-0 pl-0 bg-x-200 '>
+      <div className="max-w-7xl pl-0">
+        <div className='flex items-center pl-0  '>
           <div className="flex-none">
               <Image src="/logo_bbl-groupe.svg" alt="Logo BBL Groupe" width={100} height={70} />
             </div>
-            <div className="flex-1"></div>
-            <div className="flex-none bg-x-300">
-            <div className="px-4">
-                <span className="text-black justify-end flex">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
-                    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user w-5 h-5 mr-2 text-gray-600">
-                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>
-                </svg> {userData?.username}</span>
-                <div className="flex space-x-8 mt-2">
-                  <div className="flex items-center space-x-2">
-                    <span>Agence:</span>
-                    <AgencySelector
-                      agencies={agencies}
-                      selectedAgencyId={selectedAgency?.idAgence || ''}
-                      onAgencyChange={handleAgencyChange}
-                    />
+            <div className="flex-1 pr-[20%]"></div>
+            <div className=" flex-none">
+              <div className=" px-4pl-0 bg-x-500 ">
+                  <span className="text-black justify-end flex">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
+                        stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user w-5 h-5 mr-2 text-gray-600">
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>
+                  </svg> {userData.userName}</span>
+                  <div className="flex space-x-8 mt-2">
+                    <div className="flex items-center space-x-2">
+                      <span>Agence:</span>
+                      <AgencySelector
+                        agencies={agencies}
+                        selectedAgencyId={selectedAgency?.idAgence || ''}
+                        onAgencyChange={handleAgencyChange}
+                      />
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <span>Service:</span>
+                      <ServiceSelector
+                        selectedService={selectedService}
+                        onServiceChange={setSelectedService}
+                      />
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <span>Robot:</span>
+                      <ProgramSelector
+                        programs={programs}
+                        selectedProgramId={selectedRobot?.id_programme || ''}
+                        onProgramChange={handleProgramChange}
+                      />
+
+                      <div className="w-[50px]"></div>    
+                      <div className="flex justify-end bg-x-100 h-[40px]">
+                        <button onClick={handleOpenForm} className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium overflow-hidden relative px-4 py-1 rounded-lg hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
+                          <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] roundedlg opacity-50 group-hover:top-[250%] duration-500 shadow-[0_0_5px_5px_rgba(0,0,0,0.3)]"></span>
+                          Nouvelle Demande
+                        </button>
+                      </div>               
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <span>Robot:</span>
-                    <ProgramSelector
-                      programs={programs}
-                      selectedProgramId={selectedRobot?.id_programme || ''}
-                      onProgramChange={handleProgramChange}
-                    />
-                    <div className="w-[50px]"></div>    
-                    <div className="flex justify-end bg-x-100 h-[40px]">
-                      <button onClick={handleOpenForm} className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium overflow-hidden relative px-4 py-1 rounded-lg hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
-                        <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] roundedlg opacity-50 group-hover:top-[250%] duration-500 shadow-[0_0_5px_5px_rgba(0,0,0,0.3)]"></span>
-                        Nouvelle Demande
-                      </button>
-                    {/*<Button 
-                      type="button" 
-                      className="bg-blue-500 hover:bg-blue-700 text-white"
-                      onClick={() => {
-                        if (selectedAgency) {
-                          sessionStorage.setItem('selectedAgencyId', selectedAgency.idAgence);
-                        }
-                        if (selectedRobot) {
-                          sessionStorage.setItem('selectedRobotId', selectedRobot.id_programme);
-                        }
-                        window.location.reload();
-                      }}
-                    > Ok
-                    </Button> */}
-                    </div>               
-                  </div>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+          {OpenFormNewOrder &&  
+                <MergedRequestForm
+                  onClose={handleCloseForm}
+                  type="new"
+                  user={userData}
+                  formData={{
+                    Intitulé: '',
+                    Description: '',
+                    Robot: selectedRobot ? selectedRobot.nom_programme : '',
+                    Temps_consommé: '',
+                    Nb_operations_mensuelles: '',
+                    Statut: '1', // Par défaut "En attente de validation"
+                    Date: new Date().toISOString(),
+                    type: 'new'
+                  }}
+                /> }
+
+        <div className="container mx-auto min-h-screen bg-x-100">
+          {selectedRobot && (
+            <div className="p-4 bg-x-200">
+              <div className="grid grid-cols-4 gap-4 bg-x-100">
+                <div className="col-span-4 pb-8">
+                {useChart4All ? (
+                        <Chart4All robotType={selectedRobot?.type_gain} data1={robotData1} data2={robotData2} />
+                      ) : ('')}
+                  {robotData && !useChart4All? (  
+                    <Chart robotType={selectedRobot?.type_gain} data={robotData} />
+                  ) : ('')}
                 </div>
-            </div>
-          </div>
-        </div>
-        </div>
-      </div>
-      
+              </div>
 
-      {OpenFormNewOrder &&  
-            <MergedRequestForm
-              onClose={handleCloseForm}
-              type="new"
-              formData={{
-                Intitulé: '',
-                Description: '',
-                Robot: selectedRobot ? selectedRobot.nom_programme : '',
-                Temps_consommé: '',
-                Nb_operations_mensuelles: '',
-                Statut: '1', // Par défaut "En attente de validation"
-                Date: new Date().toISOString(),
-                type: 'new'
-              }}
-            /> }
-
-      <div className="container mx-auto min-h-screen bg-x-100">
-        {selectedRobot && (
-          <div className="p-4 bg-x-200">
-            <div className="grid grid-cols-4 gap-4 bg-x-100">
-              <div className="col-span-4 pb-8">
-               {useChart4All ? (
-                      <Chart4All robotType={selectedRobot?.type_gain} data1={robotData1} data2={robotData2} />
-                    ) : ('')}
-                {robotData && !useChart4All? (  
-                  <Chart robotType={selectedRobot?.type_gain} data={robotData} />
-                ) : ('')}
+              <div className="grid grid-cols-4 gap-4 bg-x-300 mt-5" >
+                <div className="col-span-4 w-full">
+                  <ProgramTable robot={selectedRobot?.nom_programme || ''} data={historiqueData} typeGain={selectedRobot?.type_gain}  useChart4All={useChart4All} user={userData}/>
+                </div>
               </div>
             </div>
-
-            <div className="grid grid-cols-4 gap-4 bg-x-300 mt-5" >
-              <div className="col-span-4 w-full">
-                <ProgramTable robot={selectedRobot?.nom_programme || ''} data={historiqueData} typeGain={selectedRobot?.type_gain}  useChart4All={useChart4All} user={userData}/>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
     </>
   );
 }
