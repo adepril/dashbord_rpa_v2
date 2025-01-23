@@ -48,6 +48,7 @@ export async function fetchUserIdByUserId(userId: string): Promise<UserData | nu
 interface Agency {
   idAgence: string;
   nomAgence: string;
+  libelleAgence?: string;
 }
 
   /**
@@ -72,10 +73,11 @@ export async function fetchAgenciesByIds(agencyIds: string[]): Promise<Agency[]>
           
           if (!querySnapshot.empty) {
             const agencyData = querySnapshot.docs[0].data();
-            //console.log('Agency data found:', agencyData);
+            console.log('Agency data found:', agencyData);
             agencies.push({
               idAgence: agencyData.idAgence,
-              nomAgence: agencyData.nomAgence
+              nomAgence: agencyData.nomAgence,
+              libelleAgence: agencyData.libelleAgence
             });
           } else {
             console.log('No agency found with ID:', agencyId);
