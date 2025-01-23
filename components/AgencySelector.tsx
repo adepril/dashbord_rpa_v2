@@ -20,22 +20,25 @@ export default function AgencySelector({ agencies, selectedAgencyId, onAgencyCha
   }
 
   return (
-    <Select value={selectedAgencyId} onValueChange={onAgencyChange}>
+    <Select value={selectedAgencyId || undefined} onValueChange={onAgencyChange}>
       <SelectTrigger className="bg-white border border-gray-300 rounded-md h-9 w-[200px] text-sm">
         <SelectValue placeholder="Sélectionnez une agence">
           {agencies.find(a => a.idAgence === selectedAgencyId)?.libelleAgence || agencies.find(a => a.idAgence === selectedAgencyId)?.nomAgence}
         </SelectValue>
       </SelectTrigger>
       <SelectContent className="bg-white border border-gray-300 rounded-md w-[200px]">
-        {agencies.map((agency) => (
-          <SelectItem 
-            key={agency.idAgence} 
-            value={agency.idAgence}
-            className="text-sm hover:bg-gray-100"
-          >
-            {agency.libelleAgence || agency.nomAgence}
-          </SelectItem>
-        ))}
+        {agencies.map((agency) => {
+          const displayText = agency.libelleAgence?.trim() || agency.nomAgence;
+          return (
+            <SelectItem 
+              key={agency.idAgence}
+              value={agency.idAgence}
+              className="text-sm hover:bg-gray-100"
+            >
+              {displayText}
+            </SelectItem>
+          );
+        })}
       </SelectContent>
     </Select>
   );

@@ -7,6 +7,7 @@ interface Program {
   nom_robot: string;
   id_agence: string;
   service: string;
+  description: string;
   type_gain: string;
   bareme: string;
 }

@@ -27,6 +27,7 @@ interface Program {
   nom_robot: string;
   id_agence: string;
   service: string;
+  description: string;
   type_gain: string;
   bareme: string;
 }
@@ -44,6 +45,7 @@ interface DataEntry {
 interface Agency {
   idAgence: string;
   nomAgence: string;
+  libelleAgence?: string;
 }
 
 interface MergedRequestFormProps {
@@ -102,7 +104,10 @@ export default function Dashboard() {
           return;
         }
 
-        const userAgencies = await fetchAgenciesByIds(userData.userAgenceIds);
+        const userAgencies = (await fetchAgenciesByIds(userData.userAgenceIds)).map((agency: Agency) => ({
+          ...agency,
+          libelleAgence: agency.libelleAgence ?? ''
+        }));
         setAgencies(userAgencies);
         
         if (userAgencies.length > 0) {
@@ -125,6 +130,7 @@ export default function Dashboard() {
   // Fetch programs when selected agency or service changes
   useEffect(() => {
     const loadPrograms = async () => {
+      console.log('@@ selectedAgency:', selectedAgency);
       if (selectedAgency) {
         const allRobotsByAgency = await fetchAllRobotsByAgency(selectedAgency.idAgence, selectedService);
         setPrograms(allRobotsByAgency);
@@ -148,12 +154,12 @@ export default function Dashboard() {
   // Pré-sélectionner l'agence depuis la sessionStorage au chargement
   useEffect(() => {
     const storedAgencyId = sessionStorage.getItem('selectedAgencyId');
-    //console.log('@@ sessionStorage.getItem("selectedAgencyId"):', storedAgencyId);
+    console.log('@@ sessionStorage.getItem("selectedAgencyId"):', storedAgencyId);
     if (storedAgencyId && agencies.length > 0) {
       const agencyFromStorage = agencies.find(a => a.idAgence === storedAgencyId);
       if (agencyFromStorage) {
         setSelectedAgency(agencyFromStorage);
-        //console.log('@ selectedAgency:', selectedAgency?.nomAgence);
+        console.log('@ selectedAgency:', selectedAgency?.nomAgence);
       }
     }
   }, [agencies]);

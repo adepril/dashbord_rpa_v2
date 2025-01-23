@@ -1,6 +1,8 @@
 import { collection, getDocs, query, where } from 'firebase/firestore';
 //import { formatNumber } from '../components/Dashboard';
 import { db } from '../lib/firebase';
+import { describe } from 'node:test';
+import { Description } from '@radix-ui/react-dialog';
 
 // Variable globale pour stocker tous les programmes
 export let allRobotsByAgency: Program[] = [];
@@ -67,7 +69,7 @@ export async function fetchAgenciesByIds(agencyIds: string[]): Promise<Agency[]>
 
     for (const agencyId of agencyIds) {
       if (agencyId!="-") {
-          //console.log('Fetching agency with ID:', agencyId);
+          console.log('Fetching agency with ID:', agencyId);
           const q = query(agenciesRef, where('idAgence', '==', agencyId));
           const querySnapshot = await getDocs(q);
           
@@ -98,6 +100,7 @@ interface Program {
   nom_robot: string;
   id_agence: string;
   service: string;
+  description: string;
   type_gain: string;
   bareme: string;
 }
@@ -111,7 +114,7 @@ interface Program {
 export async function fetchProgramsByAgencyId(agencyId: string): Promise<Program[]> {
   console.log('fetchProgramsByAgencyId for agency ID:', agencyId);
   try {
-    const programsRef = collection(db, 'programmes');
+    const programsRef = collection(db, 'robots');
     let q;
     if (agencyId === "1") {
       // l'agence est "ALL", on récupérer tous les programmes
@@ -133,6 +136,7 @@ export async function fetchProgramsByAgencyId(agencyId: string): Promise<Program
         id_agence: data.id_agence,
         service: data.service,
         type_gain: data.type_gain,
+        description: data.description,
         bareme: data.bareme
       };
     });
@@ -178,6 +182,7 @@ export async function fetchAllRobotsByAgency(agencyId: string, service?: string)
         id_agence: data.id_agence,
         service: data.service,
         type_gain: data.type_gain,
+        description: data.description,
         bareme: data.bareme
       };
     });

@@ -1,7 +1,9 @@
 'use client'
 
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, ReferenceLine} from "recharts"
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import { formatDuration } from '../lib/utils'
 
 interface ChartProps {
@@ -37,6 +39,69 @@ const CustomizedAxisTick: React.FC<CustomizedAxisTickProps> = (props) => {
 }
 
 export default function Chart({ robotType,data1,data2 }: ChartProps) {
+  interface Robot {
+    id_robot: string;
+    nom_robot: string;
+    service: string;
+    id_agence: string;
+    type_gain: string;
+    description: string;
+    bareme: string;
+  }
+
+  const [robots, setRobots] = useState<Robot[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchRobots = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'robots'));
+        const robotsData = querySnapshot.docs
+          .map(doc => ({
+            id_robot: doc.id,
+            nom_robot: doc.data().nom_robot,
+            type_gain: doc.data().type_gain,
+            description: doc.data().description,
+            id_agence: doc.data().id_agence,
+            service: doc.data().service,
+            bareme: doc.data().bareme
+          } as Robot))
+          .filter(robot => robot.type_gain === 'autre');
+          
+        if (robotsData.length === 0) {
+          setError('Aucun robot trouvé avec type_gain = "autre"');
+        } else {
+          setRobots(robotsData);
+          setError(null);
+        }
+      } catch (err) {
+        setError('Erreur lors du chargement des données');
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchRobots();
+  }, []);
+
+  useEffect(() => {
+    if (robots.length > 0 && !isPaused) {
+      const interval = setInterval(() => {
+        setCurrentIndex(prevIndex => (prevIndex + 1) % robots.length);
+      }, 30000);
+
+      return () => clearInterval(interval);
+    }
+  }, [robots, isPaused]);
+
+  const handlePauseResume = () => {
+    setIsPaused(prev => !prev);
+  };
+
   //console.log("Chart4All.tsx",data1);
   if (!data1) {
     return (
@@ -68,29 +133,29 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
   }); // Chart 1
 
   // Chart 2
-  const chartData2 = Array.from({ length: 31 }, (_, i) => {
-    const day = (i + 1).toString().padStart(2, '0');
-    const dateKey = `${day}/${month.toString().padStart(2, '0')}/${year}`;
-    let value = 0;
-    //console.log("Chart.tsx",data[dateKey]);
-    if (data2 && data2[dateKey]) {
-      value = Number(data2[dateKey]);
-    } else {
-      //console.log('data[dateKey] is undefined');
-    }
-    return {
-      date: dateKey,
-      valeur: value
-    };
-  }); // Chart 2
+  // const chartData2 = Array.from({ length: 31 }, (_, i) => {
+  //   const day = (i + 1).toString().padStart(2, '0');
+  //   const dateKey = `${day}/${month.toString().padStart(2, '0')}/${year}`;
+  //   let value = 0;
+  //   //console.log("Chart.tsx",data[dateKey]);
+  //   if (data2 && data2[dateKey]) {
+  //     value = Number(data2[dateKey]);
+  //   } else {
+  //     //console.log('data[dateKey] is undefined');
+  //   }
+  //   return {
+  //     date: dateKey,
+  //     valeur: value
+  //   };
+  // }); // Chart 2
 
-  if (chartData1.every(item => item.valeur === 0)) {
-    return (
-      <div className="flex justify-center items-center h-[400px] text-gray-500">
-        L'histogramme ne peut être généré car aucune donnée disponible pour ce programme
-      </div>
-    );
-  }
+  // if (chartData1.every(item => item.valeur === 0)) {
+  //   return (
+  //     <div className="flex justify-center items-center h-[400px] text-gray-500">
+  //       L'histogramme ne peut être généré car aucune donnée disponible pour ce programme
+  //     </div>
+  //   );
+  // }
 
   return (
     <>
@@ -188,14 +253,52 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
         </div> 
       </div>
 
-     <div className="w-1/3 p-4 pb-12 bg-white rounded-lg shadow ml-2">
+      <div className="w-1/3 p-4 pb-12 bg-white rounded-lg shadow ml-2">
           <div className="h-[400px] relative">
   
-            <div className="flex justify-x items-center text-gray-500">
-             <span className="text-red-800 text-xl font-bold ml-10">Le saviez-vous ?</span>
+            <div className="flex flex-col justify-center items-center text-gray-500">
+              <span className="text-red-800 text-xl font-bold ml-10">Le saviez-vous ?</span>
+            </div>
+            <div className="h-[50px] bg-x-200"></div>
+              {isLoading ? (
+                <div className="mt-4 text-gray-500">Chargement en cours...</div>
+              ) : error ? (
+                <div className="mt-4 text-red-500">{error}</div>
+              ) : robots.length > 0 ? (
+                <>
+                  <div className="mt-4 px-4 pt-10" >
+                    Robot <span className="font-bold">"{robots[currentIndex]?.nom_robot.split('_')[1]}"</span> :
+                  </div>
+                  <div className="mt-4 px-4 r">
+                    {robots[currentIndex]?.description}
+                  </div>
+                  <div className="h-[80px] bg-x-200"></div>
+                  <div className="absolute bottom-1 left-0 right-0 flex gap-2 items-center justify-center">
+                    <button
+                      onClick={() => setCurrentIndex(prev => prev > 0 ? prev - 1 : robots.length - 1)}
+                      className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                      ←
+                    </button>
+                    <button
+                      onClick={handlePauseResume} 
+                      className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                      {isPaused ? '▶' : '||'}
+                    </button>
+                    <button
+                      onClick={() => setCurrentIndex(prev => (prev + 1) % robots.length)}
+                      className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                      →
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="mt-4 text-gray-500">Aucune information disponible</div>
+              )}
             </div>
 
-          </div>
       </div> 
           
     </div>
