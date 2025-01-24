@@ -6,18 +6,26 @@ declare global {
   }
 }
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { db } from '../lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import Image from 'next/image'; 
-import { fetchRandomQuote, Quote } from '../utils/dataFetcher'; 
+import { fetchRandomQuote, Quote } from '../utils/dataFetcher';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import { useToast } from "../hooks/use-toast";
 
 export default function LoginForm() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const [quote, setQuote] = useState<Quote | null>(null); // État pour stocker la citation
+    const [quote, setQuote] = useState<Quote | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [email, setEmail] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const { toast } = useToast();
     const router = useRouter();
 
     useEffect(() => {
@@ -73,8 +81,6 @@ export default function LoginForm() {
             </div>
         </div>
 
-
-
         <div className="text-center h-10 ">
             <span className="text-black "></span> 
         </div>  
@@ -126,6 +132,15 @@ export default function LoginForm() {
                         </div>
                     </div>
 
+                    <div className="text-right mt-2">
+                        <button
+                            type="button"
+                            onClick={() => setIsModalOpen(true)}
+                            className="text-indigo-600 hover:text-indigo-500 text-sm"
+                        >
+                            Mot de passe oublié ?
+                        </button>
+                    </div>
 
                     <div>
                         <button
@@ -143,6 +158,103 @@ export default function LoginForm() {
             <span className="text-black "></span> 
         </div>  
  
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Renvoyer le mot de passe</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                    <div>
+                        <Input
+                            type="email"
+                            placeholder="Entrez votre email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
+                    </div>
+                    <div className="flex justify-end space-x-2">
+                        <Button 
+                            variant="outline" 
+                            onClick={() => setIsModalOpen(false)}
+                            disabled={isLoading}
+                        >
+                            Fermer
+                        </Button>
+                        <Button 
+                            onClick={async () => {
+                                if (!email) {
+                                    toast({
+                                        title: "Erreur",
+                                        description: "Veuillez saisir votre email",
+                                        variant: "destructive",
+                                        id: ""
+                                    });
+                                    return;
+                                }
+
+                                setIsLoading(true);
+                                try {
+                                    const usersRef = collection(db, 'utilisateurs');
+                                    const q = query(usersRef, where('email', '==', email));
+                                    const querySnapshot = await getDocs(q);
+
+                                    if (querySnapshot.empty) {
+                                        toast({
+                                            title: "Erreur",
+                                            description: "Aucun compte trouvé avec cet email",
+                                            variant: "destructive",
+                                            id: ""
+                                        });
+                                        setIsLoading(false);
+                                        return;
+                                    }
+
+                                    const userData = querySnapshot.docs[0].data();
+                                    
+                                    // Envoyer l'email avec le mot de passe
+                                    const response = await fetch('/api/password-reset', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                        },
+                                        body: JSON.stringify({
+                                            email: email,
+                                            login: userData.userName,
+                                            password: userData.password
+                                        }),
+                                    });
+
+                                    if (!response.ok) {
+                                        throw new Error('Erreur lors de l\'envoi de l\'email');
+                                    }
+
+                                    toast({
+                                        title: "Succès",
+                                        description: "Un email contenant votre mot de passe a été envoyé",
+                                        id: ""
+                                    });
+                                    setIsModalOpen(false);
+                                } catch (error) {
+                                    console.error('Erreur:', error);
+                                    toast({
+                                        title: "Erreur",
+                                        description: "Une erreur est survenue lors de la réinitialisation",
+                                        variant: "destructive",
+                                        id: ""
+                                    });
+                                } finally {
+                                    setIsLoading(false);
+                                }
+                            }}
+                            disabled={isLoading}
+                        >
+                            {isLoading ? "Envoi..." : "Envoyer"}
+                        </Button>
+                    </div>
+                </div>
+            </DialogContent>
+        </Dialog>
+
         {quote && (
             <div className="text-center w-full flex justify-center">
                 <div className="text-black text-sm bg-x-100 inline-block p-4 rounded-lg">
