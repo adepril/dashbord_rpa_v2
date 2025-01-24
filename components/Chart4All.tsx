@@ -1,10 +1,11 @@
 'use client'
 
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, ReferenceLine} from "recharts"
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { formatDuration } from '../lib/utils'
+import { fetchDataReportingByRobot } from '../utils/dataFetcher'
 
 interface ChartProps {
   robotType: string
@@ -47,6 +48,13 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
     type_gain: string;
     description: string;
     bareme: string;
+    currentMonth?: number;
+    previousMonth?: number;
+  }
+
+  interface ReportingData {
+    'NB UNITES DEPUIS DEBUT DU MOIS': number;
+    'NB UNITES MOIS N-1': number;
   }
 
   const [robots, setRobots] = useState<Robot[]>([]);
@@ -59,27 +67,46 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
     const fetchRobots = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, 'robots'));
-        const robotsData = querySnapshot.docs
-          .map(doc => ({
+        const robotsData = await Promise.all(querySnapshot.docs.map(async doc => {
+          const robotData = doc.data();
+          const robot = {
             id_robot: doc.id,
-            nom_robot: doc.data().nom_robot,
-            type_gain: doc.data().type_gain,
-            description: doc.data().description,
-            id_agence: doc.data().id_agence,
-            service: doc.data().service,
-            bareme: doc.data().bareme
-          } as Robot))
-          .filter(robot => robot.type_gain === 'autre');
+            nom_robot: robotData.nom_robot,
+            type_gain: robotData.type_gain,
+            description: robotData.description,
+            id_agence: robotData.id_agence,
+            service: robotData.service,
+            bareme: robotData.bareme
+          } as Robot;
+          
+          try {
+            const reportingResponse = await fetchDataReportingByRobot(
+              robotData.nom_robot,
+              robotData.bareme,
+              robotData.type_gain
+            );
+            if (reportingResponse.length > 0) {
+              const reportingData = reportingResponse[0];
+              robot.currentMonth = reportingData['NB UNITES DEPUIS DEBUT DU MOIS'];
+              robot.previousMonth = reportingData['NB UNITES MOIS N-1'];
+            }
+          } catch (error) {
+            console.error(`Erreur lors de la récupération des données pour le robot ${robotData.nom_robot}:`, error);
+          }
+          
+          return robot;
+        })).then(robots => robots.filter(robot => robot.type_gain === 'autre'));
           
         if (robotsData.length === 0) {
           setError('Aucun robot trouvé avec type_gain = "autre"');
         } else {
           setRobots(robotsData);
+          console.log('Robots:', JSON.stringify(robotsData, null, 2));
           setError(null);
         }
       } catch (err) {
         setError('Erreur lors du chargement des données');
-        console.error(err);
+        console.log(err);
       } finally {
         setIsLoading(false);
       }
@@ -102,11 +129,11 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
     setIsPaused(prev => !prev);
   };
 
-  //console.log("Chart4All.tsx",data1);
-  if (!data1) {
+  //console.log("Chart4All.tsx - data1:", JSON.stringify(data1, null, 2));
+  if (!data1 || !data1['NB UNITES DEPUIS DEBUT DU MOIS']) {
     return (
       <div className="flex justify-center items-center h-[400px] text-gray-500">
-        L'histogramme ne peut être généré car aucune donnée disponible pour ce programme
+        Aucune donnée de reporting disponible pour ce programme
       </div>
     );
   }
@@ -120,11 +147,8 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
     const day = (i + 1).toString().padStart(2, '0');
     const dateKey = `${day}/${month.toString().padStart(2, '0')}/${year}`;
     let value = 0;
-    //console.log("Chart.tsx",data[dateKey]);
     if (data1 && data1[dateKey]) {
       value = Number(data1[dateKey]);
-    } else {
-      //console.log('data[dateKey] is undefined');
     }
     return {
       date: dateKey,
@@ -132,30 +156,13 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
     };
   }); // Chart 1
 
-  // Chart 2
-  // const chartData2 = Array.from({ length: 31 }, (_, i) => {
-  //   const day = (i + 1).toString().padStart(2, '0');
-  //   const dateKey = `${day}/${month.toString().padStart(2, '0')}/${year}`;
-  //   let value = 0;
-  //   //console.log("Chart.tsx",data[dateKey]);
-  //   if (data2 && data2[dateKey]) {
-  //     value = Number(data2[dateKey]);
-  //   } else {
-  //     //console.log('data[dateKey] is undefined');
-  //   }
-  //   return {
-  //     date: dateKey,
-  //     valeur: value
-  //   };
-  // }); // Chart 2
-
-  // if (chartData1.every(item => item.valeur === 0)) {
-  //   return (
-  //     <div className="flex justify-center items-center h-[400px] text-gray-500">
-  //       L'histogramme ne peut être généré car aucune donnée disponible pour ce programme
-  //     </div>
-  //   );
-  // }
+  if (chartData1.every(item => item.valeur === 0)) {
+    return (
+      <div className="flex justify-center items-center h-[400px] text-gray-500">
+        L'histogramme ne peut être généré car aucune donnée disponible pour ce programme
+      </div>
+    );
+  }
 
   return (
     <>
@@ -165,7 +172,6 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
     
         <div className="h-[300px] relative">
         <div className="ml-[10%] text-left text-xl font-bold mb-4">Gain de temps</div>
-          {/* <div className="absolute top-2 right-2 text-black px-2 py-1 ">Échelle de temps en heures:minutes</div> */}
 
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
@@ -228,36 +234,36 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
               <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
                 <div className="ml-4 text-xs ">Total du mois</div>
                 <div className="ml-4 text-xl " title={data1['NB UNITES DEPUIS DEBUT DU MOIS'] ? data1['NB UNITES DEPUIS DEBUT DU MOIS'] +' minutes' : 'N/A'}>
-                {data1['NB UNITES DEPUIS DEBUT DU MOIS'] ? ( formatDuration(data1['NB UNITES DEPUIS DEBUT DU MOIS'])) : ('N/A') }
+                {data1 && data1['NB UNITES DEPUIS DEBUT DU MOIS'] !== undefined ? formatDuration(data1['NB UNITES DEPUIS DEBUT DU MOIS']) : '0'}
                 </div>
               </div>
             </div>
             <div className=" w-1/4 mr-5 ml-5">
             <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
                 <div className="ml-4 text-xs ">M-1</div>
-                <div className="ml-4 text-xl" title={data1['NB UNITES MOIS N-1'] ? data1['NB UNITES MOIS N-1'] +' minutes' : 'N/A'}>{data1['NB UNITES MOIS N-1'] ? ( formatDuration(data1['NB UNITES MOIS N-1'])) : ('N/A') }</div>
+                <div className="ml-4 text-xl" title={data1['NB UNITES MOIS N-1'] ? data1['NB UNITES MOIS N-1'] +' minutes' : 'N/A'}>{data1 && data1['NB UNITES MOIS N-1'] !== undefined ? formatDuration(data1['NB UNITES MOIS N-1']) : '0'}</div>
               </div>
             </div>
             <div className=" w-1/4 mr-5 ml-5">
               <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
                 <div className="ml-4 text-xs">M-2</div>
-                <div className="ml-4 text-xl" title={data1['NB UNITES MOIS N-2'] ? data1['NB UNITES MOIS N-2'] +' minutes' : 'N/A'}>{data1['NB UNITES MOIS N-2'] ? ( formatDuration(data1['NB UNITES MOIS N-2'])) : ('N/A') }</div>
+                <div className="ml-4 text-xl" title={data1['NB UNITES MOIS N-2'] ? data1['NB UNITES MOIS N-2'] +' minutes' : 'N/A'}>{data1 && data1['NB UNITES MOIS N-2'] !== undefined ? formatDuration(data1['NB UNITES MOIS N-2']) : '0'}</div>
               </div>
             </div>
             <div className="w-1/4 mr-5 ml-5">
             <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
                 <div className="ml-4 text-xs ">M-3</div>
-                <div className="ml-4 text-xl" title={data1['NB UNITES MOIS N-3'] ? data1['NB UNITES MOIS N-3'] +' minutes' : 'N/A'}>{data1['NB UNITES MOIS N-3'] ? ( formatDuration(data1['NB UNITES MOIS N-3'])) : ('N/A') }</div>
+                <div className="ml-4 text-xl" title={data1['NB UNITES MOIS N-3'] ? data1['NB UNITES MOIS N-3'] +' minutes' : 'N/A'}>{data1 && data1['NB UNITES MOIS N-3'] !== undefined ? formatDuration(data1['NB UNITES MOIS N-3']) : '0'}</div>
               </div>
             </div>
         </div> 
       </div>
 
       <div className="w-1/3 p-4 pb-12 bg-white rounded-lg shadow ml-2">
-          <div className="h-[400px] relative">
+          <div className="h-[380px] relative">
   
-            <div className="flex flex-col justify-center items-center text-gray-500">
-              <span className="text-red-800 text-xl font-bold ml-10">Le saviez-vous ?</span>
+            <div className="flex flex-col justify-center items-center mt-5 bg-x-100">
+              <span className="text-red-700 text-3xl font-bold">Le saviez-vous ?</span>
             </div>
             <div className="h-[50px] bg-x-200"></div>
               {isLoading ? (
@@ -272,23 +278,41 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
                   <div className="mt-4 px-4 r">
                     {robots[currentIndex]?.description}
                   </div>
-                  <div className="h-[80px] bg-x-200"></div>
+                  <div className="h-[10px] bg-x-200"></div>
+                  <div className="mt-4 px-4">
+                    <table className="w">
+                      <tbody>
+                        <tr>
+                          <td>Nombre d'exécution du mois :</td>
+                          <td>{robots[currentIndex]?.currentMonth !== undefined ? (robots[currentIndex].currentMonth!) : 'N/A'}</td>
+                        </tr>
+                        <tr>
+                          <td>Nb d'exécution {(() => {
+                            const mois = new Date(new Date().setMonth(new Date().getMonth() - 1)).toLocaleString('fr-FR', { month: 'long' });
+                            return ['avril', 'août', 'octobre'].includes(mois) ? "d'" + mois : 'de ' + mois
+                          })()} :</td>
+                          <td>{robots[currentIndex]?.previousMonth !== undefined ? (robots[currentIndex].previousMonth!) : 'N/A'}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
                   <div className="absolute bottom-1 left-0 right-0 flex gap-2 items-center justify-center">
                     <button
                       onClick={() => setCurrentIndex(prev => prev > 0 ? prev - 1 : robots.length - 1)}
-                      className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                      className="px-2 pb-[2px] bg-red-800 hover:bg-red-700 text-white rounded "
                     >
                       ←
                     </button>
                     <button
                       onClick={handlePauseResume} 
-                      className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                      className="px-3 py-0 pb-[2px] bg-red-800 hover:bg-red-700 text-white rounded"
                     >
                       {isPaused ? '▶' : '||'}
                     </button>
                     <button
                       onClick={() => setCurrentIndex(prev => (prev + 1) % robots.length)}
-                      className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                      className="px-2 pb-[2px] bg-red-800 hover:bg-red-700 text-white rounded"
                     >
                       →
                     </button>

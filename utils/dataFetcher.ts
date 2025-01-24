@@ -265,10 +265,14 @@ export async function fetchDataReportingByRobot(robotName: string, bareme: strin
           AGENCE: docData.AGENCE || 'N/A',
           'NOM PROGRAMME': docData['NOM PROGRAMME'] || 'N/A',
           
-          'NB UNITES DEPUIS DEBUT DU MOIS': bareme === '0' || isNaN(Number(docData['NB UNITES DEPUIS DEBUT DU MOIS'])) ? docData['NB UNITES DEPUIS DEBUT DU MOIS'] : (Number(docData['NB UNITES DEPUIS DEBUT DU MOIS']) * Number(bareme)) || '0',
-          'NB UNITES MOIS N-1': bareme === '0' || isNaN(Number(docData['NB UNITES MOIS N-1'])) ? docData['NB UNITES MOIS N-1'] : (Number(docData['NB UNITES MOIS N-1']) * Number(bareme)) || '0',
-          'NB UNITES MOIS N-2': bareme === '0' || isNaN(Number(docData['NB UNITES MOIS N-2'])) ? docData['NB UNITES MOIS N-2'] : (Number(docData['NB UNITES MOIS N-2']) * Number(bareme)) || '0',
-          'NB UNITES MOIS N-3': bareme === '0' || isNaN(Number(docData['NB UNITES MOIS N-3'])) ? docData['NB UNITES MOIS N-3'] : (Number(docData['NB UNITES MOIS N-3'].replace(',', '.')) * Number(bareme)) || '0',
+          'NB UNITES DEPUIS DEBUT DU MOIS': docData['NB UNITES DEPUIS DEBUT DU MOIS'] && !isNaN(Number(docData['NB UNITES DEPUIS DEBUT DU MOIS'])) ? 
+            (bareme === '0' ? Number(docData['NB UNITES DEPUIS DEBUT DU MOIS']) : Number(docData['NB UNITES DEPUIS DEBUT DU MOIS']) * Number(bareme)) : 0,
+          'NB UNITES MOIS N-1': docData['NB UNITES MOIS N-1'] && !isNaN(Number(docData['NB UNITES MOIS N-1'])) ? 
+            (bareme === '0' ? Number(docData['NB UNITES MOIS N-1']) : Number(docData['NB UNITES MOIS N-1']) * Number(bareme)) : 0,
+          'NB UNITES MOIS N-2': docData['NB UNITES MOIS N-2'] && !isNaN(Number(docData['NB UNITES MOIS N-2'])) ? 
+            (bareme === '0' ? Number(docData['NB UNITES MOIS N-2']) : Number(docData['NB UNITES MOIS N-2']) * Number(bareme)) : 0,
+          'NB UNITES MOIS N-3': docData['NB UNITES MOIS N-3'] && !isNaN(Number(docData['NB UNITES MOIS N-3'])) ? 
+            (bareme === '0' ? Number(docData['NB UNITES MOIS N-3']) : Number(docData['NB UNITES MOIS N-3']) * Number(bareme)) : 0,
         };
       })
       .filter(item => {
