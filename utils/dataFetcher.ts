@@ -239,6 +239,9 @@ export async function fetchDataReportingByRobot(robotName: string, bareme: strin
     const documents = querySnapshot.docs.map(doc => doc.data());
     //console.log('All documents:', JSON.stringify(documents, null, 2));
 
+    // Afficher les données brutes avant filtrage
+    //console.log('(fetchDataReportingByRobot) Raw data before filtering:', querySnapshot.docs.map(doc => doc.data()));
+
     const data = querySnapshot.docs
       .map(doc => {
         const docData = doc.data();
@@ -253,10 +256,10 @@ export async function fetchDataReportingByRobot(robotName: string, bareme: strin
           const day = i.toString().padStart(2, '0');
           const dateKey = `${day}/${month.toString().padStart(2, '0')}/${year}`;
           dateData[dateKey] = '';
-          dateData[dateKey] = '';
           if (docData[dateKey] && docData[dateKey] !== '') {
-            //console.log('dateKey:', dateKey, 'docData[dateKey]:', docData[dateKey], ' Robot: ', docData['AGENCE'] +"_"+docData['NOM PROGRAMME']);
-            dateData[dateKey] = bareme !== '0' && (Number(docData[dateKey])) ? (Number(docData[dateKey]) * Number(bareme)) : docData[dateKey].replace(',', '.');
+            dateData[dateKey] = bareme !== '0' && (Number(docData[dateKey])) ? 
+              (Number(docData[dateKey]) * Number(bareme)).toString() : 
+              docData[dateKey].replace(',', '.');
           }
         }
 
@@ -280,7 +283,7 @@ export async function fetchDataReportingByRobot(robotName: string, bareme: strin
         return item['AGENCE'] +"_"+item['NOM PROGRAMME'] === robotName;
       });
 
-    //console.log('return  data :', data);
+    console.log('(fetchDataReportingByRobot)  data :', data);
     return data;
   } catch (error) {
     console.log('Error fetching data:', error);

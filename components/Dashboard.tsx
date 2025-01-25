@@ -6,6 +6,7 @@ import ProgramSelector from './ProgramSelector'
 import Chart from './Chart'
 import ProgramTable from './ProgramTable'
 import Chart4All from './Chart4All'
+import Chart4Service from './Chart4Service'
 import MergedRequestForm from './MergedRequestForm'
 import AgencySelector from './AgencySelector'
 import ServiceSelector from './ServiceSelector'
@@ -130,18 +131,36 @@ export default function Dashboard() {
   // Fetch programs when selected agency or service changes
   useEffect(() => {
     const loadPrograms = async () => {
-      console.log('@@ selectedAgency:', selectedAgency);
       if (selectedAgency) {
         const allRobotsByAgency = await fetchAllRobotsByAgency(selectedAgency.idAgence, selectedService);
-        setPrograms(allRobotsByAgency);
         
-        if (allRobotsByAgency.length > 0) {
-          const defaultRobot = allRobotsByAgency[0];
-          setSelectedRobot(defaultRobot);
-          setSelectedRobotData(defaultRobot);
-        }
+        // Ajouter "TOUT" à la liste des robots
+        const toutRobot = {
+          id_robot: 'TOUT',
+          nom_robot: 'TOUT',
+          service: selectedService,
+          id_agence: selectedAgency.idAgence,
+          type_gain: allRobotsByAgency.length > 0 ? allRobotsByAgency[0].type_gain : 'temps',
+          description: '',
+          bareme: ''
+        };
+        
+        const robotsWithTout = [toutRobot, ...allRobotsByAgency];
+        setPrograms(robotsWithTout);
+        
+        // Réinitialiser les données du graphique
+        setRobotData(null);
+        setRobotData1(null);
+        setRobotData2(null);
+        setHistoriqueData([]);
+        
+        // Sélectionner automatiquement "TOUT"
+        setSelectedRobot(toutRobot);
+        setSelectedRobotData(toutRobot);
+        
+        // Forcer un re-render complet
+        setUseChart4All(prev => !prev);
       } else {
-        console.log('No agency selected, clearing programs');
         setPrograms([]);
         setSelectedRobot(null);
         setSelectedRobotData(null);
@@ -154,7 +173,7 @@ export default function Dashboard() {
   // Pré-sélectionner l'agence depuis la sessionStorage au chargement
   useEffect(() => {
     const storedAgencyId = sessionStorage.getItem('selectedAgencyId');
-    console.log('@@ sessionStorage.getItem("selectedAgencyId"):', storedAgencyId);
+    //console.log('@@ sessionStorage.getItem("selectedAgencyId"):', storedAgencyId);
     if (storedAgencyId && agencies.length > 0) {
       const agencyFromStorage = agencies.find(a => a.idAgence === storedAgencyId);
       if (agencyFromStorage) {
@@ -175,7 +194,7 @@ export default function Dashboard() {
       if (selectedRobotData) {
         // console.log('@@ 1 (combo robot changed:loadProgramData) selectedAgency :', selectedAgency);
         // console.log('@@ 1 (combo robot changed:loadProgramData) selectedRobotData :', selectedRobotData);
-        
+
         // Si "TOUT" est sélectionné, charger les données de tous les robots
         if (selectedRobotData.nom_robot === "TOUT") {
           const allRobotsEvolution = [];
@@ -188,7 +207,7 @@ export default function Dashboard() {
           const arrJoursDuMois_Type1: string[] = [...arrJoursDuMois];
           const arrJoursDuMois_Type2: string[] = [...arrJoursDuMois];
           let rawData: DataEntry[] = [];
-          
+
           // Variables pour stocker les totaux des unités
           let totalUnitesMoisCourant_Type1 = 0;
           let totalUnitesMoisN1_Type1 = 0;
@@ -198,12 +217,18 @@ export default function Dashboard() {
           let totalUnitesMoisN1_Type2 = 0;
           let totalUnitesMoisN2_Type2 = 0;
           let totalUnitesMoisN3_Type2 = 0;
-          
+
           const currentDate = new Date();
           const currentMonth = (currentDate.getMonth() + 1).toString().padStart(2, '0');
           const currentYear = currentDate.getFullYear();
 
           for (const robot of programs) {
+            // Ne pas traiter le robot "TOUT"
+            if (robot.nom_robot === "TOUT") continue;
+
+            // Vérifier si le robot correspond au service sélectionné
+            if (selectedService && robot.service !== selectedService) continue;
+
             // Récupère les données du robot
             rawData = (await fetchDataReportingByRobot(robot.nom_robot, robot.bareme, robot.type_gain)).map((entry: any) => ({
               ...entry,
@@ -218,7 +243,7 @@ export default function Dashboard() {
               continue;
             }
 
-            if ((robot.id_agence === selectedAgency?.idAgence || selectedAgency?.nomAgence === "TOUTES") && robot.nom_robot !== "TOUT") {
+            if (robot.id_agence === selectedAgency?.idAgence || selectedAgency?.nomAgence === "TOUTES") {
               // console.log('@@ 2 (lcombo robot changed:oadProgramData) selectedAgency :', selectedAgency);
               // console.log('@@ 2 (combo robot changed:loadProgramData) selectedRobotData :', selectedRobotData);
               const currentProgram = programs.find(p => p.nom_robot === robot.nom_robot);
@@ -240,7 +265,7 @@ export default function Dashboard() {
 
                 for (let i = 1; i <= 31; i++) {
                   const dateKey = i.toString().padStart(2, '0') + '/' + currentMonth + '/' + currentYear;
-            
+
                   if (entry[dateKey]) {
                     const value = entry[dateKey];
                     const idx = i - 1;
@@ -252,7 +277,7 @@ export default function Dashboard() {
                   }
                 }
               }
-              
+
               //let oneRobotEvolution: any[] = [];
               if(selectedAgency.nomAgence !== 'TOUTES') {
                 oneRobotEvolution = await fetchEvolutionsByProgram(robot.nom_robot);
@@ -288,11 +313,13 @@ export default function Dashboard() {
             allRobotsEvolution.push(...oneRobotEvolution);
           }
 
+          //console.log('Données pour "TOUT":', mergedDataType1, mergedDataType2);
           setRobotData1(mergedDataType1);
-          setRobotData2(mergedDataType2);     
+          setRobotData2(mergedDataType2);
           setHistoriqueData(allRobotsEvolution);
-          setUseChart4All(true);
-        
+          // Utiliser Chart4All uniquement quand aucun service n'est sélectionné
+          setUseChart4All(!selectedService);
+
         } else {
           setUseChart4All(false);
           const baremeValue = selectedRobotData.bareme === '' || selectedRobotData.bareme === '0' ? '0' : selectedRobotData.bareme;
@@ -310,7 +337,10 @@ export default function Dashboard() {
   }, [selectedRobotData]);
 
   const handleAgencyChange = (agencyId: string) => {
+    console.log('--- AGENCE CHANGE ---');
+    console.log('Agence ID sélectionnée:', agencyId);
     const agency = agencies.find(a => a.idAgence === agencyId);
+    console.log('Agence trouvée:', agency);
     setSelectedAgency(agency || null);
     // Sauvegarder l'agence sélectionnée
     sessionStorage.setItem('selectedAgencyId', agencyId);
@@ -323,11 +353,13 @@ export default function Dashboard() {
     setRobotData2(null);
     setHistoriqueData([]);
 
+    console.log('&&&Agence changée:', agencyId);
+
     const loadPrograms = async () => {
       if (agency) {
         const allRobotsByAgency = await fetchAllRobotsByAgency(agency.idAgence, selectedService);
         setPrograms(allRobotsByAgency);
-        
+
         const toutProgram = allRobotsByAgency.find(p => p.nom_robot === "TOUT");
         if (toutProgram) {
           setSelectedRobot(toutProgram);
@@ -335,17 +367,57 @@ export default function Dashboard() {
         }
       }
     };
-    
+
+    loadPrograms();
+  };
+
+  const handleServiceChange = (service: string) => {
+    console.log('--- SERVICE CHANGE ---');
+    console.log('Service sélectionné:', service);
+    setSelectedService(service);
+    console.log('&&&Service changé:', service);
+
+    // Réinitialiser les états liés aux robots
+    setPrograms([]);
+    setSelectedRobot(null);
+    setSelectedRobotData(null);
+    setRobotData(null);
+    setRobotData1(null);
+    setRobotData2(null);
+    setHistoriqueData([]);
+
+    const loadPrograms = async () => {
+      if (selectedAgency) {
+        const allRobotsByAgency = await fetchAllRobotsByAgency(selectedAgency.idAgence, service);
+        setPrograms(allRobotsByAgency);
+
+        const toutProgram = allRobotsByAgency.find(p => p.nom_robot === "TOUT");
+        if (toutProgram) {
+          setSelectedRobot(toutProgram);
+          setSelectedRobotData(toutProgram);
+        }
+      }
+    };
+
     loadPrograms();
   };
 
   const handleProgramChange = (programId: string) => {
+    console.log('--- ROBOT CHANGE ---');
+    console.log('Program ID sélectionné:', programId);
     const program = programs.find(p => p.id_robot === programId);
+    console.log('Programme trouvé:', program);
     if (program && selectedAgency) {
       setSelectedRobot(program);
       // Use the exact program name for searching in Firebase
-      //console.log('@@@ (Dashboard.tsx) Setting program data with name:', program.nom_robot);
+      console.log('@@@ (Dashboard.tsx) Setting program data with name:', program.nom_robot);
       setSelectedRobotData(program);
+
+      console.log('&&& Robot changé:', programId);
+      console.log('Robot sélectionné:', program);
+      console.log('Agence actuelle:', selectedAgency);
+    } else {
+      console.error('Programme ou agence non trouvé');
     }
   };
 
@@ -367,56 +439,56 @@ export default function Dashboard() {
 
   return (
     <>
-    <div className='w-full pl-0 pl-0 bg-x-200 '>
-      <div className="max-w-7xl pl-0">
-        <div className='flex items-center pl-0  '>
+    <div className='w-full pl-0 pl-0 '>
+      <div className="max-w-7xl pl-0 ">
+        <div className='flex items-center pl-0'>
           <div className="flex-none">
-              <Image src="/logo_bbl-groupe.svg" alt="Logo BBL Groupe" width={100} height={70} />
-            </div>
-            <div className="flex-1 pr-[20%]"></div>
-            <div className=" flex-none">
-              <div className=" px-4pl-0 bg-x-500 ">
-                  <span className="text-black justify-end flex">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
-                        stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user w-5 h-5 mr-2 text-gray-600">
-                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>
-                  </svg> {userData.userName}</span>
-                  <div className="flex space-x-8 mt-2">
-                    <div className="flex items-center space-x-2">
-                      <span>Agence:</span>
-                      <AgencySelector
-                        agencies={agencies}
-                        selectedAgencyId={selectedAgency?.idAgence || ''}
-                        onAgencyChange={handleAgencyChange}
-                      />
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <span>Service:</span>
-                      <ServiceSelector
-                        selectedService={selectedService}
-                        onServiceChange={setSelectedService}
-                      />
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <span>Robot:</span>
-                      <ProgramSelector
-                        robots={programs}
-                        selectedProgramId={selectedRobot?.id_robot || ''}
-                        onProgramChange={handleProgramChange}
-                      />
-
-                      <div className="w-[50px]"></div>    
-                      <div className="flex justify-end bg-x-100 h-[40px]">
-                        <button onClick={handleOpenForm} className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium overflow-hidden relative px-4 py-1 rounded-lg hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
-                          <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] roundedlg opacity-50 group-hover:top-[250%] duration-500 shadow-[0_0_5px_5px_rgba(0,0,0,0.3)]"></span>
-                          Nouvelle Demande
-                        </button>
-                      </div>               
-                    </div>
+            <Image src="/logo_bbl-groupe.svg" alt="Logo BBL Groupe" width={100} height={70} />
+          </div>
+          <div className="flex-1 pr-[2%]"></div>
+          <div className=" flex-none">
+            <div className=" px-4pl-0 bg-x-500 ">
+                <span className="text-black justify-end flex">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
+                      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user w-5 h-5 mr-2 text-gray-600">
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>
+                </svg> {userData.userName}</span>
+                <div className="flex space-x-8 mt-2">
+                  <div className="flex items-center space-x-2">
+                    <span>Agence:</span>
+                    <AgencySelector
+                      agencies={agencies}
+                      selectedAgencyId={selectedAgency?.idAgence || ''}
+                      onAgencyChange={handleAgencyChange}
+                    />
                   </div>
-              </div>
+
+                  <div className="flex items-center space-x-2">
+                    <span>Service:</span>
+                    <ServiceSelector
+                      selectedService={selectedService}
+                      onServiceChange={setSelectedService}
+                    />
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <span>Robot:</span>
+                    <ProgramSelector
+                      robots={programs}
+                      selectedProgramId={selectedRobot?.id_robot || ''}
+                      onProgramChange={handleProgramChange}
+                    />
+
+                    <div className="w-[50px]"></div>    
+                    <div className="flex justify-end bg-x-100 h-[40px]">
+                      <button onClick={handleOpenForm} className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium overflow-hidden relative px-4 py-1 rounded-lg hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
+                        <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] roundedlg opacity-50 group-hover:top-[250%] duration-500 shadow-[0_0_5px_5px_rgba(0,0,0,0.3)]"></span>
+                        Nouvelle Demande
+                      </button>
+                    </div>               
+                  </div>
+                </div>
+            </div>
           </div>
         </div>
       </div>
@@ -443,14 +515,27 @@ export default function Dashboard() {
           {selectedRobot && (
             <div className="p-4 bg-x-200">
               <div className="grid grid-cols-4 gap-4 bg-x-100">
-                <div className="col-span-4 pb-8">
-                {useChart4All ? (
-                        <Chart4All robotType={selectedRobot?.type_gain} data1={robotData1} data2={robotData2} />
-                      ) : ('')}
-                  {robotData && !useChart4All? (  
-                    <Chart robotType={selectedRobot?.type_gain} data={robotData} />
-                  ) : ('')}
-                </div>
+              <div className="col-span-4 pb-8">
+              {selectedRobot?.nom_robot === 'TOUT' && (
+                selectedService ? (
+            <Chart4Service
+              key={selectedService}
+              service={selectedService}
+              data={robotData1}
+            />
+                ) : (
+                  <Chart4All
+                    key={`${selectedAgency?.idAgence}-${Math.random()}`}
+                    robotType={selectedRobot?.type_gain}
+                    data1={robotData1}
+                    data2={robotData2}
+                  />
+                )
+              )}
+              {selectedRobot?.nom_robot !== 'TOUT' && robotData && (
+                <Chart robotType={selectedRobot?.type_gain} data={robotData} />
+              )}
+              </div>
               </div>
 
               <div className="grid grid-cols-4 gap-4 bg-x-300 mt-5" >

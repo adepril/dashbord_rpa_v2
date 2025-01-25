@@ -77,11 +77,11 @@ export default function LoginForm() {
                 <Image src="/logo_bbl-groupe2.png" alt="Logo BBL Groupe" width={100} height={70} />
             </div>
             <div className="w-full flex absolute justify-center top-1">
-                <span className="text-black text-sm ">Bienvenue à bord du Spacecraft Discovery One !</span>
+                <span className="text-black text-2xl ">Bienvenue à bord du Spacecraft Discovery One !</span>
             </div>
         </div>
 
-        <div className="text-center h-10 ">
+        <div className="text-center h-8 ">
             <span className="text-black "></span> 
         </div>  
         <div className="text-center h-20 ">

@@ -65,6 +65,7 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
 
   useEffect(() => {
     const fetchRobots = async () => {
+      console.log('### (Chart4All) fetchRobots', robotType);
       try {
         const querySnapshot = await getDocs(collection(db, 'robots'));
         const robotsData = await Promise.all(querySnapshot.docs.map(async doc => {
@@ -101,7 +102,7 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
           setError('Aucun robot trouvé avec type_gain = "autre"');
         } else {
           setRobots(robotsData);
-          console.log('Robots:', JSON.stringify(robotsData, null, 2));
+          console.log('### (Chart4All) fetchRobots - robotsData', robotsData);
           setError(null);
         }
       } catch (err) {
