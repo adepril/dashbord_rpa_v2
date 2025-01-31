@@ -105,121 +105,122 @@ interface Program {
   bareme: string;
 }
 
-  /**
-   * Fetches all programs for a given agency ID.
-   * If the agency ID is "ALL", fetches all programs.
-   * @param agencyId The ID of the agency
-   * @returns An array of programs
-   */
-export async function fetchProgramsByAgencyId(agencyId: string): Promise<Program[]> {
-  console.log('fetchProgramsByAgencyId for agency ID:', agencyId);
-  try {
-    const programsRef = collection(db, 'robots');
-    let q;
-    if (agencyId === "1") {
-      // l'agence est "ALL", on récupérer tous les programmes
-      //console.log('All agency -> Fetching ALL programs');
-      q = query(programsRef);
-    } else {
-      // filtrer par id_agence
-      //console.log('Fetching programs for agency ID:', agencyId);
-      q = query(programsRef, where('id_agence', '==', agencyId));
-    }
+//   /**
+//    * Fetches all programs for a given agency ID.
+//    * If the agency ID is "ALL", fetches all programs.
+//    * @param agencyId The ID of the agency
+//    * @returns An array of programs
+//    */
+// export async function fetchProgramsByAgencyId(agencyId: string): Promise<Program[]> {
+//   console.log('fetchProgramsByAgencyId for agency ID:', agencyId);
+//   try {
+//     const programsRef = collection(db, 'robots');
+//     let q;
+//     if (agencyId === "1") {
+//       // l'agence est "ALL", on récupérer tous les programmes
+//       //console.log('All agency -> Fetching ALL programs');
+//       q = query(programsRef);
+//     } else {
+//       // filtrer par id_agence
+//       //console.log('Fetching programs for agency ID:', agencyId);
+//       q = query(programsRef, where('id_agence', '==', agencyId));
+//     }
 
-    const querySnapshot = await getDocs(q);
+//     const querySnapshot = await getDocs(q);
     
-    const programs = querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id_robot: data.id_robot,
-        nom_robot: data.nom_robot,
-        id_agence: data.id_agence,
-        service: data.service,
-        type_gain: data.type_gain,
-        description: data.description,
-        bareme: data.bareme
-      };
-    });
+//     const programs = querySnapshot.docs.map(doc => {
+//       const data = doc.data();
+// return {
+//   id: doc.id,
+//   id_robot: data.id_robot,
+//   nom_robot: data.nom_robot,
+//   id_agence: data.id_agence,
+//   service: data.service,
+//   type_gain: data.type_gain,
+//   description: data.description,
+//   bareme: data.bareme
+// };
+//     });
     
-    console.log('fetchProgramsByAgencyId(): ', programs);
-    return programs;
-  } catch (error) {
-    console.log('Error fetching programs:', error);
-    return [];
-  }
-}
+//     console.log('fetchProgramsByAgencyId(): ', programs);
+//     return programs;
+//   } catch (error) {
+//     console.log('Error fetching programs:', error);
+//     return [];
+//   }
+// }
 
-/**
- * Fetches all robots from Firestore without agency filter
- * @returns An array of all programs
- */
-export async function fetchAllRobotsByAgency(agencyId: string, service?: string): Promise<Program[]> {
-  console.log('-- fetchAllRobotsByAgency: id_agence= ', agencyId, 'service=', service);
-  try {
-    const programsRef = collection(db, 'robots');
-    let q;
+// /**
+//  * Fetches all robots from Firestore without agency filter
+//  * @returns An array of all programs
+//  */
+// export async function fetchAllRobotsByAgency(agencyId: string, service?: string): Promise<Program[]> {
+//   console.log('-- fetchAllRobotsByAgency: id_agence= ', agencyId, 'service=', service);
+//   try {
+//     const programsRef = collection(db, 'robots');
+//     let q;
     
-    const conditions = [];
-    if (agencyId !== "1") {
-      conditions.push(where('id_agence', '==', agencyId));
-    }
-    if (service && service !== "TOUT") {
-      conditions.push(where('service', '==', service.toLowerCase()));
-    }
+//     const conditions = [];
+//     if (agencyId !== "1") {
+//       conditions.push(where('id_agence', '==', agencyId));
+//     }
+//     if (service && service !== "TOUT") {
+//       conditions.push(where('service', '==', service.toLowerCase()));
+//     }
     
-    if (conditions.length > 0) {
-      q = query(programsRef, ...conditions);
-    } else {
-      q = query(programsRef);
-    }
-    const querySnapshot = await getDocs(q);
+//     if (conditions.length > 0) {
+//       q = query(programsRef, ...conditions);
+//     } else {
+//       q = query(programsRef);
+//     }
+//     const querySnapshot = await getDocs(q);
     
-    let robots = querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id_robot: data.id_robot,
-        nom_robot: data.nom_robot,
-        id_agence: data.id_agence,
-        service: data.service,
-        type_gain: data.type_gain,
-        description: data.description,
-        bareme: data.bareme
-      };
-    });
+//     let robots = querySnapshot.docs.map(doc => {
+//       const data = doc.data();
+//       return {
+//         id_robot: data.id_robot,
+//         nom_robot: data.nom_robot,
+//         id_agence: data.id_agence,
+//         service: data.service,
+//         type_gain: data.type_gain,
+//         description: data.description,
+//         bareme: data.bareme
+//       };
+//     });
     
-    // Trier les robots : "TOUT" en premier, puis par nom
-    robots.sort((a, b) => {
-      if (a.nom_robot === "TOUT") return -1;
-      if (b.nom_robot === "TOUT") return 1;
-      return a.nom_robot.localeCompare(b.nom_robot);
-    });
+//     // Trier les robots : "TOUT" en premier, puis par nom
+//     robots.sort((a, b) => {
+//       if (a.nom_robot === "TOUT") return -1;
+//       if (b.nom_robot === "TOUT") return 1;
+//       return a.nom_robot.localeCompare(b.nom_robot);
+//     });
 
-    function removeDuplicates(robots: Program[]) {
-      const uniqueRobots = [];
-      const seenProgramNames = new Set();
+//     function removeDuplicates(robots: Program[]) {
+//       const uniqueRobots = [];
+//       const seenProgramNames = new Set();
 
-      for (const robot of robots) {
-        if (!seenProgramNames.has(robot.nom_robot)) {
-          seenProgramNames.add(robot.nom_robot);
-          uniqueRobots.push(robot);
-        }
-      }
+//       for (const robot of robots) {
+//         if (!seenProgramNames.has(robot.nom_robot)) {
+//           seenProgramNames.add(robot.nom_robot);
+//           uniqueRobots.push(robot);
+//         }
+//       }
 
-      return uniqueRobots;
-    }
+//       return uniqueRobots;
+//     }
 
-    const uniqueRobots = removeDuplicates(robots);
-    robots = uniqueRobots;
+//     const uniqueRobots = removeDuplicates(robots);
+//     robots = uniqueRobots;
     
-    // Mettre à jour la variable globale
-    allRobotsByAgency = robots;
-    console.log('All programs fetched and stored globally:', allRobotsByAgency);
-    return robots;
-  } catch (error) {
-    console.log('Error fetching all programs:', error);
-    return [];
-  }
-}
+//     // Mettre à jour la variable globale
+//     allRobotsByAgency = robots;
+//     console.log('All programs fetched and stored globally:', allRobotsByAgency);
+//     return robots;
+//   } catch (error) {
+//     console.log('Error fetching all programs:', error);
+//     return [];
+//   }
+// }
 
 
   /**
@@ -283,7 +284,7 @@ export async function fetchDataReportingByRobot(robotName: string, bareme: strin
         return item['AGENCE'] +"_"+item['NOM PROGRAMME'] === robotName;
       });
 
-    console.log('(fetchDataReportingByRobot)  data :', data);
+    //console.log('(dataFetcher - fetchDataReportingByRobot)  data :', data);
     return data;
   } catch (error) {
     console.log('Error fetching data:', error);
@@ -291,18 +292,6 @@ export async function fetchDataReportingByRobot(robotName: string, bareme: strin
   }
 }
 
-// export async function fetchAllEvolutions() {
-//   console.log('fetchAllEvolutions');
-//   try {
-//     const evolutionsRef = collection(db, 'evolutions');
-//     const q = query(evolutionsRef);
-//     const querySnapshot = await getDocs(q);
-//     return querySnapshot.docs.map(doc => doc.data());
-//   } catch (error) {
-//     console.log('Error fetching evolutions:', error);
-//     return [];
-//   }
-// }
 
 interface Evolution {
   Robot: string;
@@ -368,11 +357,11 @@ export async function fetchEvolutionsByProgram(programId: string) {
     const querySnapshot = await getDocs(q);
     const data = querySnapshot.docs.map(doc => {
     const docData = doc.data();
-      return {
-        id: doc.id,
-        ...docData,
-        'Date de la demande': docData['Date'] ? new Date(docData['Date']).toLocaleDateString('fr-FR') : ''
-      };
+return {
+  id: doc.id,
+  ...docData,
+  'Date de la demande': docData['Date'] ? new Date(docData['Date']).toLocaleDateString('fr-FR') : ''
+};
     });
 
     //console.log('Processed evolutions data:', data);

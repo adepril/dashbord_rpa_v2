@@ -1,11 +1,8 @@
 'use client'
 
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, ReferenceLine } from "recharts"
-import React, { useState, useEffect } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import React from 'react';
 import { formatDuration } from '../lib/utils'
-import { fetchDataReportingByRobot } from '../utils/dataFetcher'
 
 interface Chart4ServiceProps {
   service: string
@@ -46,68 +43,6 @@ export default function Chart4Service({ service, data1 = {
   'NB UNITES MOIS N-2': 0,
   'NB UNITES MOIS N-3': 0
 } }: Chart4ServiceProps) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [serviceData, setServiceData] = useState<Record<string, number>>({});
-
-  useEffect(() => {
-    const fetchServiceData = async () => {
-      console.log('### (fetchServiceData) fetchServiceData', service);
-      try {
-        const querySnapshot = await getDocs(collection(db, 'robots'));
-        console.log('Total robots:', querySnapshot.docs.length);
-        const normalize = (str: string) => str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        const filteredDocs = querySnapshot.docs.filter(doc => {
-          const robotService = normalize(doc.data().service || '');
-          const selectedService = normalize(service || '');
-          return robotService === selectedService;
-        });
-        console.log('Robots for service', service, ':', filteredDocs.length);
-        const robotsData = await Promise.all(filteredDocs
-          .map(async doc => {
-            const robotData = doc.data();
-            const reportingResponse = await fetchDataReportingByRobot(
-              robotData.nom_robot,
-              robotData.bareme,
-              robotData.type_gain
-            );
-            return reportingResponse[0] as Record<string, number>;
-          }));
-
-        // Somme des données de tous les robots du service
-        const summedData = robotsData.reduce((acc, curr) => {
-          if (curr) {
-            Object.entries(curr).forEach(([key, value]) => {
-              if (key.startsWith('0') || key.startsWith('1') || key.startsWith('2') || key.startsWith('3')) {
-                acc[key] = (acc[key] || 0) + (typeof value === 'number' ? value : parseFloat(value as string) || 0);
-              }
-            });
-          }
-          return acc;
-        }, {} as Record<string, number>);
-
-        setServiceData(summedData);
-        console.log('### (fetchServiceData) fetchServiceData - summedData', summedData);
-        setError(null);
-      } catch (err) {
-        setError('Erreur lors du chargement des données');
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchServiceData();
-  }, [service]);
-
-  if (isLoading) {
-    return <div className="flex justify-center items-center h-[400px] text-gray-500">Chargement en cours...</div>;
-  }
-
-  if (error) {
-    return <div className="flex justify-center items-center h-[400px] text-red-500">{error}</div>;
-  }
-
   const currentDate = new Date();
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth() + 1;
@@ -116,8 +51,8 @@ export default function Chart4Service({ service, data1 = {
     const day = (i + 1).toString().padStart(2, '0');
     const dateKey = `${day}/${month.toString().padStart(2, '0')}/${year}`;
     let value = 0;
-    if (serviceData && serviceData[dateKey]) {
-      value = Number(serviceData[dateKey]);
+    if (data1 && data1[dateKey]) {
+      value = Number(data1[dateKey]);
     }
     return {
       date: dateKey,

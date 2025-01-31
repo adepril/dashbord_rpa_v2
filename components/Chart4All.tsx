@@ -1,15 +1,16 @@
 'use client'
 
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, ReferenceLine} from "recharts"
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, ReferenceLine } from "recharts"
 import React, { useState, useEffect, useCallback } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { formatDuration } from '../lib/utils'
 import { fetchDataReportingByRobot } from '../utils/dataFetcher'
+import { Program } from '../utils/dataStore';
 
 interface ChartProps {
   robotType: string
-  data1: any,data2: any
+  data1: any, data2: any
 }
 
 interface CustomizedAxisTickProps {
@@ -24,13 +25,13 @@ const CustomizedAxisTick: React.FC<CustomizedAxisTickProps> = (props) => {
   const { x, y, payload } = props;
   return (
     <g transform={`translate(${x},${y})`}>
-      <text 
-        x={0} 
-        y={0} 
-        dy={16} 
-        textAnchor="end" 
-        fill="#666" 
-        transform="rotate(-35)" 
+      <text
+        x={0}
+        y={0}
+        dy={16}
+        textAnchor="end"
+        fill="#666"
+        transform="rotate(-35)"
         fontSize={10}
       >
         {payload.value}
@@ -39,25 +40,14 @@ const CustomizedAxisTick: React.FC<CustomizedAxisTickProps> = (props) => {
   );
 }
 
-export default function Chart({ robotType,data1,data2 }: ChartProps) {
-  interface Robot {
-    id_robot: string;
-    nom_robot: string;
-    service: string;
-    id_agence: string;
-    type_gain: string;
-    description: string;
-    bareme: string;
-    currentMonth?: number;
-    previousMonth?: number;
-  }
+export default function Chart({ robotType, data1, data2 }: ChartProps) {
 
   interface ReportingData {
     'NB UNITES DEPUIS DEBUT DU MOIS': number;
     'NB UNITES MOIS N-1': number;
   }
 
-  const [robots, setRobots] = useState<Robot[]>([]);
+  const [robots, setRobots] = useState<Program[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -65,7 +55,7 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
 
   useEffect(() => {
     const fetchRobots = async () => {
-      console.log('### (Chart4All) fetchRobots', robotType);
+      //console.log('### (Chart4All) fetchRobots - robotType: ', robotType);
       try {
         const querySnapshot = await getDocs(collection(db, 'robots'));
         const robotsData = await Promise.all(querySnapshot.docs.map(async doc => {
@@ -78,8 +68,8 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
             id_agence: robotData.id_agence,
             service: robotData.service,
             bareme: robotData.bareme
-          } as Robot;
-          
+          } as Program;
+
           try {
             const reportingResponse = await fetchDataReportingByRobot(
               robotData.nom_robot,
@@ -92,17 +82,17 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
               robot.previousMonth = reportingData['NB UNITES MOIS N-1'];
             }
           } catch (error) {
-            console.error(`Erreur lors de la récupération des données pour le robot ${robotData.nom_robot}:`, error);
+            console.log(`Erreur lors de la récupération des données pour le robot ${robotData.nom_robot}:`, error);
           }
-          
+
           return robot;
-        })).then(robots => robots.filter(robot => robot.type_gain === 'autre'));
-          
+        })).then(robots => robots.filter(robot => robot.type_gain === 'temps'));
+
         if (robotsData.length === 0) {
           setError('Aucun robot trouvé avec type_gain = "autre"');
         } else {
           setRobots(robotsData);
-          console.log('### (Chart4All) fetchRobots - robotsData', robotsData);
+          console.log(' (Chart4All) fetchRobots - robotsData', robotsData);
           setError(null);
         }
       } catch (err) {
@@ -142,7 +132,7 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
   const currentDate = new Date();
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth() + 1;
-  
+
   // Chart 1
   const chartData1 = Array.from({ length: 31 }, (_, i) => {
     const day = (i + 1).toString().padStart(2, '0');
@@ -169,164 +159,163 @@ export default function Chart({ robotType,data1,data2 }: ChartProps) {
     <>
     <div className="w-full flex justify- gap-4 items-center ">
 
-    <div className="w-2/3 pt-4 pb-12 bg-white rounded-lg shadow ml-2"> 
-    
-        <div className="h-[300px] relative">
-        <div className="ml-[10%] text-left text-xl font-bold mb-4">Gain de temps</div>
+        <div className="w-2/3 pt-4 pb-12 bg-white rounded-lg shadow ml-2">
 
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={chartData1}
-              width={600}
-              height={600}
-              barSize={40}
-              barGap={15}
-              title=""
-              margin={{ top: 20, right: 10, left: 5, bottom: 1 }}
-            >
-              <XAxis
-                dataKey="date"
-                stroke="#888888"
-                tickLine={false}
-                axisLine={false}
-                tick={<CustomizedAxisTick x={0} y={0} payload={{
-                  value: ""
-                }} />}
-                height={60}
-                tickFormatter={(t) => `${t}`} />
-              <ReferenceLine 
-                y={0} 
-                stroke="#888888" 
-                strokeWidth={1} />
-              <YAxis
-                stroke="#888888"
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(value: number) => formatDuration(value)}
-                fontSize={10} />
-              <Tooltip
-                labelFormatter={(label: string) => label}
-                formatter={(value: any, name: string, props: any) => {
-                  const valeur  = props.payload;
-                  if ((valeur === undefined || valeur === 0) ) {
-                    return [''];
-                  }
-                  const gain = `Gain : ${formatDuration(valeur.valeur)}`;
-                  return [gain];
-                } } />
-              <Bar
-                dataKey="valeur"
-                fill="#3498db" 
-                radius={[4, 4, 0, 0]}
-                name="Quantité"
-                label={{
-                  position: 'top',
-                  fill: '#000',
-                  fontSize: 12,
-                  formatter: (value: number) => value === 0 ? '' : formatDuration(value)
-                }}
-                activeBar={{ fill: robotType?.toLowerCase() === "temps" ? '#3498db' : '#3333db' }}
-                />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="flex justify-around mt-10">
-            <div className="w-1/4 mr-5 ml-5 ">
-              <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
-                <div className="ml-4 text-xs ">Total du mois</div>
-                <div className="ml-4 text-xl " title={data1['NB UNITES DEPUIS DEBUT DU MOIS'] ? data1['NB UNITES DEPUIS DEBUT DU MOIS'] +' minutes' : 'N/A'}>
-                {data1 && data1['NB UNITES DEPUIS DEBUT DU MOIS'] !== undefined ? formatDuration(data1['NB UNITES DEPUIS DEBUT DU MOIS']) : '0'}
+          <div className="h-[300px] relative">
+          <div className="ml-[10%] text-left text-xl font-bold mb-4">Gain de temps</div>
+
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={chartData1}
+                width={600}
+                height={600}
+                barSize={40}
+                barGap={15}
+                title=""
+                margin={{ top: 20, right: 10, left: 5, bottom: 1 }}
+              >
+                <XAxis
+                  dataKey="date"
+                  stroke="#888888"
+                  tickLine={false}
+                  axisLine={false}
+                  tick={<CustomizedAxisTick x={0} y={0} payload={{
+                    value: ""
+                  }} />}
+                  height={60}
+                  tickFormatter={(t) => `${t}`} />
+                <ReferenceLine
+                  y={0}
+                  stroke="#888888"
+                  strokeWidth={1} />
+                <YAxis
+                  stroke="#888888"
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(value: number) => formatDuration(value)}
+                  fontSize={10} />
+                <Tooltip
+                  labelFormatter={(label: string) => label}
+                  formatter={(value: any, name: string, props: any) => {
+                    const valeur  = props.payload;
+                    if ((valeur === undefined || valeur === 0) ) {
+                      return [''];
+                    }
+                    const gain = `Gain : ${formatDuration(valeur.valeur)}`;
+                    return [gain];
+                  } } />
+                <Bar
+                  dataKey="valeur"
+                  fill="#3498db"
+                  radius={[4, 4, 0, 0]}
+                  name="Quantité"
+                  label={{
+                    position: 'top',
+                    fill: '#000',
+                    fontSize: 12,
+                    formatter: (value: number) => value === 0 ? '' : formatDuration(value)
+                  }}
+                  activeBar={{ fill: robotType?.toLowerCase() === "temps" ? '#3498db' : '#3333db' }}
+                  />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="flex justify-around mt-10">
+              <div className="w-1/4 mr-5 ml-5 ">
+                <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
+                  <div className="ml-4 text-xs ">Total du mois</div>
+                  <div className="ml-4 text-xl " title={data1['NB UNITES DEPUIS DEBUT DU MOIS'] ? data1['NB UNITES DEPUIS DEBUT DU MOIS'] +' minutes' : 'N/A'}>
+                  {data1 && data1['NB UNITES DEPUIS DEBUT DU MOIS'] !== undefined ? formatDuration(data1['NB UNITES DEPUIS DEBUT DU MOIS']) : '0'}
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className=" w-1/4 mr-5 ml-5">
-            <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
-                <div className="ml-4 text-xs ">M-1</div>
-                <div className="ml-4 text-xl" title={data1['NB UNITES MOIS N-1'] ? data1['NB UNITES MOIS N-1'] +' minutes' : 'N/A'}>{data1 && data1['NB UNITES MOIS N-1'] !== undefined ? formatDuration(data1['NB UNITES MOIS N-1']) : '0'}</div>
-              </div>
-            </div>
-            <div className=" w-1/4 mr-5 ml-5">
+              <div className=" w-1/4 mr-5 ml-5">
               <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
-                <div className="ml-4 text-xs">M-2</div>
-                <div className="ml-4 text-xl" title={data1['NB UNITES MOIS N-2'] ? data1['NB UNITES MOIS N-2'] +' minutes' : 'N/A'}>{data1 && data1['NB UNITES MOIS N-2'] !== undefined ? formatDuration(data1['NB UNITES MOIS N-2']) : '0'}</div>
+                  <div className="ml-4 text-xs ">M-1</div>
+                  <div className="ml-4 text-xl" title={data1['NB UNITES MOIS N-1'] ? data1['NB UNITES MOIS N-1'] +' minutes' : 'N/A'}>{data1 && data1['NB UNITES MOIS N-1'] !== undefined ? formatDuration(data1['NB UNITES MOIS N-1']) : '0'}</div>
+                </div>
               </div>
-            </div>
-            <div className="w-1/4 mr-5 ml-5">
-            <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
-                <div className="ml-4 text-xs ">M-3</div>
-                <div className="ml-4 text-xl" title={data1['NB UNITES MOIS N-3'] ? data1['NB UNITES MOIS N-3'] +' minutes' : 'N/A'}>{data1 && data1['NB UNITES MOIS N-3'] !== undefined ? formatDuration(data1['NB UNITES MOIS N-3']) : '0'}</div>
+              <div className=" w-1/4 mr-5 ml-5">
+                <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
+                  <div className="ml-4 text-xs">M-2</div>
+                  <div className="ml-4 text-xl" title={data1['NB UNITES MOIS N-2'] ? data1['NB UNITES MOIS N-2'] +' minutes' : 'N/A'}>{data1 && data1['NB UNITES MOIS N-2'] !== undefined ? formatDuration(data1['NB UNITES MOIS N-2']) : '0'}</div>
+                </div>
               </div>
+              <div className="w-1/4 mr-5 ml-5">
+              <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
+                  <div className="ml-4 text-xs ">M-3</div>
+                  <div className="ml-4 text-xl" title={data1['NB UNITES MOIS N-3'] ? data1['NB UNITES MOIS N-3'] +' minutes' : 'N/A'}>{data1 && data1['NB UNITES MOIS N-3'] !== undefined ? formatDuration(data1['NB UNITES MOIS N-3']) : '0'}</div>
+                </div>
+              </div>
+          </div>
+        </div>
+
+        <div className="w-1/3 p-4 pb-12 bg-white rounded-lg shadow ml-2">
+            <div className="h-[380px] relative">
+              <div className="flex flex-col justify-center items-center mt-5 bg-x-100">
+                <span className="text-red-700 text-3xl font-bold">Le saviez-vous ?</span>
+              </div>
+              <div className="h-[50px] bg-x-200"></div>
+                {isLoading ? (
+                  <div className="mt-4 text-gray-500">Chargement en cours...</div>
+                ) : error ? (
+                  <div className="mt-4 text-red-500">{error}</div>
+                ) : robots.length > 0 ? (
+                  <>
+                    <div className="mt-4 px-4 pt-10" >
+                      Robot <span className="font-bold">"{robots[currentIndex]?.nom_robot.split('_')[1]}"</span> :
+                    </div>
+                    <div className="mt-4 px-4 r">
+                      {robots[currentIndex]?.description}
+                    </div>
+                    <div className="h-[10px] bg-x-200"></div>
+                    <div className="mt-4 px-4">
+                      <table className="w">
+                        <tbody>
+                          <tr>
+                            <td>Nombre d'exécution du mois :</td>
+                            <td>{robots[currentIndex]?.currentMonth !== undefined ? (robots[currentIndex].currentMonth!) : 'N/A'}</td>
+                          </tr>
+                          <tr>
+                            <td>Nb d'exécution {(() => {
+                              const mois = new Date(new Date().setMonth(new Date().getMonth() - 1)).toLocaleString('fr-FR', { month: 'long' });
+                              return ['avril', 'août', 'octobre'].includes(mois) ? "d'" + mois : 'de ' + mois
+                            })()} :</td>
+                            <td>{robots[currentIndex]?.previousMonth !== undefined ? (robots[currentIndex].previousMonth!) : 'N/A'}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="absolute bottom-1 left-0 right-0 flex gap-2 items-center justify-center">
+                      <button
+                        onClick={() => setCurrentIndex(prev => prev > 0 ? prev - 1 : robots.length - 1)}
+                        className="px-2 pb-[2px] bg-red-800 hover:bg-red-700 text-white rounded "
+                      >
+                        ←
+                      </button>
+                      <button
+                        onClick={handlePauseResume}
+                        className="px-3 py-0 pb-[2px] bg-red-800 hover:bg-red-700 text-white rounded"
+                      >
+                        {isPaused ? '▶' : '||'}
+                      </button>
+                      <button
+                        onClick={() => setCurrentIndex(prev => (prev + 1) % robots.length)}
+                        className="px-2 pb-[2px] bg-red-800 hover:bg-red-700 text-white rounded"
+                      >
+                        →
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="mt-4 text-gray-500">Aucune information disponible</div>
+                )}
             </div>
-        </div> 
+
+        </div>
+
       </div>
-
-      <div className="w-1/3 p-4 pb-12 bg-white rounded-lg shadow ml-2">
-          <div className="h-[380px] relative">
-  
-            <div className="flex flex-col justify-center items-center mt-5 bg-x-100">
-              <span className="text-red-700 text-3xl font-bold">Le saviez-vous ?</span>
-            </div>
-            <div className="h-[50px] bg-x-200"></div>
-              {isLoading ? (
-                <div className="mt-4 text-gray-500">Chargement en cours...</div>
-              ) : error ? (
-                <div className="mt-4 text-red-500">{error}</div>
-              ) : robots.length > 0 ? (
-                <>
-                  <div className="mt-4 px-4 pt-10" >
-                    Robot <span className="font-bold">"{robots[currentIndex]?.nom_robot.split('_')[1]}"</span> :
-                  </div>
-                  <div className="mt-4 px-4 r">
-                    {robots[currentIndex]?.description}
-                  </div>
-                  <div className="h-[10px] bg-x-200"></div>
-                  <div className="mt-4 px-4">
-                    <table className="w">
-                      <tbody>
-                        <tr>
-                          <td>Nombre d'exécution du mois :</td>
-                          <td>{robots[currentIndex]?.currentMonth !== undefined ? (robots[currentIndex].currentMonth!) : 'N/A'}</td>
-                        </tr>
-                        <tr>
-                          <td>Nb d'exécution {(() => {
-                            const mois = new Date(new Date().setMonth(new Date().getMonth() - 1)).toLocaleString('fr-FR', { month: 'long' });
-                            return ['avril', 'août', 'octobre'].includes(mois) ? "d'" + mois : 'de ' + mois
-                          })()} :</td>
-                          <td>{robots[currentIndex]?.previousMonth !== undefined ? (robots[currentIndex].previousMonth!) : 'N/A'}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <div className="absolute bottom-1 left-0 right-0 flex gap-2 items-center justify-center">
-                    <button
-                      onClick={() => setCurrentIndex(prev => prev > 0 ? prev - 1 : robots.length - 1)}
-                      className="px-2 pb-[2px] bg-red-800 hover:bg-red-700 text-white rounded "
-                    >
-                      ←
-                    </button>
-                    <button
-                      onClick={handlePauseResume} 
-                      className="px-3 py-0 pb-[2px] bg-red-800 hover:bg-red-700 text-white rounded"
-                    >
-                      {isPaused ? '▶' : '||'}
-                    </button>
-                    <button
-                      onClick={() => setCurrentIndex(prev => (prev + 1) % robots.length)}
-                      className="px-2 pb-[2px] bg-red-800 hover:bg-red-700 text-white rounded"
-                    >
-                      →
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <div className="mt-4 text-gray-500">Aucune information disponible</div>
-              )}
-            </div>
-
-      </div> 
-          
-    </div>
     </>
   );
 }

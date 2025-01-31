@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 const SERVICES = [
   "TOUT",
   "COMMERCE",
-  "EXPLOITATION", 
+  "EXPLOITATION",
   "ADMINISTRATIF",
   "DOUANE",
   "DIRECTION"

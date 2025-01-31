@@ -2,11 +2,7 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 
-interface Agency {
-  idAgence: string;
-  nomAgence: string;
-  libelleAgence?: string;
-}
+import { Agency } from '../utils/dataStore';
 
 interface AgencySelectorProps {
   agencies: Agency[];

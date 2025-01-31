@@ -26,25 +26,9 @@ interface ProgramTableProps {
   };
 }
 
-// interface MergedRequestFormProps {
-//   onClose: () => void;
-//   type?: 'evolution' | 'new' | 'edit';
-//   typeGain?: string;
-//   formData?: {
-//     Intitulé: string;
-//     Description: string;
-//     Programme: string;
-//     Nb_operations_mensuelles: string; 
-//     Temps_consommé: string;
-//     Statut: string;
-//     Date: string;
-//     type: 'new' | 'evolution' | 'edit';
-//     type_gain?: string;
-//   };
-// }
 
 export default function ProgramTable({robot, data, typeGain, useChart4All, user}: ProgramTableProps): JSX.Element {
- //console.log('ProgramTable with robot:', robot, 'and data:', data, ' and useChart4All:', useChart4All, ' and user:', user);
+  //console.log('(ProgramTable) robot:', robot, ' data:', data, '  useChart4All:', useChart4All, );
   const [showForm, setShowForm] = useState(false);
   const [popupInfo, setPopupInfo] = useState<{ row: any; position: { x: number; y: number } | null }>({ row: null, position: null });
   const [statuts, setStatuts] = useState<{ [key: string]: string }>({});
@@ -218,10 +202,10 @@ export default function ProgramTable({robot, data, typeGain, useChart4All, user}
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((row, index) => (
+            {data.map((row) => (
               <TableRow
-                key={index}
-                className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 h-[49px]`}
+                key={row.id || Math.random().toString(36).substr(2, 9)}
+                className={`${data.indexOf(row) % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 h-[49px]`}
               >
                 <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">{row.Intitulé}</TableCell>
                 <TableCell className="py-2 px-3 text-xs text-gray-800 whitespace-normal break-words">
