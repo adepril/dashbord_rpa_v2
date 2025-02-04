@@ -11,6 +11,7 @@ import { Program } from '../utils/dataStore';
 interface ChartProps {
   robotType: string
   data1: any, data2: any
+  selectedAgency: string
 }
 
 interface CustomizedAxisTickProps {
@@ -40,7 +41,10 @@ const CustomizedAxisTick: React.FC<CustomizedAxisTickProps> = (props) => {
   );
 }
 
-export default function Chart({ robotType, data1, data2 }: ChartProps) {
+export default function Chart({ robotType, data1, data2 , selectedAgency}: ChartProps) {
+  
+  console.log("Chart4All.tsx - data1:", data1, " data2:", data2);
+  console.log("Chart4All.tsx - robotType:", selectedAgency);
 
   interface ReportingData {
     'NB UNITES DEPUIS DEBUT DU MOIS': number;
@@ -53,58 +57,7 @@ export default function Chart({ robotType, data1, data2 }: ChartProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchRobots = async () => {
-      //console.log('### (Chart4All) fetchRobots - robotType: ', robotType);
-      try {
-        const querySnapshot = await getDocs(collection(db, 'robots'));
-        const robotsData = await Promise.all(querySnapshot.docs.map(async doc => {
-          const robotData = doc.data();
-          const robot = {
-            id_robot: doc.id,
-            nom_robot: robotData.nom_robot,
-            type_gain: robotData.type_gain,
-            description: robotData.description,
-            id_agence: robotData.id_agence,
-            service: robotData.service,
-            bareme: robotData.bareme
-          } as Program;
 
-          try {
-            const reportingResponse = await fetchDataReportingByRobot(
-              robotData.nom_robot,
-              robotData.bareme,
-              robotData.type_gain
-            );
-            if (reportingResponse.length > 0) {
-              const reportingData = reportingResponse[0];
-              robot.currentMonth = reportingData['NB UNITES DEPUIS DEBUT DU MOIS'];
-              robot.previousMonth = reportingData['NB UNITES MOIS N-1'];
-            }
-          } catch (error) {
-            console.log(`Erreur lors de la récupération des données pour le robot ${robotData.nom_robot}:`, error);
-          }
-
-          return robot;
-        })).then(robots => robots.filter(robot => robot.type_gain === 'temps'));
-
-        if (robotsData.length === 0) {
-          setError('Aucun robot trouvé avec type_gain = "autre"');
-        } else {
-          setRobots(robotsData);
-          console.log(' (Chart4All) fetchRobots - robotsData', robotsData);
-          setError(null);
-        }
-      } catch (err) {
-        setError('Erreur lors du chargement des données');
-        console.log(err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchRobots();
-  }, []);
 
   useEffect(() => {
     if (robots.length > 0 && !isPaused) {
@@ -263,7 +216,7 @@ export default function Chart({ robotType, data1, data2 }: ChartProps) {
                 ) : robots.length > 0 ? (
                   <>
                     <div className="mt-4 px-4 pt-10" >
-                      Robot <span className="font-bold">"{robots[currentIndex]?.nom_robot.split('_')[1]}"</span> :
+                      Robot <span className="font-bold">"{robots[currentIndex]?.robot.split('_')[1]}"</span> :
                     </div>
                     <div className="mt-4 px-4 r">
                       {robots[currentIndex]?.description}

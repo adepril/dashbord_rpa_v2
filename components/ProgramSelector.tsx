@@ -14,8 +14,8 @@ export default function ProgramSelector({ robots, selectedProgramId, onProgramCh
   return (
     <Select value={selectedProgramId} onValueChange={onProgramChange}>
       <SelectTrigger className="bg-white border border-gray-300 rounded-md h-9 w-[400px] text-sm">
-        <SelectValue placeholder={robots.length > 0 ? robots[0].nom_robot : "Aucun programme disponible"}>
-          {robots.length === 0 ? "Aucun programme disponible" : robots.find(p => p.id_robot === selectedProgramId)?.nom_robot}
+        <SelectValue placeholder={robots.length > 0 ? robots[0].robot : "Aucun programme disponible"}>
+          {robots.length === 0 ? "Aucun programme disponible" : robots.find(p => p.id_robot === selectedProgramId)?.robot}
         </SelectValue>
       </SelectTrigger>
       <SelectContent className="bg-white border border-gray-300 rounded-md w-[400px]">
@@ -25,7 +25,7 @@ export default function ProgramSelector({ robots, selectedProgramId, onProgramCh
             value={program.id_robot}
             className="text-sm hover:bg-gray-100"
           >
-            {program.nom_robot}
+            {program.robot}
           </SelectItem>
         ))}
       </SelectContent>

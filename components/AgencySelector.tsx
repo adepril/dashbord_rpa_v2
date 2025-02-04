@@ -10,13 +10,22 @@ interface AgencySelectorProps {
   onAgencyChange: (agencyId: string) => void;
 }
 
+import { getRobotsByAgency, cachedRobots, Program, updateRobots } from '../utils/dataStore';
+
 export default function AgencySelector({ agencies, selectedAgencyId, onAgencyChange }: AgencySelectorProps) {
   if (!agencies || agencies.length === 0) {
     return <div>Aucune agence disponible</div>;
   }
 
+const handleAgencyChange = (agencyId: string) => {
+  onAgencyChange(agencyId);
+  const robots = getRobotsByAgency(agencyId);
+  // Mettre à jour la liste des robots dans le composant parent
+  updateRobots(robots);
+};
+
   return (
-    <Select value={selectedAgencyId || undefined} onValueChange={onAgencyChange}>
+    <Select value={selectedAgencyId || undefined} onValueChange={handleAgencyChange}>
       <SelectTrigger className="bg-white border border-gray-300 rounded-md h-9 w-[200px] text-sm">
         <SelectValue placeholder="Sélectionnez une agence">
           {agencies.find(a => a.idAgence === selectedAgencyId)?.libelleAgence || agencies.find(a => a.idAgence === selectedAgencyId)?.nomAgence}
@@ -26,7 +35,7 @@ export default function AgencySelector({ agencies, selectedAgencyId, onAgencyCha
         {agencies.map((agency) => {
           const displayText = agency.libelleAgence?.trim() || agency.nomAgence;
           return (
-            <SelectItem 
+            <SelectItem
               key={agency.idAgence}
               value={agency.idAgence}
               className="text-sm hover:bg-gray-100"

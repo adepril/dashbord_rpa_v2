@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { useToast } from "../hooks/use-toast";
+import { updateFirstLoginStatus } from '../utils/dataStore';
 
 export default function LoginForm() {
     const [username, setUsername] = useState('');
@@ -59,6 +60,9 @@ export default function LoginForm() {
             const userDoc = querySnapshot.docs[0];
             const userData = userDoc.data();
             console.log('(loginForm) utilisateur :', userData);
+            
+            // Mettre à jour le statut de première connexion
+            updateFirstLoginStatus();
 
             // Stocker les informations de l'utilisateur dans localStorage
             localStorage.setItem('userData', JSON.stringify(userData));

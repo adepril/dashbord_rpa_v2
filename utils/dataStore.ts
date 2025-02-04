@@ -9,22 +9,45 @@ export interface Agency {
   libelleAgence?: string;
 }
 
+//Interface pour les données du robot
 export interface Program {
+  robot: string;
   id_robot: string;
-  nom_robot: string;
-  id_agence: string;
-  service: string;
-  description: string;
+  agence: string;
+  description?: string;
+  date_maj?: string;
+  type_unite: string;
+  temps_par_unite: string;
   type_gain: string;
-  bareme: string;
-  currentMonth?: number;
-  previousMonth?: number;
+  validateur?: string;
+  valide_oui_non?: string;
+  service?: string;
+  probleme?: string;
+  description_long?: string;
+  resultat?: string;
+  currentMonth?: string;
+  previousMonth?: string; 
 }
 
 // Variables globales pour le cache
 let cachedAgencies: Agency[] = [];
-let cachedRobots: Program[] = [];
+export let cachedRobots: Program[] = [];
+// Variable pour stocker la fonction de mise à jour des robots
+let updateRobotsCallback: ((robots: Program[]) => void) | null = null;
+
+// Fonction pour mettre à jour les robots
+export function updateRobots(robots: Program[]): void {
+  if (updateRobotsCallback) {
+    updateRobotsCallback(robots);
+  }
+}
+
+// Fonction pour définir le callback de mise à jour des robots
+export function setUpdateRobotsCallback(callback: (robots: Program[]) => void): void {
+  updateRobotsCallback = callback;
+}
 let isInitialized = false;
+let isFirstLogin = true;
 
 // Fonction d'initialisation des données
 export async function initializeData(userId: string): Promise<void> {
@@ -41,12 +64,13 @@ export async function initializeData(userId: string): Promise<void> {
     // 2. Charger les agences
     if (userId === '0') {
       // Cas spécial pour l'admin : charger toutes les agences
-      await loadAllAgencies();
-      console.log('(dataStore - initializeData) Toutes les Agences chargées');
+      //await loadAllAgencies();
+      //console.log('(dataStore - initializeData) Toutes les Agences chargées');
     } else {
       // Cas normal : charger les agences de l'utilisateur
       await loadUserAgencies(userData.userAgenceIds);
-      console.log('(dataStore - initializeData) Chargement des agences utilisateur', userData.userAgenceIds);
+      console.log('## (dataStore - initializeData) Chargement des agences utilisateur', userData.userAgenceIds);
+      console.log('## (dataStore - initializeData) Agences chargées', cachedAgencies);
     }
 
     // 3. Charger tous les robots pour ces agences
@@ -60,11 +84,7 @@ export async function initializeData(userId: string): Promise<void> {
   }
 }
 
-// Fonction pour récupérer les données utilisateur
-// This is a TypeScript function named fetchUserData that retrieves user data from a Firestore database.
-//  It takes a userId string as input, queries the database for a matching user ID, 
-//  and returns an object containing the user's ID, name, and agency IDs (split into an array). 
-//  If no matching user is found, it returns null. 
+
 async function fetchUserData(userId: string) {
   try {
     const usersRef = collection(db, 'utilisateurs');
@@ -108,14 +128,18 @@ async function loadAllAgencies(): Promise<void> {
 }
 
 // Fonction pour charger les agences d'un utilisateur
-async function loadUserAgencies(agencyIds: string[]): Promise<void> {
+async function loadUserAgencies(agencyNames: string[]): Promise<void> {
   try {
     const agenciesRef = collection(db, 'agences');
     cachedAgencies = [];
-
-    for (const agencyId of agencyIds) {
-      if (agencyId !== "-") {
-        const q = query(agenciesRef, where('idAgence', '==', agencyId));
+    cachedAgencies.push({
+      idAgence: '99',
+      nomAgence: 'TOUT',
+      libelleAgence: 'TOUT'
+    });
+    for (const agencyName of agencyNames) {
+      if (agencyName !== "-") {
+        const q = query(agenciesRef, where('nomAgence', '==', agencyName));
         const querySnapshot = await getDocs(q);
         
         if (!querySnapshot.empty) {
@@ -134,32 +158,51 @@ async function loadUserAgencies(agencyIds: string[]): Promise<void> {
   }
 }
 
-// Fonction pour charger tous les robots pour les agences en cache
+/////////////////////////////////////////////////////////////////////
+// Fonction pour charger tous les robots pour les agences en cache //
+// Chargement des robots dans la collection "robots_et_baremes"    //
+/////////////////////////////////////////////////////////////////////
 async function loadAllRobotsForAgencies(): Promise<void> {
+  
   try {
-    const robotsRef = collection(db, 'robots');
-    const agencyIds = cachedAgencies.map(agency => agency.idAgence);
+    const robotsRef = collection(db, 'robots_et_baremes'); // Collection "robots_et_baremes"
+    const agencyNames = cachedAgencies.map(agency => agency.nomAgence); // liste des agences
     cachedRobots = [];
+    console.log('*(dataStore - loadAllRobotsForAgencies) Chargement des ROBOTS des agences :',agencyNames);
 
-    for (const agencyId of agencyIds) {
-      const q = query(robotsRef, where('id_agence', '==', agencyId));
-      const querySnapshot = await getDocs(q);
-      
-      const robots = querySnapshot.docs.map(doc => {
+    for (const agencyName of agencyNames) {
+      // Ne pas charger les robots de l'agence "TOUT"
+      if (agencyName !== 'TOUT') {
+        const q = query(robotsRef, where('AGENCE', '==', agencyName));
+        const querySnapshot = await getDocs(q);
+        
+        const robots = querySnapshot.docs.map(doc => {
         const data = doc.data();
         //console.log('(dataStore - loadAllRobotsForAgencies) Chargement des robots',data);
+        //const tempsParUnite = data["TEMPS PAR UNITE"].replace(',', '.') || '0';
+        //const typeGain = data["TYPE GAIN"].replace(' (mn)', '').toLowerCase() || '0';
+        // console.log('(dataStore - loadAllRobotsForAgencies) tempsParUnite',tempsParUnite);
+        // console.log('(dataStore - loadAllRobotsForAgencies) typeGain',typeGain);
         return {
-          id_robot: data.id_robot,
-          nom_robot: data.nom_robot,
-          id_agence: data.id_agence,
-          service: data.service,
-          type_gain: data.type_gain,
-          description: data.description,
-          bareme: data.bareme
+          robot: data["NOM PROGRAMME"], 
+          id_robot: data.CLEF,
+          agence: data.AGENCE,
+          description: data.DESCRIPTION,
+          data_maj: data["DATE MAJ"],
+          type_unite: data.TYPE_UNITE,
+          temps_par_unite: data["TEMPS PAR UNITE"].replace(',', '.') || '0',
+          type_gain: data["TYPE GAIN"].replace(' (mn)', '').toLowerCase() || '0',
+          validateur: data.VALIDATEUR,
+          valide_oui_non: data["VALIDE OUI/NON"],
+          service: data.SERVICE,
+          probleme: data.PROBLEME,
+          description_long: data["DESCRIPTION LONG"],
+          resultat: data.RESULTAT
         };
-      });
+        });
 
-      cachedRobots.push(...robots);
+        cachedRobots.push(...robots);
+      }
     }
   } catch (error) {
     console.log('Erreur lors du chargement des robots:', error);
@@ -174,17 +217,22 @@ export function getCachedAgencies(): Agency[] {
 
 // Fonction pour obtenir les robots filtrés par agence
 export function getRobotsByAgency(agencyId: string): Program[] {
-  const filteredRobots = cachedRobots.filter(robot => robot.id_agence === agencyId);
+  // Si l'agence est "TOUT", retourner tous les robots de toutes les agences
+  const filteredRobots = agencyId === '99'
+    ? cachedRobots // Retourner tous les robots
+    : cachedRobots.filter(robot => {
+        const agency = cachedAgencies.find(a => a.idAgence === agencyId);
+        return robot.agence === agency?.nomAgence;
+      });
   
   // Ajouter l'élément "TOUT" en premier
   const toutRobot: Program = {
     id_robot: 'TOUT',
-    nom_robot: 'TOUT',
-    id_agence: agencyId,
-    service: '',
-    type_gain: filteredRobots.length > 0 ? filteredRobots[0].type_gain : 'temps',
-    description: '',
-    bareme: ''
+    robot: 'TOUT',
+    agence: 'TOUT',
+    type_gain: '0',
+    temps_par_unite : '0',
+    type_unite: ''
   };
 
   return [toutRobot, ...filteredRobots];
@@ -196,7 +244,7 @@ export function getRobotsByService(service: string): Program[] {
     return cachedRobots;
   }
   return cachedRobots.filter(robot => 
-    robot.service.toLowerCase() === service.toLowerCase()
+    (robot.service ?? '').toLowerCase() === service.toLowerCase()
   );
 }
 
@@ -205,14 +253,23 @@ export function getRobotsByAgencyAndService(agencyId: string, service: string): 
   let filteredRobots = cachedRobots;
 
   // Filtrer par agence si spécifiée
-  if (agencyId && agencyId !== '1') {
-    filteredRobots = filteredRobots.filter(robot => robot.id_agence === agencyId);
+  if (agencyId && agencyId !== 'TOUT') {
+    if (agencyId === '99') {
+      // Pour l'agence "TOUT", retourner tous les robots
+      filteredRobots = cachedRobots;
+    } else {
+      // Pour une agence spécifique, filtrer par son nom
+      const agency = cachedAgencies.find(a => a.idAgence === agencyId);
+      if (agency) {
+        filteredRobots = filteredRobots.filter(robot => robot.agence === agency.nomAgence);
+      }
+    }
   }
 
   // Filtrer par service si spécifié
   if (service && service !== 'TOUT') {
     filteredRobots = filteredRobots.filter(robot => 
-      robot.service.toLowerCase() === service.toLowerCase()
+      (robot.service ?? '').toLowerCase() === service.toLowerCase()
     );
   }
 
@@ -220,12 +277,11 @@ export function getRobotsByAgencyAndService(agencyId: string, service: string): 
   if (!service || service === 'TOUT') {
     const toutRobot: Program = {
       id_robot: 'TOUT',
-      nom_robot: 'TOUT',
-      id_agence: agencyId,
-      service: service,
-      type_gain: filteredRobots.length > 0 ? filteredRobots[0].type_gain : 'temps',
-      description: '',
-      bareme: ''
+      robot: 'TOUT',
+      agence: 'TOUT',
+    type_gain: '0',
+    temps_par_unite : '0',
+      type_unite: ''
     };
     return [toutRobot, ...filteredRobots];
   }
@@ -243,4 +299,28 @@ export function resetCache(): void {
   cachedAgencies = [];
   cachedRobots = [];
   isInitialized = false;
+  isFirstLogin = true;
+}
+
+export let cachedReportingData: any[] = [];
+
+export async function initializeReportingData(): Promise<void> {
+  try {
+    const querySnapshot = await getDocs(collection(db, 'DataReportingMoisCourant'));
+    cachedReportingData = querySnapshot.docs.map(doc => doc.data());
+    console.log('(dataStore) Reporting data cached:', cachedReportingData);
+  } catch (error) {
+    console.log('Error caching reporting data:', error);
+    throw error;
+  }
+}
+
+// Fonction pour vérifier si c'est la première connexion
+export function isFirstLoginSession(): boolean {
+  return isFirstLogin;
+}
+
+// Fonction pour mettre à jour l'état de la première connexion
+export function updateFirstLoginStatus(): void {
+  isFirstLogin = false;
 }
