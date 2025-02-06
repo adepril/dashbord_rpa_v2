@@ -31,7 +31,9 @@ import {
   isFirstLoginSession,
   updateRobots,
   setUpdateRobotsCallback,
-  cachedReportingData
+  cachedReportingData,
+  loadAllRobots,
+  cachedAllRobots
 } from '../utils/dataStore'
 
 interface DataEntry {
@@ -112,12 +114,14 @@ export default function Dashboard() {
           // Initialiser les données en cache
           await initializeData(username);
           await initializeReportingData(); // Add this line to initialize reporting data
-          console.log('??& (dataStore - initializeData) Données utilisateur:', userData);
-          console.log('??& (dataStore - initializeData) cachedReportingData :', cachedReportingData);
+          await loadAllRobots(); // Charger tous les robots
+          // console.log('@@ (dataStore - initializeData) Données utilisateur:', userData);
+          // console.log('@@ (dataStore - initializeData) cachedReportingData :', cachedReportingData);
+          // console.log('@@ (dataStore - initializeData) cachedRobots :', cachedAllRobots);
 
           // Récupérer les agences depuis le cache
           const userAgencies = getCachedAgencies();
-          console.log('(dataStore - getCachedAgencies) userAgencies :', userAgencies);
+              //console.log('(dataStore - getCachedAgencies) userAgencies :', userAgencies);
           setAgencies(userAgencies);
 
           if (userAgencies.length > 0) {
@@ -186,7 +190,7 @@ export default function Dashboard() {
       if (selectedRobotData) {
         // Si "TOUT" est sélectionné, charger les données de tous les robots
         if (selectedRobotData.robot === "TOUT") {
-   //console.log('@@ 1 (loadProgramData) selectedRobotData.robot === "TOUT"', selectedRobotData);
+              //console.log('@@ 1 (loadProgramData) selectedRobotData.robot === "TOUT"', selectedRobotData);
           const allRobotsEvolution = [];
           // const allMergedDataType1 = [];
           // const allMergedDataType2 = [];
@@ -213,7 +217,7 @@ export default function Dashboard() {
           const currentYear = currentDate.getFullYear();
 
           for (const robot of programs) {
-  //console.log('@ 1-1 (loadProgramData) robot :', robot);
+                 //console.log('@ 1-1 (loadProgramData) robot :', robot);
             // Ne pas traiter le robot "TOUT"
             if (robot.robot === "TOUT" || robot.robot === null) continue;
 
@@ -227,9 +231,9 @@ export default function Dashboard() {
                 'NB UNITES MOIS N-2': String(entry['NB UNITES MOIS N-2']),
                 'NB UNITES MOIS N-3': String(entry['NB UNITES MOIS N-3']),
               }));
-      //console.log('@ 1-2 (loadProgramData) rawData :', rawData);
+                    //console.log('@ 1-2 (loadProgramData) rawData :', rawData);
 
-     //console.log('@@ 2-4 (loadProgramData) selectedAgency :', selectedAgency);
+                    //console.log('@@ 2-4 (loadProgramData) selectedAgency :', selectedAgency);
             if (robot.agence === selectedAgency?.nomAgence || selectedAgency?.nomAgence === "TOUT") {
               const currentProgram = programs.find(p => p.robot === robot.robot);
               const robotType = currentProgram?.type_gain;
@@ -299,15 +303,15 @@ export default function Dashboard() {
           setRobotData2(mergedDataType2);
           setHistoriqueData(allRobotsEvolution);
           setUseChart4All(!selectedService);
-console.log('@@ 3 (loadProgramData) robotData1 :', mergedDataType1);
-console.log('@@ 4 (loadProgramData) robotData2 :', mergedDataType2);
+          // console.log('@@ 3 (loadProgramData) robotData1 :', mergedDataType1);
+          // console.log('@@ 4 (loadProgramData) robotData2 :', mergedDataType2);
         } else {
           setUseChart4All(false);
           const tempsParUnite = selectedRobotData.type_unite !== 'temps' || selectedRobotData.temps_par_unite === '0' ? '0' : selectedRobotData.temps_par_unite;
-          console.log('Debug: selectedRobotData.robot:', selectedRobotData.robot);
-          console.log('Debug: selectedRobotData.agence:', selectedRobotData.agence);
-          console.log('Debug: tempsParUnite:', tempsParUnite);
-          console.log('Debug: selectedRobotData.type_gain:', selectedRobotData.type_gain);
+          // console.log('Debug: selectedRobotData.robot:', selectedRobotData.robot);
+          // console.log('Debug: selectedRobotData.agence:', selectedRobotData.agence);
+          // console.log('Debug: tempsParUnite:', tempsParUnite);
+          // console.log('Debug: selectedRobotData.type_gain:', selectedRobotData.type_gain);
 
           const data = cachedReportingData
             .filter(entry => entry['AGENCE'] + "_" + entry['NOM PROGRAMME'] === selectedRobotData.agence + "_" + selectedRobotData.robot)
@@ -317,9 +321,11 @@ console.log('@@ 4 (loadProgramData) robotData2 :', mergedDataType2);
               'NB UNITES MOIS N-1': String(entry['NB UNITES MOIS N-1']),
               'NB UNITES MOIS N-2': String(entry['NB UNITES MOIS N-2']),
               'NB UNITES MOIS N-3': String(entry['NB UNITES MOIS N-3']),
+              ...selectedRobot
             }));
           setRobotData(data[0]);
-console.log('@@ 5 (loadProgramData) robotData :', data[0]);
+          // console.log('@@ 5 (loadProgramData) robotData :', data[0]);
+          // console.log('@@ 6 (loadProgramData) selectedRobot :', selectedRobot);
           const oneRobotEvolution = await fetchEvolutionsByProgram(selectedRobotData.robot);
           setHistoriqueData(oneRobotEvolution);
         }
@@ -400,9 +406,9 @@ console.log('@@ 5 (loadProgramData) robotData :', data[0]);
 
   const handleProgramChange = (robotID: string) => {
     console.log('--- ROBOT CHANGE - robotID:', robotID, '---');
-    console.log(' ID robot sélectionné:', robotID);
+    //console.log(' ID robot sélectionné:', robotID);
     const program = programs.find(p => p.id_robot === robotID);
-    console.log('@ (Dashboard.tsx) _Programme trouvé:', program);
+        //console.log('@ (Dashboard.tsx) _Programme trouvé:', program);
     if (program && selectedAgency) {
       setSelectedRobot(program);
       setSelectedRobotData(program);
@@ -437,7 +443,7 @@ console.log('@@ 5 (loadProgramData) robotData :', data[0]);
         <div className="max-w-7xl pl-0 ">
           <div className='flex items-center pl-0'>
             <div className="flex-none">
-              <Image src="/logo_bbl-groupe.svg" alt="Logo BBL Groupe" width={100} height={70} />
+              <Image src="/logo_bbl-groupe.svg" alt="Logo BBL Groupe" width={100} height={70} onClick={() => router.push('/')} />
             </div>
             <div className="flex-1 pr-[2%]"></div>
             <div className=" flex-none">
@@ -510,8 +516,8 @@ console.log('@@ 5 (loadProgramData) robotData :', data[0]);
           <div className="p-4 bg-x-200">
             <div className="grid grid-cols-4 gap-4 bg-x-100">
               <div className="col-span-4 pb-8">
-                <div className="text-md font-bold text-center">Robot - {selectedRobot?.robot}</div>
-                <div className="text-md font-bold text-center">Agence : {selectedAgency?.nomAgence}</div>
+                {/* <div className="text-md font-bold text-center">Robot - {selectedRobot?.robot}</div>
+                <div className="text-md font-bold text-center">Agence : {selectedAgency?.nomAgence}</div> */}
               
                 {selectedRobot?.robot === 'TOUT' && (
                     <Chart4All

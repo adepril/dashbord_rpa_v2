@@ -5,8 +5,8 @@ import React, { useState, useEffect } from 'react';
 import { formatDuration } from '../lib/utils'
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { Program } from '../utils/dataStore';
 import { fetchDataReportingByRobot } from '../utils/dataFetcher'
+import { Program, cachedAllRobots } from '../utils/dataStore';
 
 interface ChartProps {
   robotType: string
@@ -50,6 +50,11 @@ export default function Chart({ robotType, data, selectedAgency }: ChartProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const [descriptionRobot, setDescriptionRobot] = useState<Program | null>(null);
+
+    // console.log("Chart.tsx - robots:", robots);
+    // console.log("Chart.tsx - descriptionRobot:", descriptionRobot);
+
     const currentDate = new Date();
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth() + 1;
@@ -74,7 +79,7 @@ export default function Chart({ robotType, data, selectedAgency }: ChartProps) {
 
       <div className="w-2/3 pt-4 pb-12 bg-white rounded-lg shadow ml-2">
           <div className="h-[300px] relative ">
-{/* Histogram */}
+            {/* Histogram */}
             {data ? (
               <>
                 <div className="ml-[10%] text-left text-xl font-bold mb-4">
@@ -149,10 +154,10 @@ export default function Chart({ robotType, data, selectedAgency }: ChartProps) {
                 Aucune donnée disponible pour ce service
               </div>
             )}
-{/* // fin histogramme */}
+            {/* // fin histogramme */}
           </div>
           <div className="flex justify-around mt-10">
-{/* // histogramme */}
+            {/* // histogramme */}
             {data ? (
               <>
               <div className="w-1/4 mr-5 ml-5 ">
@@ -193,13 +198,13 @@ export default function Chart({ robotType, data, selectedAgency }: ChartProps) {
                     ) : ('N/A') }
                   </div>
                 </div>
-              </div> 
+              </div>
               </>
-            ) : ( 
+            ) : (
             <div className="flex justify-center items-center text-gray-500">
             </div>
-            )} 
-{/* // fin histogramme */}
+            )}
+            {/* // fin histogramme */}
           </div>
 
       </div>
@@ -210,32 +215,27 @@ export default function Chart({ robotType, data, selectedAgency }: ChartProps) {
               <span className="text-red-700 text-3xl font-bold">Description</span>
             </div>
 
-            {isLoading ? (
-                  <div className="mt-4 text-gray-500">Chargement en cours...</div>
-                ) : error ? (
-                  <div className="mt-4 text-red-500">{error}</div>
-                ) : robots.length > 0 ? (
-                  <>
-                    <div className="mt-4 px-4 pt-10" >
-                      Robot <span className="font-bold">"{data['NOM PROGRAMME']}"</span> :
-                    </div>
-                    <div className="mt-4 px-4 r">
-                      N/A
-                    </div>
-                    <div className="h-[10px] bg-x-200"></div>
-                    <div className="mt-4 px-4">
-                      <table className="w">
-                        <tbody>
-
-                        </tbody>
-                      </table>
-                    </div>
-
-                  </>
-                ) : (
-                  <div className="mt-4 text-gray-500">Aucune information disponible</div>
-                )}
-
+            <div className="mt-4 text-red-500">{error}</div>
+            {data ? (
+              <>
+                <div className="mt-4 px-4 pt-10" >
+                  Robot <span className="font-bold">{data.robot}</span> :
+                </div>                
+                <div className="mt-4 px-4">
+                  <table className="w">
+                    <tbody>
+                      <tr>
+                        <td>Description:</td>
+                        <td>{data.id_robot}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  </div>              
+                </>
+              ) : (
+                <div>Pas d'information disponible</div>
+              )}
+          
           </div>
       </div>
 

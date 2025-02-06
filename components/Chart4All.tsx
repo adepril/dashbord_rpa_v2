@@ -6,7 +6,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { formatDuration } from '../lib/utils'
 import { fetchDataReportingByRobot } from '../utils/dataFetcher'
-import { Program } from '../utils/dataStore';
+import { Program, cachedAllRobots } from '../utils/dataStore';
 
 interface ChartProps {
   robotType: string
@@ -43,24 +43,25 @@ const CustomizedAxisTick: React.FC<CustomizedAxisTickProps> = (props) => {
 
 export default function Chart({ robotType, data1, data2 , selectedAgency}: ChartProps) {
   
-  console.log("Chart4All.tsx - data1:", data1, " data2:", data2);
-  console.log("Chart4All.tsx - robotType:", selectedAgency);
+  // console.log("Chart4All.tsx - data1:", data1, " data2:", data2);
+  // console.log("Chart4All.tsx - robotType:", selectedAgency);
+  // console.log("Chart4All.tsx - robotType:", cachedAllRobots);
 
   interface ReportingData {
-    'NB UNITES DEPUIS DEBUT DU MOIS': number;
-    'NB UNITES MOIS N-1': number;
+    'NB UNITES DEPUIS DEBUT DU MOIS': string;
+    'NB UNITES MOIS N-1': string;
   }
 
   const [robots, setRobots] = useState<Program[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+ // const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
 
-
   useEffect(() => {
-    if (robots.length > 0 && !isPaused) {
+    if (cachedAllRobots.length > 0 && !isPaused) {
+      setRobots(cachedAllRobots);
       const interval = setInterval(() => {
         setCurrentIndex(prevIndex => (prevIndex + 1) % robots.length);
       }, 30000);
@@ -73,7 +74,6 @@ export default function Chart({ robotType, data1, data2 , selectedAgency}: Chart
     setIsPaused(prev => !prev);
   };
 
-  //console.log("Chart4All.tsx - data1:", JSON.stringify(data1, null, 2));
   if (!data1 || !data1['NB UNITES DEPUIS DEBUT DU MOIS']) {
     return (
       <div className="flex justify-center items-center h-[400px] text-gray-500">
@@ -209,14 +209,11 @@ export default function Chart({ robotType, data1, data2 , selectedAgency}: Chart
                 <span className="text-red-700 text-3xl font-bold">Le saviez-vous ?</span>
               </div>
               <div className="h-[50px] bg-x-200"></div>
-                {isLoading ? (
-                  <div className="mt-4 text-gray-500">Chargement en cours...</div>
-                ) : error ? (
-                  <div className="mt-4 text-red-500">{error}</div>
-                ) : robots.length > 0 ? (
+              <div className="mt-4 text-red-500">{error}</div>
+                {robots.length > 0 ? (
                   <>
                     <div className="mt-4 px-4 pt-10" >
-                      Robot <span className="font-bold">"{robots[currentIndex]?.robot.split('_')[1]}"</span> :
+                      Robot : <span className="font-bold">"{robots[currentIndex]?.robot}"</span>
                     </div>
                     <div className="mt-4 px-4 r">
                       {robots[currentIndex]?.description}

@@ -9,7 +9,7 @@ export interface Agency {
   libelleAgence?: string;
 }
 
-//Interface pour les données du robot
+// Interface pour les données du robot
 export interface Program {
   robot: string;
   id_robot: string;
@@ -26,11 +26,15 @@ export interface Program {
   description_long?: string;
   resultat?: string;
   currentMonth?: string;
-  previousMonth?: string; 
+  previousMonth?: string;
+  name?: string;
+  type?: string;
+  status?: string;
 }
 
 // Variables globales pour le cache
 let cachedAgencies: Agency[] = [];
+export let cachedAllRobots: Program[] = [];
 export let cachedRobots: Program[] = [];
 // Variable pour stocker la fonction de mise à jour des robots
 let updateRobotsCallback: ((robots: Program[]) => void) | null = null;
@@ -52,7 +56,7 @@ let isFirstLogin = true;
 // Fonction d'initialisation des données
 export async function initializeData(userId: string): Promise<void> {
   if (isInitialized) return;
-  
+
   try {
     // 1. Récupérer les données de l'utilisateur
     const userData = await fetchUserData(userId);
@@ -75,7 +79,7 @@ export async function initializeData(userId: string): Promise<void> {
 
     // 3. Charger tous les robots pour ces agences
     await loadAllRobotsForAgencies();
-    console.log('(dataStore - loadAllRobotsForAgencies) Chargement des robots',cachedRobots);
+    console.log('(dataStore - loadAllRobotsForAgencies) Chargement des robots', cachedRobots);
 
     isInitialized = true;
   } catch (error) {
@@ -84,13 +88,12 @@ export async function initializeData(userId: string): Promise<void> {
   }
 }
 
-
 async function fetchUserData(userId: string) {
   try {
     const usersRef = collection(db, 'utilisateurs');
     const q = query(usersRef, where('userId', '==', userId));
     const querySnapshot = await getDocs(q);
-    
+
     if (querySnapshot.empty) {
       return null;
     }
@@ -103,26 +106,6 @@ async function fetchUserData(userId: string) {
     };
   } catch (error) {
     console.log('Erreur lors de la récupération des données utilisateur:', error);
-    throw error;
-  }
-}
-
-// Fonction pour charger toutes les agences (cas admin)
-async function loadAllAgencies(): Promise<void> {
-  try {
-    const agenciesRef = collection(db, 'agences');
-    const querySnapshot = await getDocs(agenciesRef);
-    
-    cachedAgencies = querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        idAgence: data.idAgence,
-        nomAgence: data.nomAgence,
-        libelleAgence: data.libelleAgence
-      };
-    });
-  } catch (error) {
-    console.log('Erreur lors du chargement de toutes les agences:', error);
     throw error;
   }
 }
@@ -141,7 +124,7 @@ async function loadUserAgencies(agencyNames: string[]): Promise<void> {
       if (agencyName !== "-") {
         const q = query(agenciesRef, where('nomAgence', '==', agencyName));
         const querySnapshot = await getDocs(q);
-        
+
         if (!querySnapshot.empty) {
           const agencyData = querySnapshot.docs[0].data();
           cachedAgencies.push({
@@ -158,47 +141,89 @@ async function loadUserAgencies(agencyNames: string[]): Promise<void> {
   }
 }
 
-/////////////////////////////////////////////////////////////////////
-// Fonction pour charger tous les robots pour les agences en cache //
-// Chargement des robots dans la collection "robots_et_baremes"    //
-/////////////////////////////////////////////////////////////////////
+// Fonction pour charger tous les robots de la collection "robots_et_baremes"
+export async function loadAllRobots(): Promise<void> {
+  try {
+    const robotsRef = collection(db, 'robots_et_baremes');
+    const querySnapshot = await getDocs(robotsRef);
+    cachedAllRobots = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        robot: data["NOM PROGRAMME"],
+        id_robot: data.CLEF,
+        agence: data.AGENCE,
+        description: data.DESCRIPTION,
+        date_maj: data["DATE MAJ"],
+        type_unite: data.TYPE_UNITE,
+        temps_par_unite: data["TEMPS PAR UNITE"].replace(',', '.') || '0',
+        type_gain: data["TYPE GAIN"].replace(' (mn)', '').toLowerCase() || '0',
+        validateur: data.VALIDATEUR,
+        valide_oui_non: data["VALIDE OUI/NON"],
+        service: data.SERVICE,
+        probleme: data.PROBLEME,
+        description_long: data["DESCRIPTION LONG"],
+        resultat: data.RESULTAT
+      };
+    });
+
+    // Pour chaque robot, chercher les données de reporting correspondantes
+    cachedAllRobots = cachedAllRobots.map(robot => {
+      // Chercher dans cachedReportingData les données correspondantes
+      const reportingData = cachedReportingData.find(
+        report => report['AGENCE'] + '_' + report['NOM PROGRAMME'] === robot.id_robot
+      );
+//console.log('####### reportingData', reportingData);
+      if (reportingData) {
+        //console.log('####### reportingData', reportingData);
+        return {
+          ...robot,
+          currentMonth: reportingData['NB UNITES DEPUIS DEBUT DU MOIS'],
+          previousMonth: reportingData['NB UNITES MOIS N-1']
+        };
+      }
+      // console.log('####### robot', robot);
+      // console.log('####### robot.id_robot', robot.id_robot);
+      return robot;
+    });
+
+  } catch (error) {
+    console.log('Erreur lors du chargement des robots:', error);
+    throw error;
+  }
+}
+
+// Fonction pour charger tous les robots pour les agences en cache
 async function loadAllRobotsForAgencies(): Promise<void> {
-  
   try {
     const robotsRef = collection(db, 'robots_et_baremes'); // Collection "robots_et_baremes"
     const agencyNames = cachedAgencies.map(agency => agency.nomAgence); // liste des agences
     cachedRobots = [];
-    console.log('*(dataStore - loadAllRobotsForAgencies) Chargement des ROBOTS des agences :',agencyNames);
+    console.log('*(dataStore - loadAllRobotsForAgencies) Chargement des ROBOTS des agences :', agencyNames);
 
     for (const agencyName of agencyNames) {
       // Ne pas charger les robots de l'agence "TOUT"
       if (agencyName !== 'TOUT') {
         const q = query(robotsRef, where('AGENCE', '==', agencyName));
         const querySnapshot = await getDocs(q);
-        
+
         const robots = querySnapshot.docs.map(doc => {
-        const data = doc.data();
-        //console.log('(dataStore - loadAllRobotsForAgencies) Chargement des robots',data);
-        //const tempsParUnite = data["TEMPS PAR UNITE"].replace(',', '.') || '0';
-        //const typeGain = data["TYPE GAIN"].replace(' (mn)', '').toLowerCase() || '0';
-        // console.log('(dataStore - loadAllRobotsForAgencies) tempsParUnite',tempsParUnite);
-        // console.log('(dataStore - loadAllRobotsForAgencies) typeGain',typeGain);
-        return {
-          robot: data["NOM PROGRAMME"], 
-          id_robot: data.CLEF,
-          agence: data.AGENCE,
-          description: data.DESCRIPTION,
-          data_maj: data["DATE MAJ"],
-          type_unite: data.TYPE_UNITE,
-          temps_par_unite: data["TEMPS PAR UNITE"].replace(',', '.') || '0',
-          type_gain: data["TYPE GAIN"].replace(' (mn)', '').toLowerCase() || '0',
-          validateur: data.VALIDATEUR,
-          valide_oui_non: data["VALIDE OUI/NON"],
-          service: data.SERVICE,
-          probleme: data.PROBLEME,
-          description_long: data["DESCRIPTION LONG"],
-          resultat: data.RESULTAT
-        };
+          const data = doc.data();
+          return {
+            robot: data["NOM PROGRAMME"],
+            id_robot: data.CLEF,
+            agence: data.AGENCE,
+            description: data.DESCRIPTION,
+            data_maj: data["DATE MAJ"],
+            type_unite: data.TYPE_UNITE,
+            temps_par_unite: data["TEMPS PAR UNITE"].replace(',', '.') || '0',
+            type_gain: data["TYPE GAIN"].replace(' (mn)', '').toLowerCase() || '0',
+            validateur: data.VALIDATEUR,
+            valide_oui_non: data["VALIDE OUI/NON"],
+            service: data.SERVICE,
+            probleme: data.PROBLEME,
+            description_long: data["DESCRIPTION LONG"],
+            resultat: data.RESULTAT
+          };
         });
 
         cachedRobots.push(...robots);
@@ -224,14 +249,14 @@ export function getRobotsByAgency(agencyId: string): Program[] {
         const agency = cachedAgencies.find(a => a.idAgence === agencyId);
         return robot.agence === agency?.nomAgence;
       });
-  
+
   // Ajouter l'élément "TOUT" en premier
   const toutRobot: Program = {
     id_robot: 'TOUT',
     robot: 'TOUT',
     agence: 'TOUT',
     type_gain: '0',
-    temps_par_unite : '0',
+    temps_par_unite: '0',
     type_unite: ''
   };
 
@@ -243,7 +268,7 @@ export function getRobotsByService(service: string): Program[] {
   if (!service || service === 'TOUT') {
     return cachedRobots;
   }
-  return cachedRobots.filter(robot => 
+  return cachedRobots.filter(robot =>
     (robot.service ?? '').toLowerCase() === service.toLowerCase()
   );
 }
@@ -268,7 +293,7 @@ export function getRobotsByAgencyAndService(agencyId: string, service: string): 
 
   // Filtrer par service si spécifié
   if (service && service !== 'TOUT') {
-    filteredRobots = filteredRobots.filter(robot => 
+    filteredRobots = filteredRobots.filter(robot =>
       (robot.service ?? '').toLowerCase() === service.toLowerCase()
     );
   }
@@ -279,8 +304,8 @@ export function getRobotsByAgencyAndService(agencyId: string, service: string): 
       id_robot: 'TOUT',
       robot: 'TOUT',
       agence: 'TOUT',
-    type_gain: '0',
-    temps_par_unite : '0',
+      type_gain: '0',
+      temps_par_unite: '0',
       type_unite: ''
     };
     return [toutRobot, ...filteredRobots];
