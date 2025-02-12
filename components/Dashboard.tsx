@@ -358,8 +358,10 @@ export default function Dashboard() {
     // Charger les nouveaux robots depuis le cache
     if (agencySelected && isDataInitialized()) {
       const filteredRobots = getRobotsByAgency(agencySelected.idAgence);
+      console.log('Robots filtrés:', filteredRobots);
       setPrograms(filteredRobots);
       updateRobots(filteredRobots);
+      updateService(filteredRobots); // Appel de la nouvelle fonction
 
       if (filteredRobots.length > 0) {
         const firstRobot = selectedService ? filteredRobots[0] : filteredRobots.find(r => r.robot === "TOUT") || filteredRobots[0];
@@ -369,47 +371,13 @@ export default function Dashboard() {
     }
   };
 
-  const handleServiceChange = (service: string) => {
-    if (service === "") {
-      if (selectedAgency) {
-        sessionStorage.setItem('selectedAgencyId', selectedAgency.idAgence);
-      }
-      window.location.reload();
-    } else {
-      setSelectedService(service);
-
-      setPrograms([]);
-      setSelectedRobot(null);
-      setSelectedRobotData(null);
-      setRobotData(null);
-      setRobotData1(null);
-      setRobotData2(null);
-      setHistoriqueData([]);
-
-      if (selectedAgency && isDataInitialized()) {
-        const filteredRobots = getRobotsByAgencyAndService(selectedAgency.idAgence, service);
-        setPrograms(filteredRobots);
-
-        if (filteredRobots.length > 0) {
-          const firstRobot = filteredRobots[0];
-          setSelectedRobot(firstRobot);
-          setSelectedRobotData(firstRobot);
-
-          const loadRobotHistory = async () => {
-            const oneRobotEvolution = await fetchEvolutionsByProgram(firstRobot.robot);
-            setHistoriqueData(oneRobotEvolution);
-          };
-          loadRobotHistory();
-        }
-      }
-    }
-  };
+  
 
   const handleProgramChange = (robotID: string) => {
     console.log('--- ROBOT CHANGE - robotID:', robotID, '---');
-    //console.log(' ID robot sélectionné:', robotID);
+console.log(' ID robot sélectionné:', robotID);
     const program = programs.find(p => p.id_robot === robotID);
-        //console.log('@ (Dashboard.tsx) _Programme trouvé:', program);
+  console.log('@ (Dashboard.tsx) _Programme trouvé:', program);
     if (program && selectedAgency) {
       setSelectedRobot(program);
       setSelectedRobotData(program);
@@ -433,6 +401,30 @@ export default function Dashboard() {
   if (error) {
     return <div className="text-red-500">{error}</div>;
   }
+
+  const updateService = (filteredRobots: Program[]) => {
+    // Extraire tous les services uniques des robots filtrés
+    const services = new Set<string>();
+    services.add("TOUT"); // Toujours garder l'option "TOUT"
+
+    filteredRobots.forEach(robot => {
+      if (robot.service) {
+        services.add(robot.service);
+      } else {
+        // Si le service est vide, ajouter "TOUT"
+        services.add("TOUT");
+      }
+    });
+
+    // Mettre à jour la liste des services disponibles
+    setAvailableServices(services);
+
+    // Si le service actuellement sélectionné n'est pas dans la liste des services disponibles,
+    // réinitialiser à "TOUT"
+    if (selectedService && !services.has(selectedService)) {
+      setSelectedService("TOUT");
+    }
+  };
 
   if (!username) {
     return <div className="text-red-500">Pas d'utilisateur connecté</div>;
@@ -519,7 +511,7 @@ export default function Dashboard() {
               <div className="col-span-4 pb-8">
                 {/* <div className="text-md font-bold text-center">Robot - {selectedRobot?.robot}</div>
                 <div className="text-md font-bold text-center">Agence : {selectedAgency?.nomAgence}</div> */}
-              
+
                 {selectedRobot?.robot === 'TOUT' && (
                     <Chart4All
                       key={`all-${selectedAgency?.idAgence}-${selectedRobot?.type_gain}`}

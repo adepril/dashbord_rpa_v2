@@ -50,10 +50,9 @@ export default function Chart({ robotType, data, selectedAgency }: ChartProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const [descriptionRobot, setDescriptionRobot] = useState<Program | null>(null);
 
-    // console.log("Chart.tsx - robots:", robots);
-    // console.log("Chart.tsx - descriptionRobot:", descriptionRobot);
+
+    console.log("Chart.tsx - robots:", robots);
 
     const currentDate = new Date();
     const year = currentDate.getFullYear();
@@ -151,7 +150,7 @@ export default function Chart({ robotType, data, selectedAgency }: ChartProps) {
               </>
             ) : (
               <div className="flex justify-center items-center h-[400px] text-gray-500">
-                Aucune donnée disponible pour ce service
+                Aucune donnée disponible
               </div>
             )}
             {/* // fin histogramme */}
@@ -201,7 +200,7 @@ export default function Chart({ robotType, data, selectedAgency }: ChartProps) {
               </div>
               </>
             ) : (
-            <div className="flex justify-center items-center text-gray-500">
+            <div className="flex justify-center  h-[60px] text-gray-500">
             </div>
             )}
             {/* // fin histogramme */}
@@ -210,30 +209,31 @@ export default function Chart({ robotType, data, selectedAgency }: ChartProps) {
       </div>
 
       <div className="w-1/3 p-4 pb-12 bg-white rounded-lg shadow ml-2">
-          <div className="h-[380px] relative">
-            <div className="flex flex-col justify-center items-center mt-5 bg-x-100">
-              <span className="text-red-700 text-3xl font-bold">Description</span>
-            </div>
-
-            <div className="mt-4 text-red-500">{error}</div>
+          <div className="h-[400px] relative">
             {data ? (
               <>
-                <div className="mt-4 px-4 pt-10" >
+                <div className="flex justify-center items-center mt-0 bg-x-100">
+                  <span className="text-red-700 text-3xl font-bold">Description</span>
+                </div>
+             
+                <div className="mt-5  px-4 pt-10" >
                   Robot <span className="font-bold">{data.robot}</span> :
-                </div>                
-                <div className="mt-4 px-4">
-                  <table className="w">
-                    <tbody>
-                      <tr>
-                        <td>Description:</td>
-                        <td>{data.id_robot}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  </div>              
+                </div>         
+                
+                <div className="mt-4 px-4 pt-2" >
+                {data.description_long}
+                </div>      
+                <div className="mt-4 px-4 pt-2" >
+                Problème : {data.probleme}
+                </div>   
+                <div className="mt-4 px-4 pt-2" >
+                Solution apportée : {data.resultat}
+                </div>   
                 </>
               ) : (
-                <div>Pas d'information disponible</div>
+                <div className="flex justify-center items-center text-center h-[400px] ">
+                  <span className="text-gray-500">Aucune donnée disponible</span>
+                </div>
               )}
           
           </div>

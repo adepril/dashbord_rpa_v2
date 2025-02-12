@@ -314,6 +314,14 @@ export function getRobotsByAgencyAndService(agencyId: string, service: string): 
   return filteredRobots;
 }
 
+// Variables pour le cache des services
+export let cachedServices: string[] = [];
+export function updateService(robots: Program[]): string[] {
+  const services = Array.from(new Set(robots.map(robot => robot.service).filter((s): s is string => !!s)));
+  cachedServices = services;
+  return services;
+}
+
 // Fonction pour vérifier si les données sont initialisées
 export function isDataInitialized(): boolean {
   return isInitialized;
@@ -349,3 +357,4 @@ export function isFirstLoginSession(): boolean {
 export function updateFirstLoginStatus(): void {
   isFirstLogin = false;
 }
+

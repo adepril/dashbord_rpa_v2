@@ -208,7 +208,7 @@ export default function Chart({ robotType, data1, data2 , selectedAgency}: Chart
               <div className="flex flex-col justify-center items-center mt-5 bg-x-100">
                 <span className="text-red-700 text-3xl font-bold">Le saviez-vous ?</span>
               </div>
-              <div className="h-[50px] bg-x-200"></div>
+              <div className="h-[10px] bg-x-200"></div>
               <div className="mt-4 text-red-500">{error}</div>
                 {robots.length > 0 ? (
                   <>
@@ -216,10 +216,11 @@ export default function Chart({ robotType, data1, data2 , selectedAgency}: Chart
                       Robot : <span className="font-bold">"{robots[currentIndex]?.robot}"</span>
                     </div>
                     <div className="mt-4 px-4 r">
-                      {robots[currentIndex]?.description}
+                      {robots[currentIndex]?.description_long}
                     </div>
                     <div className="h-[10px] bg-x-200"></div>
                     <div className="mt-4 px-4">
+                      {robots[currentIndex]?.currentMonth !== undefined ? (
                       <table className="w">
                         <tbody>
                           <tr>
@@ -235,6 +236,9 @@ export default function Chart({ robotType, data1, data2 , selectedAgency}: Chart
                           </tr>
                         </tbody>
                       </table>
+                      ) : (
+                        <div className="mt-4 text-gray-500"></div>
+                      )}
                     </div>
 
                     <div className="absolute bottom-1 left-0 right-0 flex gap-2 items-center justify-center">
