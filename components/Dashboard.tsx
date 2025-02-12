@@ -68,6 +68,7 @@ export default function Dashboard() {
   const username = userData?.userId || '';
   const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null);
   const [selectedService, setSelectedService] = useState<string>('');
+  const [availableServices, setAvailableServices] = useState<Set<string>>(new Set(['TOUT']));
   const [programs, setPrograms] = useState<Program[]>([]);
   const [selectedRobot, setSelectedRobot] = useState<Program | null>(null);
   const [selectedRobotData, setSelectedRobotData] = useState<Program | null>(null);
