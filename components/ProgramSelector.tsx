@@ -16,12 +16,12 @@ export default function ProgramSelector({ robots, selectedProgramId, onProgramCh
 
   return (
     <Select value={selectedProgramId} onValueChange={onProgramChange}>
-      <SelectTrigger className="bg-white border border-gray-300 rounded-md h-9 w-[400px] text-sm">
+      <SelectTrigger className="bg-white border border-gray-300 rounded-md h-9 w-[350px] text-sm">
         <SelectValue placeholder={uniquePrograms.length > 0 ? uniquePrograms[0].robot : "Aucun programme disponible"}>
           {uniquePrograms.length === 0 ? "Aucun programme disponible" : uniquePrograms.find(p => p.id_robot === selectedProgramId)?.robot}
         </SelectValue>
       </SelectTrigger>
-      <SelectContent className="bg-white border border-gray-300 rounded-md w-[400px]">
+      <SelectContent className="bg-white border border-gray-300 rounded-md w-[350px]">
         {uniquePrograms.map((program) => (
           <SelectItem 
             key={program.id_robot} 

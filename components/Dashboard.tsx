@@ -469,13 +469,13 @@ console.log(' ID robot sélectionné:', robotID);
                     />
                   </div>
 
-                  <div className="flex items-center space-x-2">
+{/*                   <div className="flex items-center space-x-2">
                     <span>Service:</span>
                     <ServiceSelector
                       selectedService={selectedService}
                       onServiceChange={setSelectedService}
                     />
-                  </div>
+                  </div> */}
 
                   <div className="flex items-center space-x-2">
                     <span>Robot:</span>
