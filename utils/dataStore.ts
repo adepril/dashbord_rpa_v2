@@ -127,11 +127,13 @@ async function loadUserAgencies(agencyNames: string[]): Promise<void> {
 
         if (!querySnapshot.empty) {
           const agencyData = querySnapshot.docs[0].data();
-          cachedAgencies.push({
-            idAgence: agencyData.idAgence,
-            nomAgence: agencyData.nomAgence,
-            libelleAgence: agencyData.libelleAgence
-          });
+          if (!cachedAgencies.find(a => a.idAgence === agencyData.idAgence)) {
+            cachedAgencies.push({
+              idAgence: agencyData.idAgence,
+              nomAgence: agencyData.nomAgence,
+              libelleAgence: agencyData.libelleAgence
+            });
+          }
         }
       }
     }
@@ -260,7 +262,10 @@ export function getRobotsByAgency(agencyId: string): Program[] {
     type_unite: ''
   };
 
-  return [toutRobot, ...filteredRobots];
+  const uniqueRobots = filteredRobots.filter((robot, index, self) =>
+    index === self.findIndex(r => r.id_robot === robot.id_robot)
+  );
+  return [toutRobot, ...uniqueRobots];
 }
 
 // Fonction pour obtenir les robots filtrés par service
@@ -298,7 +303,10 @@ export function getRobotsByAgencyAndService(agencyId: string, service: string): 
     );
   }
 
-  // Ajouter l'élément "TOUT" en premier seulement si aucun service n'est spécifié
+  const uniqueRobots = filteredRobots.filter((robot, index, self) =>
+    index === self.findIndex(r => r.id_robot === robot.id_robot)
+  );
+
   if (!service || service === 'TOUT') {
     const toutRobot: Program = {
       id_robot: 'TOUT',
@@ -308,10 +316,10 @@ export function getRobotsByAgencyAndService(agencyId: string, service: string): 
       temps_par_unite: '0',
       type_unite: ''
     };
-    return [toutRobot, ...filteredRobots];
+    return [toutRobot, ...uniqueRobots];
   }
 
-  return filteredRobots;
+  return uniqueRobots;
 }
 
 // Variables pour le cache des services
@@ -357,4 +365,3 @@ export function isFirstLoginSession(): boolean {
 export function updateFirstLoginStatus(): void {
   isFirstLogin = false;
 }
-

@@ -11,15 +11,18 @@ interface ProgramSelectorProps {
 }
 
 export default function ProgramSelector({ robots, selectedProgramId, onProgramChange }: ProgramSelectorProps) {
+  // Filtrer les doublons basés sur id_robot
+  const uniquePrograms = Array.from(new Map(robots.map(p => [p.id_robot, p])).values());
+
   return (
     <Select value={selectedProgramId} onValueChange={onProgramChange}>
       <SelectTrigger className="bg-white border border-gray-300 rounded-md h-9 w-[400px] text-sm">
-        <SelectValue placeholder={robots.length > 0 ? robots[0].robot : "Aucun programme disponible"}>
-          {robots.length === 0 ? "Aucun programme disponible" : robots.find(p => p.id_robot === selectedProgramId)?.robot}
+        <SelectValue placeholder={uniquePrograms.length > 0 ? uniquePrograms[0].robot : "Aucun programme disponible"}>
+          {uniquePrograms.length === 0 ? "Aucun programme disponible" : uniquePrograms.find(p => p.id_robot === selectedProgramId)?.robot}
         </SelectValue>
       </SelectTrigger>
       <SelectContent className="bg-white border border-gray-300 rounded-md w-[400px]">
-        {robots.map((program) => (
+        {uniquePrograms.map((program) => (
           <SelectItem 
             key={program.id_robot} 
             value={program.id_robot}
