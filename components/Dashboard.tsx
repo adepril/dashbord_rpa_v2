@@ -252,6 +252,7 @@ export default function Dashboard() {
             if (robot.robot === "TOUT" || robot.robot === null) continue;
 
             // Récupère les données du robot
+            const tempsParUnite = robot.type_unite !== 'temps' || robot.temps_par_unite === '0' ? '0' : robot.temps_par_unite;
             rawData = cachedReportingData
               .filter(entry => entry['AGENCE'] + "_" + entry['NOM PROGRAMME'] === robot.id_robot)
               .map((entry: any) => ({
@@ -269,16 +270,19 @@ export default function Dashboard() {
               const robotType = currentProgram?.type_gain;
 
               for (const entry of rawData) {
+                // Récupérer le temps par unité pour ce robot
+                const tempsParUnite = robot.type_unite !== 'temps' || robot.temps_par_unite === '0' ? 1 : Number(robot.temps_par_unite);
+                
                 if (robotType === 'temps') {
-                  totalUnitesMoisCourant_Type1 += Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) || 0;
-                  totalUnitesMoisN1_Type1 += Number(entry['NB UNITES MOIS N-1']) || 0;
-                  totalUnitesMoisN2_Type1 += Number(entry['NB UNITES MOIS N-2']) || 0;
-                  totalUnitesMoisN3_Type1 += Number(entry['NB UNITES MOIS N-3']) || 0;
+                  totalUnitesMoisCourant_Type1 += (Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) || 0) * tempsParUnite;
+                  totalUnitesMoisN1_Type1 += (Number(entry['NB UNITES MOIS N-1']) || 0) * tempsParUnite;
+                  totalUnitesMoisN2_Type1 += (Number(entry['NB UNITES MOIS N-2']) || 0) * tempsParUnite;
+                  totalUnitesMoisN3_Type1 += (Number(entry['NB UNITES MOIS N-3']) || 0) * tempsParUnite;
                 } else if (robotType === 'autre') {
-                  totalUnitesMoisCourant_Type2 += Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) || 0;
-                  totalUnitesMoisN1_Type2 += Number(entry['NB UNITES MOIS N-1']) || 0;
-                  totalUnitesMoisN2_Type2 += Number(entry['NB UNITES MOIS N-2']) || 0;
-                  totalUnitesMoisN3_Type2 += Number(entry['NB UNITES MOIS N-3']) || 0;
+                  totalUnitesMoisCourant_Type2 += (Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) || 0) ;
+                  totalUnitesMoisN1_Type2 += (Number(entry['NB UNITES MOIS N-1']) || 0);
+                  totalUnitesMoisN2_Type2 += (Number(entry['NB UNITES MOIS N-2']) || 0);
+                  totalUnitesMoisN3_Type2 += (Number(entry['NB UNITES MOIS N-3']) || 0);
                 }
 
                 for (let i = 1; i <= 31; i++) {

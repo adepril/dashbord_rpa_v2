@@ -583,16 +583,18 @@ export async function initializeReportingData(): Promise<void> {
     const querySnapshot = await getDocs(collection(db, 'DataReportingMoisCourant'));
     cachedReportingData = querySnapshot.docs.map(doc => {
       const data = doc.data();
+      
+      // Trouver le robot correspondant dans cachedAllRobots
+      const matchingRobot = cachedAllRobots.find(robot =>
+        (robot.robot === data['NOM PROGRAMME'] || robot.id_robot.includes(data['NOM PROGRAMME'])) &&
+        robot.agence === data['AGENCE']
+      );
+      
       // Pour chaque clé correspondant à une date, applique le calcul du gain
       for (const key in data) {
         if (/^\d{2}\/\d{2}\/\d{4}$/.test(key)) {
           const originalValue = Number(data[key]);
           if (!isNaN(originalValue)) {
-            // Trouver le robot correspondant dans cachedAllRobots
-            const matchingRobot = cachedAllRobots.find(robot =>
-              (robot.robot === data['NOM PROGRAMME'] || robot.id_robot.includes(data['NOM PROGRAMME'])) &&
-              robot.agence === data['AGENCE']
-            );
             // Multiplie la valeur par le temps_par_unite si applicable
             if (matchingRobot && matchingRobot.temps_par_unite && matchingRobot.temps_par_unite !== '0') {
               data[key] = (originalValue * Number(matchingRobot.temps_par_unite)).toString();
@@ -600,6 +602,27 @@ export async function initializeReportingData(): Promise<void> {
           }
         }
       }
+      
+      // Appliquer la même logique de multiplication aux totaux mensuels
+      const monthlyTotals = [
+        'NB UNITES DEPUIS DEBUT DU MOIS',
+        'NB UNITES MOIS N-1',
+        'NB UNITES MOIS N-2',
+        'NB UNITES MOIS N-3'
+      ];
+      
+      for (const totalKey of monthlyTotals) {
+        if (data[totalKey] !== undefined) {
+          const originalValue = Number(data[totalKey]);
+          if (!isNaN(originalValue)) {
+            // Multiplie la valeur par le temps_par_unite si applicable
+            if (matchingRobot && matchingRobot.temps_par_unite && matchingRobot.temps_par_unite !== '0') {
+              data[totalKey] = (originalValue * Number(matchingRobot.temps_par_unite)).toString();
+            }
+          }
+        }
+      }
+      
       return data;
     });
     console.log('(dataStore) Reporting data cached:', cachedReportingData);
