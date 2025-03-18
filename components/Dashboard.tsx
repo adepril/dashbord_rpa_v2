@@ -13,7 +13,7 @@ import ServiceSelector from './ServiceSelector'
 import Image from 'next/image';
 import { Button } from './ui/button';
 import {
-  fetchDataReportingByRobot,
+  //tchDataReportingByRobot,
   fetchAllEvolutions,
   fetchEvolutionsByProgram,
   formatNumber
@@ -318,10 +318,10 @@ export default function Dashboard() {
             .filter(entry => entry['AGENCE'] + "_" + entry['NOM PROGRAMME'] === selectedRobotData.agence + "_" + selectedRobotData.robot)
             .map((entry: any) => ({
               ...entry,
-              'NB UNITES DEPUIS DEBUT DU MOIS': String(entry['NB UNITES DEPUIS DEBUT DU MOIS']),
-              'NB UNITES MOIS N-1': String(entry['NB UNITES MOIS N-1']),
-              'NB UNITES MOIS N-2': String(entry['NB UNITES MOIS N-2']),
-              'NB UNITES MOIS N-3': String(entry['NB UNITES MOIS N-3']),
+              'NB UNITES DEPUIS DEBUT DU MOIS': tempsParUnite !== '0' ? String(Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) * Number(tempsParUnite)) : String(entry['NB UNITES DEPUIS DEBUT DU MOIS']),
+              'NB UNITES MOIS N-1': tempsParUnite !== '0' ? String(Number(entry['NB UNITES MOIS N-1']) * Number(tempsParUnite)) : String(entry['NB UNITES MOIS N-1']),
+              'NB UNITES MOIS N-2': tempsParUnite !== '0' ? String(Number(entry['NB UNITES MOIS N-2']) * Number(tempsParUnite)) : String(entry['NB UNITES MOIS N-2']),
+              'NB UNITES MOIS N-3': tempsParUnite !== '0' ? String(Number(entry['NB UNITES MOIS N-3']) * Number(tempsParUnite)) : String(entry['NB UNITES MOIS N-3']),
               ...selectedRobot
             }));
           setRobotData(data[0]);

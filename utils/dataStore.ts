@@ -348,7 +348,26 @@ export let cachedReportingData: any[] = [];
 export async function initializeReportingData(): Promise<void> {
   try {
     const querySnapshot = await getDocs(collection(db, 'DataReportingMoisCourant'));
-    cachedReportingData = querySnapshot.docs.map(doc => doc.data());
+    cachedReportingData = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      // Pour chaque clé au format "jj/mm/aaaa", multiplier la valeur par le temps_par_unite correspondant
+      for (const key in data) {
+        if (/^\d{2}\/\d{2}\/\d{4}$/.test(key)) {
+          const originalValue = Number(data[key]);
+          if (!isNaN(originalValue)) {
+            // Trouver le robot correspondant dans cachedAllRobots en se basant sur "NOM PROGRAMME" et "AGENCE".
+            // On considère une correspondance exacte sur robot.robot ou une correspondance partielle via robot.id_robot.
+            const matchingRobot = cachedAllRobots.find(robot =>
+              (robot.robot === data['NOM PROGRAMME'] || robot.id_robot.includes(data['NOM PROGRAMME'])) && robot.agence === data['AGENCE']
+            );
+            if (matchingRobot && matchingRobot.temps_par_unite && matchingRobot.temps_par_unite !== '0') {
+              data[key] = (originalValue * Number(matchingRobot.temps_par_unite)).toString();
+            }
+          }
+        }
+      }
+      return data;
+    });
     console.log('(dataStore) Reporting data cached:', cachedReportingData);
   } catch (error) {
     console.log('Error caching reporting data:', error);
