@@ -36,6 +36,12 @@ import {
   cachedAllRobots
 } from '../utils/dataStore'
 
+// ============================================================
+// Interfaces
+// ------------------------------------------------------------
+// DataEntry : Représente une entrée de reporting pour l'affichage des graphiques.
+// MergedRequestFormProps : Interface pour les propriétés passées lors de l'ouverture du formulaire.
+// ==
 interface DataEntry {
   AGENCE: string;
   'NOM PROGRAMME': string;
@@ -61,7 +67,20 @@ interface MergedRequestFormProps {
   };
 }
 
+// ============================================================
+// Composant Dashboard
+// ------------------------------------------------------------
+// Vue principale du tableau de bord qui gère :
+// - L'authentification et la redirection si l'utilisateur n'est pas connecté
+// - L'initialisation des données utilisateur, agences et robots via Firestore
+// - La gestion des sélections (agence, service et robot)
+// - L'affichage de graphiques et d'un tableau d'évolution
+// - L'ouverture de formulaires pour les demandes
+// ============================================================
 export default function Dashboard() {
+  // ------------------------------------------------------------------
+  // États pour divers paramètres et données
+  // ------------------------------------------------------------------
   const [showAllRobots, setShowAllRobots] = useState(isFirstLoginSession());
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const userData = JSON.parse(localStorage.getItem('userData') || 'null');
@@ -81,14 +100,23 @@ export default function Dashboard() {
   const [OpenFormNewOrder, setIsFormOpen] = useState(false);
   const [useChart4All, setUseChart4All] = useState(true);
 
+  // Récupère l'objet router de Next.js pour rediriger l'utilisateur si besoin
   const router = useRouter();
 
+// ------------------------------------------------------------------
+// Redirection si l'utilisateur n'est pas connecté
+// ------------------------------------------------------------------
   useEffect(() => {
     if (!userData) {
       router.replace('/');
     }
   }, [userData, router]);
 
+  // ------------------------------------------------------------------
+  // Initialisation des données (utilisateur, agences, robots, reporting)
+  // Utilise un useRef pour ne lancer cette initialisation qu'une seule fois.
+  // Définition d'un callback pour mettre à jour la liste des robots.
+  // ------------------------------------------------------------------
   // Fetch user data and agencies
   const initialized = useRef(false);
 
@@ -112,13 +140,14 @@ export default function Dashboard() {
             return;
           }
 
-          // Initialiser les données en cache
+          // Initialiser les données en cache dans le bon ordre
           await initializeData(username);
-          await initializeReportingData(); // Add this line to initialize reporting data
-          await loadAllRobots(); // Charger tous les robots
+          await loadAllRobots(); // Charger tous les robots d'abord
+          await initializeReportingData(); // Puis initialiser les données de reporting avec les robots déjà chargés
+          
           // console.log('@@ (dataStore - initializeData) Données utilisateur:', userData);
-          // console.log('@@ (dataStore - initializeData) cachedReportingData :', cachedReportingData);
-          // console.log('@@ (dataStore - initializeData) cachedRobots :', cachedAllRobots);
+          console.log('@@ (dataStore - initializeData) cachedReportingData :', cachedReportingData);
+          console.log('@@ (dataStore - initializeData) cachedRobots :', cachedAllRobots);
 
           // Récupérer les agences depuis le cache
           const userAgencies = getCachedAgencies();
