@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { formatDuration } from '../lib/utils'
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { fetchDataReportingByRobot } from '../utils/dataFetcher'
+//import { fetchDataReportingByRobot } from '../utils/dataFetcher'
 import { Program, cachedAllRobots } from '../utils/dataStore';
 
 interface ChartProps {
