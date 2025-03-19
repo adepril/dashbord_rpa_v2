@@ -1,19 +1,26 @@
 'use client'
 
+// Importations pour la création de graphiques avec Recharts
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, ReferenceLine } from "recharts"
+// Importation de React ainsi que des hooks pour gérer l'état et les effets
 import React, { useState, useEffect, useCallback } from 'react';
+// Importations pour interagir avec Firebase Firestore (bien que non utilisé directement ici)
 import { collection, getDocs } from 'firebase/firestore';
+// Importation de la configuration Firebase
 import { db } from '../lib/firebase';
+// Fonction utilitaire permettant de formater des valeurs de temps/durée
 import { formatDuration } from '../lib/utils'
-//import { fetchDataReportingByRobot } from '../utils/dataFetcher'
+// Importation des types et des données mises en cache concernant les robots (programmes)
 import { Program, cachedAllRobots } from '../utils/dataStore';
 
+// Définition des propriétés que ce composant attend
 interface ChartProps {
   robotType: string
   data1: any, data2: any
   selectedAgency: string
 }
 
+// Interface définissant les propriétés utilisées pour personnaliser l'affichage des ticks sur l'axe X
 interface CustomizedAxisTickProps {
   x: number;
   y: number;
@@ -22,6 +29,7 @@ interface CustomizedAxisTickProps {
   };
 }
 
+// Composant pour personnaliser l'affichage d'un tick de l'axe X avec une rotation pour une meilleure lisibilité
 const CustomizedAxisTick: React.FC<CustomizedAxisTickProps> = (props) => {
   const { x, y, payload } = props;
   return (
@@ -41,39 +49,51 @@ const CustomizedAxisTick: React.FC<CustomizedAxisTickProps> = (props) => {
   );
 }
 
+// Composant principal d'affichage du graphique et des infos additionnelles sur les robots
 export default function Chart({ robotType, data1, data2 , selectedAgency}: ChartProps) {
   
   // console.log("Chart4All.tsx - data1:", data1, " data2:", data2);
   // console.log("Chart4All.tsx - robotType:", selectedAgency);
   // console.log("Chart4All.tsx - robotType:", cachedAllRobots);
 
+  // Interface locale pour décrire la forme des données de reporting attendues (exemple)
   interface ReportingData {
     'NB UNITES DEPUIS DEBUT DU MOIS': string;
     'NB UNITES MOIS N-1': string;
   }
 
+  // États locaux du composant :
+// robots : tableau de robots filtrés pour l'affichage dans la section "Le saviez-vous ?"
+// currentIndex : index du robot actuellement affiché dans le diaporama
+// isPaused : booléen indiquant si le défilement automatique des robots est en pause
+// error : message d'erreur éventuel pour l'affichage
   const [robots, setRobots] = useState<Program[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
- // const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-
+// useEffect pour gérer le diaporama des robots :
+// - Filtre les robots présents dans le cache afin d'exclure ceux dont le type d'unité est "temps"
+// - Met en place un intervalle pour faire défiler les informations toutes les 30 secondes
   useEffect(() => {
     if (cachedAllRobots.length > 0 && !isPaused) {
-      setRobots(cachedAllRobots);
+      // Filtrer les robots pour exclure ceux avec type_unite = 'temps'
+      const filteredRobots = cachedAllRobots.filter(robot => robot.type_unite !== 'temps');
+      setRobots(filteredRobots);
       const interval = setInterval(() => {
-        setCurrentIndex(prevIndex => (prevIndex + 1) % robots.length);
+        setCurrentIndex(prevIndex => (prevIndex + 1) % filteredRobots.length);
       }, 30000);
 
       return () => clearInterval(interval);
     }
-  }, [robots, isPaused]);
+  }, [isPaused]);
 
+  // Fonction pour changer l'état de pause/reprise du diaporama
   const handlePauseResume = () => {
     setIsPaused(prev => !prev);
   };
 
+  // Vérification de la présence des données de reporting essentielles (sinon affichage d'un message d'erreur)
   if (!data1 || !data1['NB UNITES DEPUIS DEBUT DU MOIS']) {
     return (
       <div className="flex justify-center items-center h-[400px] text-gray-500">
@@ -82,10 +102,13 @@ export default function Chart({ robotType, data1, data2 , selectedAgency}: Chart
     );
   }
 
+  // Détermination de la date actuelle pour l'axe X du graphique
   const currentDate = new Date();
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth() + 1;
 
+// Construction des données pour le graphique sur 31 jours :
+// Pour chaque jour, recherche une valeur dans data1 ou attribue 0 par défaut
   // Chart 1
   const chartData1 = Array.from({ length: 31 }, (_, i) => {
     const day = (i + 1).toString().padStart(2, '0');
@@ -99,7 +122,7 @@ export default function Chart({ robotType, data1, data2 , selectedAgency}: Chart
       valeur: value
     };
   }); // Chart 1
-
+  // Si toutes les valeurs sont nulles, affichage d'un message informant l'utilisateur
   if (chartData1.every(item => item.valeur === 0)) {
     return (
       <div className="flex justify-center items-center h-[400px] text-gray-500">
@@ -107,9 +130,12 @@ export default function Chart({ robotType, data1, data2 , selectedAgency}: Chart
       </div>
     );
   }
-
+// Rendu principal du composant réparti en deux sections :
+// 1. Affichage de l'histogramme (gain de temps) et des totaux mensuels
+// 2. Section "Le saviez-vous ?" affichant des informations supplémentaires sur les robots
   return (
     <>
+    {/* Section gauche : Histogramme et totaux */}
     <div className="w-full flex justify- gap-4 items-center ">
 
         <div className="w-2/3 pt-4 pb-12 bg-white rounded-lg shadow ml-2">
@@ -173,6 +199,7 @@ export default function Chart({ robotType, data1, data2 , selectedAgency}: Chart
               </BarChart>
             </ResponsiveContainer>
           </div>
+          {/* Affichage des totaux mensuels (mois courant, M-1, M-2, M-3) */}
           <div className="flex justify-around mt-10">
               <div className="w-1/4 mr-5 ml-5 ">
                 <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
@@ -202,7 +229,7 @@ export default function Chart({ robotType, data1, data2 , selectedAgency}: Chart
               </div>
           </div>
         </div>
-
+         {/* Section droite : Informations complémentaires sur les robots ("Le saviez-vous ?") */}
         <div className="w-1/3 p-4 pb-12 bg-white rounded-lg shadow ml-2">
             <div className="h-[380px] relative">
               <div className="flex flex-col justify-center items-center mt-5 bg-x-100">

@@ -249,6 +249,12 @@ async function loadUserAgencies(agencyNames: string[]): Promise<void> {
         }
       }
     }
+    // Trier les agences par ordre alphabétique (sauf "TOUT" qui reste en premier)
+    cachedAgencies.sort((a, b) => {
+      if (a.nomAgence === 'TOUT') return -1;
+      if (b.nomAgence === 'TOUT') return 1;
+      return a.nomAgence.localeCompare(b.nomAgence);
+    });
   } catch (error) {
     console.log('Erreur lors du chargement des agences utilisateur:', error);
     throw error;
@@ -424,6 +430,11 @@ export function getRobotsByAgency(agencyId: string): Program[] {
   const uniqueRobots = filteredRobots.filter((robot, index, self) =>
     index === self.findIndex(r => r.id_robot === robot.id_robot)
   );
+  
+  // Trier les robots par ordre alphabétique
+  uniqueRobots.sort((a, b) => a.robot.localeCompare(b.robot));
+  
+  // Retourner avec "TOUT" en premier
   return [toutRobot, ...uniqueRobots];
 }
 
@@ -441,11 +452,22 @@ export function getRobotsByAgency(agencyId: string): Program[] {
  */
 export function getRobotsByService(service: string): Program[] {
   if (!service || service === 'TOUT') {
-    return cachedRobots;
+    // Créer une copie pour ne pas modifier cachedRobots
+    const robots = [...cachedRobots];
+    // Trier par ordre alphabétique
+    robots.sort((a, b) => a.robot.localeCompare(b.robot));
+    return robots;
   }
-  return cachedRobots.filter(robot =>
+  
+  // Filtrer puis trier
+  const filteredRobots = cachedRobots.filter(robot =>
     (robot.service ?? '').toLowerCase() === service.toLowerCase()
   );
+  
+  // Trier par ordre alphabétique
+  filteredRobots.sort((a, b) => a.robot.localeCompare(b.robot));
+  
+  return filteredRobots;
 }
 
 /**
@@ -489,6 +511,9 @@ export function getRobotsByAgencyAndService(agencyId: string, service: string): 
   const uniqueRobots = filteredRobots.filter((robot, index, self) =>
     index === self.findIndex(r => r.id_robot === robot.id_robot)
   );
+  
+  // Trier les robots par ordre alphabétique
+  uniqueRobots.sort((a, b) => a.robot.localeCompare(b.robot));
 
   if (!service || service === 'TOUT') {
     const toutRobot: Program = {
@@ -521,8 +546,15 @@ export function getRobotsByAgencyAndService(agencyId: string, service: string): 
  *  - string[] : Liste des services uniques.
  */
 export function updateService(robots: Program[]): string[] {
-  const services = Array.from(new Set(robots.map(robot => robot.service).filter((s): s is string => !!s)));
+  // Extraire les services uniques et non-null
+  let services = Array.from(new Set(robots.map(robot => robot.service).filter((s): s is string => !!s)));
+  
+  // Trier les services par ordre alphabétique
+  services.sort((a, b) => a.localeCompare(b));
+  
+  // Mettre à jour le cache
   cachedServices = services;
+  
   return services;
 }
 

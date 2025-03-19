@@ -43,16 +43,12 @@ const CustomizedAxisTick: React.FC<CustomizedAxisTickProps> = (props) => {
 
 export default function Chart({ robotType, data, selectedAgency }: ChartProps) {
 
-    console.log("Chart.tsx - data:", data);
-    console.log("Chart.tsx - selectedAgency:", selectedAgency);
-
+    //console.log("Chart.tsx - data:", data);
+    //console.log("Chart.tsx - selectedAgency:", selectedAgency);
+    //console.log("Chart.tsx - robots:", robots);
     const [robots, setRobots] = useState<Program[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
-
-
-    console.log("Chart.tsx - robots:", robots);
 
     const currentDate = new Date();
     const year = currentDate.getFullYear();

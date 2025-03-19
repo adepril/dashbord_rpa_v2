@@ -222,9 +222,6 @@ export default function Dashboard() {
         if (selectedRobotData.robot === "TOUT") {
               //console.log('@@ 1 (loadProgramData) selectedRobotData.robot === "TOUT"', selectedRobotData);
           const allRobotsEvolution = [];
-          // const allMergedDataType1 = [];
-          // const allMergedDataType2 = [];
-
           let oneRobotEvolution: any[] = [];
           // Tableaux de 31 jours initialisés à 0 pour chaque type de robot
           const arrJoursDuMois: string[] = new Array(31).fill("0");
@@ -263,7 +260,6 @@ export default function Dashboard() {
                 'NB UNITES MOIS N-3': String(entry['NB UNITES MOIS N-3']),
               }));
                     //console.log('@ 1-2 (loadProgramData) rawData :', rawData);
-
                     //console.log('@@ 2-4 (loadProgramData) selectedAgency :', selectedAgency);
             if (robot.agence === selectedAgency?.nomAgence || selectedAgency?.nomAgence === "TOUT") {
               const currentProgram = programs.find(p => p.robot === robot.robot);
@@ -415,9 +411,9 @@ console.log(' ID robot sélectionné:', robotID);
       setSelectedRobot(program);
       setSelectedRobotData(program);
 
-      console.log('_Robot sélectionné:', program);
-      console.log('_Agence actuelle:', selectedAgency);
-      console.log('_DataReportingMoisCourant cached :', cachedReportingData);
+      // console.log('_Robot sélectionné:', program);
+      // console.log('_Agence actuelle:', selectedAgency);
+      // console.log('_DataReportingMoisCourant cached :', cachedReportingData);
     } else {
       console.log('_Programme ou agence non trouvé');
     }
