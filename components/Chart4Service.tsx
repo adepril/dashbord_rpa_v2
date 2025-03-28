@@ -22,13 +22,13 @@ const CustomizedAxisTick: React.FC<CustomizedAxisTickProps> = (props) => {
   const { x, y, payload } = props;
   return (
     <g transform={`translate(${x},${y})`}>
-      <text 
-        x={0} 
-        y={0} 
-        dy={16} 
-        textAnchor="end" 
-        fill="#666" 
-        transform="rotate(-35)" 
+      <text
+        x={0}
+        y={0}
+        dy={16}
+        textAnchor="end"
+        fill="#666"
+        transform="rotate(-35)"
         fontSize={10}
       >
         {payload.value}
@@ -39,7 +39,7 @@ const CustomizedAxisTick: React.FC<CustomizedAxisTickProps> = (props) => {
 
 export default function Chart4Service({ service, data1 = {
   'NB UNITES DEPUIS DEBUT DU MOIS': 0,
-  'NB UNITES MOIS N-1': 0, 
+  'NB UNITES MOIS N-1': 0,
   'NB UNITES MOIS N-2': 0,
   'NB UNITES MOIS N-3': 0
 } }: Chart4ServiceProps) {
@@ -118,34 +118,34 @@ export default function Chart4Service({ service, data1 = {
           </BarChart>
         </ResponsiveContainer>
       </div>
-              <div className="flex justify-around mt-10">
-                  <div className="w-1/4 mr-5 ml-5 ">
-                    <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
-                      <div className="ml-4 text-xs ">Total du mois</div>
-                      <div className="ml-4 text-xl " title={data1['NB UNITES DEPUIS DEBUT DU MOIS'] ? data1['NB UNITES DEPUIS DEBUT DU MOIS'] +' minutes' : 'N/A'}>
-                      {data1 && data1['NB UNITES DEPUIS DEBUT DU MOIS'] !== undefined ? formatDuration(data1['NB UNITES DEPUIS DEBUT DU MOIS']) : '0'}
-                      </div>
-                    </div>
-                  </div>
-                  <div className=" w-1/4 mr-5 ml-5">
-                  <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
-                      <div className="ml-4 text-xs ">M-1</div>
-                      <div className="ml-4 text-xl" title={data1['NB UNITES MOIS N-1'] ? data1['NB UNITES MOIS N-1'] +' minutes' : 'N/A'}>{data1 && data1['NB UNITES MOIS N-1'] !== undefined ? formatDuration(data1['NB UNITES MOIS N-1']) : '0'}</div>
-                    </div>
-                  </div>
-                  <div className=" w-1/4 mr-5 ml-5">
-                    <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
-                      <div className="ml-4 text-xs">M-2</div>
-                      <div className="ml-4 text-xl" title={data1['NB UNITES MOIS N-2'] ? data1['NB UNITES MOIS N-2'] +' minutes' : 'N/A'}>{data1 && data1['NB UNITES MOIS N-2'] !== undefined ? formatDuration(data1['NB UNITES MOIS N-2']) : '0'}</div>
-                    </div>
-                  </div>
-                  <div className="w-1/4 mr-5 ml-5">
-                  <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
-                      <div className="ml-4 text-xs ">M-3</div>
-                      <div className="ml-4 text-xl" title={data1['NB UNITES MOIS N-3'] ? data1['NB UNITES MOIS N-3'] +' minutes' : 'N/A'}>{data1 && data1['NB UNITES MOIS N-3'] !== undefined ? formatDuration(data1['NB UNITES MOIS N-3']) : '0'}</div>
-                    </div>
-                  </div>
-              </div> 
+      <div className="flex justify-around mt-10">
+        <div className="w-1/4 mr-5 ml-5 ">
+          <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
+            <div className="ml-4 text-xs ">Total du mois</div>
+            <div className="ml-4 text-xl " title={data1['NB UNITES DEPUIS DEBUT DU MOIS'] ? data1['NB UNITES DEPUIS DEBUT DU MOIS'] +' minutes' : 'N/A'}>
+              {data1 && data1['NB UNITES DEPUIS DEBUT DU MOIS'] !== undefined ? formatDuration(data1['NB UNITES DEPUIS DEBUT DU MOIS']) : '0'}
+            </div>
+          </div>
+        </div>
+        <div className=" w-1/4 mr-5 ml-5">
+          <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
+            <div className="ml-4 text-xs ">M-1</div>
+            <div className="ml-4 text-xl" title={data1['NB UNITES MOIS N-1'] ? data1['NB UNITES MOIS N-1'] +' minutes' : 'N/A'}>{data1 && data1['NB UNITES MOIS N-1'] !== undefined ? formatDuration(data1['NB UNITES MOIS N-1']) : '0'}</div>
+          </div>
+        </div>
+        <div className=" w-1/4 mr-5 ml-5">
+          <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
+            <div className="ml-4 text-xs">M-2</div>
+            <div className="ml-4 text-xl" title={data1['NB UNITES MOIS N-2'] ? data1['NB UNITES MOIS N-2'] +' minutes' : 'N/A'}>{data1 && data1['NB UNITES MOIS N-2'] !== undefined ? formatDuration(data1['NB UNITES MOIS N-2']) : '0'}</div>
+          </div>
+        </div>
+        <div className="w-1/4 mr-5 ml-5">
+          <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
+            <div className="ml-4 text-xs ">M-3</div>
+            <div className="ml-4 text-xl" title={data1['NB UNITES MOIS N-3'] ? data1['NB UNITES MOIS N-3'] +' minutes' : 'N/A'}>{data1 && data1['NB UNITES MOIS N-3'] !== undefined ? formatDuration(data1['NB UNITES MOIS N-3']) : '0'}</div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

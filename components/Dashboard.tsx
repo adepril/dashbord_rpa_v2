@@ -6,7 +6,6 @@ import ProgramSelector from './ProgramSelector'
 import Chart from './Chart'
 import ProgramTable from './ProgramTable'
 import Chart4All from './Chart4All'
-import Chart4Service from './Chart4Service'
 import MergedRequestForm from './MergedRequestForm'
 import AgencySelector from './AgencySelector'
 import ServiceSelector from './ServiceSelector'
@@ -18,6 +17,7 @@ import {
   fetchEvolutionsByProgram,
   formatNumber
 } from '../utils/dataFetcher'
+
 import {
   initializeData,
   initializeReportingData,

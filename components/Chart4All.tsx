@@ -191,7 +191,7 @@ export default function Chart({ robotType, data1, data2 , selectedAgency}: Chart
                   label={{
                     position: 'top',
                     fill: '#000',
-                    fontSize: 12,
+                    fontSize: 10,
                     formatter: (value: number) => value === 0 ? '' : formatDuration(value)
                   }}
                   activeBar={{ fill: robotType?.toLowerCase() === "temps" ? '#3498db' : '#3333db' }}

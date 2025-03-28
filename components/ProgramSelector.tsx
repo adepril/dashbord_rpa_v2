@@ -22,10 +22,10 @@ export default function ProgramSelector({ robots, selectedProgramId, onProgramCh
         </SelectValue>
       </SelectTrigger>
       <SelectContent className="bg-white border border-gray-300 rounded-md w-[350px]">
-        {uniquePrograms.map((program) => (
+        {uniquePrograms.map((program, index) => (
           <SelectItem 
-            key={program.id_robot} 
-            value={program.id_robot}
+            key={program.id_robot || index.toString()} 
+            value={program.id_robot || index.toString()}
             className="text-sm hover:bg-gray-100"
           >
             {program.robot}

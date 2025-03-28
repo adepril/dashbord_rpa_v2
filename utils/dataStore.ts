@@ -286,11 +286,11 @@ export async function loadAllRobots(): Promise<void> {
       const data = doc.data();
       return {
         robot: data["NOM PROGRAMME"],
-        id_robot: data.CLEF,
+        id_robot: data.AGENCE + "_" + data["NOM PROGRAMME"],
         agence: data.AGENCE,
         description: data.DESCRIPTION,
         date_maj: data["DATE MAJ"],
-        type_unite: data.TYPE_UNITE,
+        type_unite: data["TYPE UNITE"],
         temps_par_unite: data["TEMPS PAR UNITE"].replace(',', '.') || '0',
         type_gain: data["TYPE GAIN"].replace(' (mn)', '').toLowerCase() || '0',
         validateur: data.VALIDATEUR,
@@ -355,11 +355,11 @@ async function loadAllRobotsForAgencies(): Promise<void> {
           const data = doc.data();
           return {
             robot: data["NOM PROGRAMME"],
-            id_robot: data.CLEF,
+            id_robot: data.AGENCE+"_"+data["NOM PROGRAMME"],
             agence: data.AGENCE,
             description: data.DESCRIPTION,
             data_maj: data["DATE MAJ"],
-            type_unite: data.TYPE_UNITE,
+            type_unite: data["TYPE UNITE"],
             temps_par_unite: data["TEMPS PAR UNITE"].replace(',', '.') || '0',
             type_gain: data["TYPE GAIN"].replace(' (mn)', '').toLowerCase() || '0',
             validateur: data.VALIDATEUR,
@@ -618,7 +618,7 @@ export async function initializeReportingData(): Promise<void> {
       
       // Trouver le robot correspondant dans cachedAllRobots
       const matchingRobot = cachedAllRobots.find(robot =>
-        (robot.robot === data['NOM PROGRAMME'] || robot.id_robot.includes(data['NOM PROGRAMME'])) &&
+        (robot.robot === data['NOM PROGRAMME'] || (robot.id_robot && robot.id_robot.includes(data['NOM PROGRAMME']))) &&
         robot.agence === data['AGENCE']
       );
       
