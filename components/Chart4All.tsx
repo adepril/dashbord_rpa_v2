@@ -79,7 +79,7 @@ export default function Chart({ robotType, data1}: ChartProps) {
   useEffect(() => {
     if (cachedAllRobots.length > 0 && !isPaused) {
       // Filtrer les robots pour exclure ceux avec type_unite = 'temps'
-      const filteredRobots = cachedAllRobots.filter(robot => robot.type_unite !== 'temps');
+      const filteredRobots = cachedAllRobots.filter(robot => robot.type_gain !== 'temps');
       setRobots(filteredRobots);
       const interval = setInterval(() => {
         setCurrentIndex(prevIndex => (prevIndex + 1) % filteredRobots.length);
