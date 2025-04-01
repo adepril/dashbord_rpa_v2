@@ -10,25 +10,30 @@ interface ProgramSelectorProps {
   onProgramChange: (program: string) => void;
 }
 
-export default function ProgramSelector({ robots, selectedProgramId, onProgramChange }: ProgramSelectorProps) {
-  // Filtrer les doublons basés sur id_robot
-  const uniquePrograms = Array.from(new Map(robots.map(p => [p.id_robot, p])).values());
+function verboseName(program: Program | undefined): string {
+  if (!program) return "";
+  return program.robot === "TOUT" ? "TOUT" : `${program.robot}`; //(${program.agence})`; 
+}
 
+export default function ProgramSelector({ robots, selectedProgramId, onProgramChange }: ProgramSelectorProps) {
+  // Utiliser la liste complète des robots sans éliminer les doublons
+  const programs = robots;
+  
   return (
     <Select value={selectedProgramId} onValueChange={onProgramChange}>
       <SelectTrigger className="bg-white border border-gray-300 rounded-md h-9 w-[350px] text-sm">
-        <SelectValue placeholder={uniquePrograms.length > 0 ? uniquePrograms[0].robot : "Aucun programme disponible"}>
-          {uniquePrograms.length === 0 ? "Aucun programme disponible" : uniquePrograms.find(p => p.id_robot === selectedProgramId)?.robot}
-        </SelectValue>
+      <SelectValue placeholder="Sélectionnez un programme">
+                {verboseName(programs.find((p: Program) => p.id_robot === selectedProgramId))}
+      </SelectValue>
       </SelectTrigger>
       <SelectContent className="bg-white border border-gray-300 rounded-md w-[350px]">
-        {uniquePrograms.map((program, index) => (
+        {programs.map((program: Program, index: number) => (
           <SelectItem 
             key={program.id_robot || index.toString()} 
             value={program.id_robot || index.toString()}
             className="text-sm hover:bg-gray-100"
           >
-            {program.robot}
+            {verboseName(program)}
           </SelectItem>
         ))}
       </SelectContent>

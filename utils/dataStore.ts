@@ -408,15 +408,7 @@ export function getCachedAgencies(): Agency[] {
  * Sortie :
  *  - Program[] : Liste des robots filtrés, avec "TOUT" inclus.
  */
-export function getRobotsByAgency(agencyId: string): Program[] {
-  const filteredRobots = agencyId === '99'
-    ? cachedRobots
-    : cachedRobots.filter(robot => {
-        const agency = cachedAgencies.find(a => a.idAgence === agencyId);
-        return robot.agence === agency?.nomAgence;
-      });
-
-  // Robot "TOUT" pour afficher tous les robots
+export function getRobotsByAgency(_agencyId: string): Program[] {
   const toutRobot: Program = {
     id_robot: 'TOUT',
     robot: 'TOUT',
@@ -426,16 +418,18 @@ export function getRobotsByAgency(agencyId: string): Program[] {
     type_unite: ''
   };
 
-  // Éliminer les doublons
-  const uniqueRobots = filteredRobots.filter((robot, index, self) =>
-    index === self.findIndex(r => r.id_robot === robot.id_robot)
-  );
-  
-  // Trier les robots par ordre alphabétique
-  uniqueRobots.sort((a, b) => a.robot.localeCompare(b.robot));
-  
-  // Retourner avec "TOUT" en premier
-  return [toutRobot, ...uniqueRobots];
+  const allRobots = [...cachedAllRobots];
+  allRobots.sort((a, b) => a.robot.localeCompare(b.robot));
+
+  if (_agencyId === '99') {
+    return [toutRobot, ...allRobots];
+  } else {
+    // On récupère l'agence correspondante dans le cache pour obtenir son nom
+    const agency = cachedAgencies.find(a => a.idAgence === _agencyId);
+    const agencyName = agency ? agency.nomAgence : _agencyId;
+    const filteredRobots = allRobots.filter(r => r.agence === agencyName);
+    return [toutRobot, ...filteredRobots];
+  }
 }
 
 /**
@@ -508,12 +502,8 @@ export function getRobotsByAgencyAndService(agencyId: string, service: string): 
     );
   }
 
-  const uniqueRobots = filteredRobots.filter((robot, index, self) =>
-    index === self.findIndex(r => r.id_robot === robot.id_robot)
-  );
-  
   // Trier les robots par ordre alphabétique
-  uniqueRobots.sort((a, b) => a.robot.localeCompare(b.robot));
+  filteredRobots.sort((a, b) => a.robot.localeCompare(b.robot));
 
   if (!service || service === 'TOUT') {
     const toutRobot: Program = {
@@ -524,10 +514,10 @@ export function getRobotsByAgencyAndService(agencyId: string, service: string): 
       temps_par_unite: '0',
       type_unite: ''
     };
-    return [toutRobot, ...uniqueRobots];
+    return [toutRobot, ...filteredRobots];
   }
 
-  return uniqueRobots;
+  return filteredRobots;
 }
 
 // ============================================================
@@ -617,11 +607,13 @@ export async function initializeReportingData(): Promise<void> {
       const data = doc.data();
       
       // Trouver le robot correspondant dans cachedAllRobots
-      const matchingRobot = cachedAllRobots.find(robot =>
-        (robot.robot === data['NOM PROGRAMME'] || (robot.id_robot && robot.id_robot.includes(data['NOM PROGRAMME']))) &&
-        robot.agence === data['AGENCE']
-      );
+      // const matchingRobot = cachedAllRobots.find(robot =>
+      //   (robot.robot === data['NOM PROGRAMME'] || (robot.id_robot && robot.id_robot.includes(data['NOM PROGRAMME']))) &&
+      //   robot.agence === data['AGENCE']
+      // );
+      const matchingRobot = cachedAllRobots.find(robot => robot.id_robot === data['NOM PROGRAMME'] + '_' + data['AGENCE']);  
       
+
       // Pour chaque clé correspondant à une date, applique le calcul du gain
       for (const key in data) {
         if (/^\d{2}\/\d{2}\/\d{4}$/.test(key)) {
