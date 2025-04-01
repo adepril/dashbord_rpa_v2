@@ -240,8 +240,20 @@ export default function Dashboard() {
           let totalUnitesMoisN3_Type2 = 0;
 
           const currentDate = new Date();
-          const currentMonth = (currentDate.getMonth() + 1).toString().padStart(2, '0');
-          const currentYear = currentDate.getFullYear();
+          const year = currentDate.getFullYear();
+          const month = currentDate.getMonth() + 1;
+          let displayMonth = month;
+          let displayYear = year;
+          if (currentDate.getDate() === 1) {
+            if (month === 1) {
+              displayMonth = 12;
+              displayYear = year - 1;
+            } else {
+              displayMonth = month - 1;
+            }
+          }
+          const currentMonth = displayMonth.toString().padStart(2, '0');
+          const currentYear = displayYear;
 
           for (const robot of programs) {
                  //console.log('@ 1-1 (loadProgramData) robot :', robot);
@@ -330,7 +342,7 @@ export default function Dashboard() {
           }
 
           setRobotData1(mergedDataType1);
-          setRobotData2(mergedDataType2);
+          //setRobotData2(mergedDataType2);
           setHistoriqueData(allRobotsEvolution);
           setUseChart4All(!selectedService);
           // console.log('@@ 3 (loadProgramData) robotData1 :', mergedDataType1);
@@ -559,8 +571,8 @@ console.log(' ID robot sélectionné:', robotID);
                       key={`all-${selectedAgency?.idAgence}-${selectedRobot?.type_gain}`}
                       robotType={selectedRobot?.type_gain}
                       data1={robotData1}
-                      data2={robotData2}
-                      selectedAgency={selectedAgency?.idAgence || 'ALL'}
+                      //data2={robotData2}
+                      //selectedAgency={selectedAgency?.idAgence || 'ALL'}
                     />
                   )}
 

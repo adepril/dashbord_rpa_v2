@@ -53,10 +53,20 @@ export default function Chart({ robotType, data, selectedAgency }: ChartProps) {
     const currentDate = new Date();
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth() + 1;
+    let displayMonth = month;
+    let displayYear = year;
+    if(currentDate.getDate() === 1) {
+      if(month === 1) {
+        displayMonth = 12;
+        displayYear = year - 1;
+      } else {
+        displayMonth = month - 1;
+      }
+    }
 
     const chartData = Array.from({ length: 31 }, (_, i) => {
-    const day = (i + 1).toString().padStart(2, '0');
-    const dateKey = `${day}/${month.toString().padStart(2, '0')}/${year}`;
+      const day = (i + 1).toString().padStart(2, '0');
+      const dateKey = `${day}/${displayMonth.toString().padStart(2, '0')}/${displayYear}`;
     let value = 0;
     if (data && data[dateKey]) {
       value = Number(data[dateKey]);

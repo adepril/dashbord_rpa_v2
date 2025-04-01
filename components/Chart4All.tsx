@@ -16,8 +16,8 @@ import { Program, cachedAllRobots } from '../utils/dataStore';
 // Définition des propriétés que ce composant attend
 interface ChartProps {
   robotType: string
-  data1: any, data2: any
-  selectedAgency: string
+  data1: any //,data2: any
+  //selectedAgency: string
 }
 
 // Interface définissant les propriétés utilisées pour personnaliser l'affichage des ticks sur l'axe X
@@ -50,11 +50,12 @@ const CustomizedAxisTick: React.FC<CustomizedAxisTickProps> = (props) => {
 }
 
 // Composant principal d'affichage du graphique et des infos additionnelles sur les robots
-export default function Chart({ robotType, data1, data2 , selectedAgency}: ChartProps) {
+export default function Chart({ robotType, data1}: ChartProps) {
   
-  // console.log("Chart4All.tsx - data1:", data1, " data2:", data2);
-  // console.log("Chart4All.tsx - robotType:", selectedAgency);
-  // console.log("Chart4All.tsx - robotType:", cachedAllRobots);
+  //console.log("Chart4All.tsx - data1:", data1);
+  //console.log("Chart4All.tsx - data1:", data1, " data2:", data2);
+  //console.log("Chart4All.tsx - robotType:", selectedAgency);
+  //console.log("Chart4All.tsx - robotType:", cachedAllRobots);
 
   // Interface locale pour décrire la forme des données de reporting attendues (exemple)
   interface ReportingData {
@@ -106,13 +107,23 @@ export default function Chart({ robotType, data1, data2 , selectedAgency}: Chart
   const currentDate = new Date();
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth() + 1;
+  let displayMonth = month;
+  let displayYear = year;
+  if(currentDate.getDate() === 1) {
+    if(month === 1) {
+      displayMonth = 12;
+      displayYear = year - 1;
+    } else {
+      displayMonth = month - 1;
+    }
+  }
 
 // Construction des données pour le graphique sur 31 jours :
 // Pour chaque jour, recherche une valeur dans data1 ou attribue 0 par défaut
   // Chart 1
   const chartData1 = Array.from({ length: 31 }, (_, i) => {
     const day = (i + 1).toString().padStart(2, '0');
-    const dateKey = `${day}/${month.toString().padStart(2, '0')}/${year}`;
+    const dateKey = `${day}/${displayMonth.toString().padStart(2, '0')}/${displayYear}`;
     let value = 0;
     if (data1 && data1[dateKey]) {
       value = Number(data1[dateKey]);
