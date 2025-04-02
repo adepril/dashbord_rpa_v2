@@ -34,11 +34,16 @@ const handleAgencyChange = (agencyId: string) => {
       <SelectContent className="bg-white border border-gray-300 rounded-md w-[350px]">
         {agencies.map((agency) => {
           const displayText = agency.libelleAgence?.trim() || agency.nomAgence;
+          // Vérifier si l'agence a des robots associés (en excluant le robot "TOUT")
+          const agencyRobots = getRobotsByAgency(agency.idAgence);
+          const hasRobots = agencyRobots.length > 1; // Plus de 1 car le premier est toujours "TOUT"
+          
           return (
             <SelectItem
               key={agency.idAgence}
               value={agency.idAgence}
-              className="text-sm hover:bg-gray-100"
+              disabled={!hasRobots}
+              className={`text-sm ${!hasRobots ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}`}
             >
               {displayText}
             </SelectItem>
