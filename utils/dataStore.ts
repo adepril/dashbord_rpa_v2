@@ -301,6 +301,10 @@ export async function loadAllRobots(): Promise<void> {
         resultat: data.RESULTAT
       };
     });
+    if (cachedAgencies.length > 0) {
+      const userAgencyNames = cachedAgencies.map(agency => agency.nomAgence);
+      cachedAllRobots = cachedAllRobots.filter(robot => userAgencyNames.includes(robot.agence));
+    }
 
     // Pour chaque robot, essaye de lier les données de reporting
     cachedAllRobots = cachedAllRobots.map(robot => {
