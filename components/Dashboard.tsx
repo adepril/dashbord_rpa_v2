@@ -33,7 +33,7 @@ import {
   setUpdateRobotsCallback,
   cachedReportingData,
   loadAllRobots,
-  cachedAllRobots
+  cachedRobots4Agencies
 } from '../utils/dataStore'
 
 // ============================================================
@@ -137,7 +137,7 @@ export default function Dashboard() {
           await initializeReportingData();
           
           console.log('@@ (dataStore - initializeData) cachedReportingData :', cachedReportingData);
-          console.log('@@ (dataStore - initializeData) cachedRobots :', cachedAllRobots);
+          console.log('@@ (dataStore - initializeData) cachedRobots4Agencies :', cachedRobots4Agencies);
 
           // Récupérer les agences depuis le cache
           const userAgencies = getCachedAgencies();
@@ -317,17 +317,18 @@ export default function Dashboard() {
           setUseChart4All((prev: boolean) => !prev);
         } else {
           setUseChart4All(false);
-          const unitStr = selectedRobotData.type_unite !== 'temps' || selectedRobotData.temps_par_unite === '0' ? '0' : selectedRobotData.temps_par_unite;
+          const tpsParUnit = selectedRobotData.temps_par_unite === '0' ? '0' : selectedRobotData.temps_par_unite;
           const data = cachedReportingData
             .filter(entry => entry['AGENCE'] + "_" + entry['NOM PROGRAMME'] === selectedRobotData.agence + "_" + selectedRobotData.robot)
             .map((entry: any) => ({
-              ...entry,
-              'NB UNITES DEPUIS DEBUT DU MOIS': unitStr !== '0' ? String(Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) * Number(unitStr)) : String(entry['NB UNITES DEPUIS DEBUT DU MOIS']),
-              'NB UNITES MOIS N-1': unitStr !== '0' ? String(Number(entry['NB UNITES MOIS N-1']) * Number(unitStr)) : String(entry['NB UNITES MOIS N-1']),
-              'NB UNITES MOIS N-2': unitStr !== '0' ? String(Number(entry['NB UNITES MOIS N-2']) * Number(unitStr)) : String(entry['NB UNITES MOIS N-2']),
-              'NB UNITES MOIS N-3': unitStr !== '0' ? String(Number(entry['NB UNITES MOIS N-3']) * Number(unitStr)) : String(entry['NB UNITES MOIS N-3']),
-              ...selectedRobot
+             ...entry,
+              'NB UNITES DEPUIS DEBUT DU MOIS': tpsParUnit !== '0' ? String(Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) * Number(tpsParUnit)) : String(entry['NB UNITES DEPUIS DEBUT DU MOIS']),
+              'NB UNITES MOIS N-1': tpsParUnit !== '0' ? String(Number(entry['NB UNITES MOIS N-1']) * Number(tpsParUnit)) : String(entry['NB UNITES MOIS N-1']),
+              'NB UNITES MOIS N-2': tpsParUnit !== '0' ? String(Number(entry['NB UNITES MOIS N-2']) * Number(tpsParUnit)) : String(entry['NB UNITES MOIS N-2']),
+              'NB UNITES MOIS N-3': tpsParUnit !== '0' ? String(Number(entry['NB UNITES MOIS N-3']) * Number(tpsParUnit)) : String(entry['NB UNITES MOIS N-3']),
+              //...selectedRobot
             }));
+          console.log('## data:', data," tpsParUnit:", tpsParUnit);
           setRobotData(data[0]);
           const oneRobotEvolution = await fetchEvolutionsByProgram(selectedRobotData.robot);
           setHistoriqueData(oneRobotEvolution);

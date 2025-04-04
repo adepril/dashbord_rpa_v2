@@ -11,7 +11,7 @@ import { db } from '../lib/firebase';
 // Fonction utilitaire permettant de formater des valeurs de temps/durée
 import { formatDuration } from '../lib/utils'
 // Importation des types et des données mises en cache concernant les robots (programmes)
-import { Program, cachedAllRobots } from '../utils/dataStore';
+import { Program, cachedRobots4Agencies } from '../utils/dataStore';
 
 // Définition des propriétés que ce composant attend
 interface ChartProps {
@@ -77,9 +77,9 @@ export default function Chart({ robotType, data1}: ChartProps) {
 // - Filtre les robots présents dans le cache afin d'exclure ceux dont le type d'unité est "temps"
 // - Met en place un intervalle pour faire défiler les informations toutes les 30 secondes
   useEffect(() => {
-    if (cachedAllRobots.length > 0 && !isPaused) {
+if (cachedRobots4Agencies.length > 0 && !isPaused) {
       // Filtrer les robots pour exclure ceux avec type_unite = 'temps'
-      const filteredRobots = cachedAllRobots.filter(robot => robot.type_gain !== 'temps');
+      const filteredRobots = cachedRobots4Agencies.filter(robot => robot.type_gain !== 'temps');
       setRobots(filteredRobots);
       const interval = setInterval(() => {
         setCurrentIndex(prevIndex => (prevIndex + 1) % filteredRobots.length);
@@ -251,7 +251,10 @@ export default function Chart({ robotType, data1}: ChartProps) {
                 {robots.length > 0 ? (
                   <>
                     <div className="mt-4 px-4 pt-10" >
-                      Robot : <span className="font-bold">"{robots[currentIndex]?.robot}"</span>
+                      Robot : <span className="font-bold">{robots[currentIndex]?.robot}</span>
+                    </div>
+                    <div className="mt-2 px-4 " >
+                      Agence : <span className="font-">{robots[currentIndex]?.agence}</span>
                     </div>
                     <div className="mt-4 px-4 r">
                       {robots[currentIndex]?.description_long}
