@@ -64,7 +64,7 @@ export interface Program {
 // - cachedRobots: stocke les robots filtrés pour les agences en cache.
 // ------------------------------------------------------------
 let cachedAgencies: Agency[] = [];
-export let cachedAllRobots: Program[] = [];
+export let cachedRobots4Agencies: Program[] = [];
 export let cachedRobots: Program[] = [];
 export let cachedServices: string[] = [];
 
@@ -282,7 +282,7 @@ export async function loadAllRobots(): Promise<void> {
   try {
     const robotsRef = collection(db, 'robots_et_baremes');
     const querySnapshot = await getDocs(robotsRef);
-    cachedAllRobots = querySnapshot.docs.map(doc => {
+    cachedRobots4Agencies = querySnapshot.docs.map(doc => {
       const data = doc.data();
       return {
         robot: data["NOM PROGRAMME"],
@@ -303,11 +303,11 @@ export async function loadAllRobots(): Promise<void> {
     });
     if (cachedAgencies.length > 0) {
       const userAgencyNames = cachedAgencies.map(agency => agency.nomAgence);
-      cachedAllRobots = cachedAllRobots.filter(robot => userAgencyNames.includes(robot.agence));
+      cachedRobots4Agencies = cachedRobots4Agencies.filter(robot => userAgencyNames.includes(robot.agence));
     }
 
     // Pour chaque robot, essaye de lier les données de reporting
-    cachedAllRobots = cachedAllRobots.map(robot => {
+    cachedRobots4Agencies = cachedRobots4Agencies.map(robot => {
       const reportingData = cachedReportingData.find(
         report => report['AGENCE'] + '_' + report['NOM PROGRAMME'] === robot.id_robot
       );
@@ -422,7 +422,7 @@ export function getRobotsByAgency(_agencyId: string): Program[] {
     type_unite: ''
   };
 
-  const allRobots = [...cachedAllRobots];
+  const allRobots = [...cachedRobots4Agencies];
   allRobots.sort((a, b) => a.robot.localeCompare(b.robot));
 
   if (_agencyId === '99') {
@@ -615,7 +615,7 @@ export async function initializeReportingData(): Promise<void> {
       //   (robot.robot === data['NOM PROGRAMME'] || (robot.id_robot && robot.id_robot.includes(data['NOM PROGRAMME']))) &&
       //   robot.agence === data['AGENCE']
       // );
-      const matchingRobot = cachedAllRobots.find(robot => robot.id_robot === data['NOM PROGRAMME'] + '_' + data['AGENCE']);  
+      const matchingRobot = cachedRobots4Agencies.find(robot => robot.id_robot === data['NOM PROGRAMME'] + '_' + data['AGENCE']);
       
 
       // Pour chaque clé correspondant à une date, applique le calcul du gain
