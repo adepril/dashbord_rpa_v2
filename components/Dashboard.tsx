@@ -133,7 +133,7 @@ export default function Dashboard() {
           }
           // Initialiser les données en cache dans le bon ordre
           await initializeData(username);
-          await loadAllRobots();
+          await loadAllRobots(); // Charger tous les robots dans le cache (cachedRobots4Agencies
           await initializeReportingData();
           
           console.log('@@ (dataStore - initializeData) cachedReportingData :', cachedReportingData);
@@ -236,7 +236,7 @@ export default function Dashboard() {
 
           for (const robot of programs) {
             if (robot.robot === "TOUT" || robot.robot === null) continue;
-            const tempsParUnite = robot.type_unite !== 'temps' || robot.temps_par_unite === '0' ? '0' : robot.temps_par_unite;
+            const tempsParUnite = robot.temps_par_unite === '0' ? '0' : robot.temps_par_unite;
             rawData = cachedReportingData
               .filter(entry => entry['AGENCE'] + "_" + entry['NOM PROGRAMME'] === robot.id_robot)
               .map((entry: any) => ({
@@ -252,7 +252,7 @@ export default function Dashboard() {
               const robotType = currentProgram?.type_gain;
 
               for (const entry of rawData) {
-                const unitFactor = robot.type_unite !== 'temps' || robot.temps_par_unite === '0' ? 1 : Number(robot.temps_par_unite);
+                const unitFactor = robot.temps_par_unite === '0' ? 1 : Number(robot.temps_par_unite);
                 if (robotType === 'temps') {
                   totalUnitesMoisCourant_Type1 += (Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) || 0) * unitFactor;
                   totalUnitesMoisN1_Type1 += (Number(entry['NB UNITES MOIS N-1']) || 0) * unitFactor;
