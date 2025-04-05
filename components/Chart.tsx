@@ -136,7 +136,7 @@ export default function Chart({ robotType, data, selectedAgency }: ChartProps) {
                           const gain ='Gain : ' + (robotType?.toLowerCase() === "temps" ? formatDuration(value) : `${value}`)
                           return [gain];
                         }
-                        return  valeur > 1 ? [`Gain : ${valeur} éxecutions`] : [`Gain : ${valeur} éxecution`];
+                        return  valeur > 1 ? [`${valeur} éxecutions`] : [`${valeur} éxecution`];
                       } } />
                     <Bar
                       dataKey="valeur"

@@ -131,10 +131,11 @@ export default function Dashboard() {
             setIsLoading(false);
             return;
           }
+
           // Initialiser les données en cache dans le bon ordre
-          await initializeData(username);
+          await initializeData(username); // Charger les données utilisateur et agences dans le cache
           await loadAllRobots(); // Charger tous les robots dans le cache (cachedRobots4Agencies
-          await initializeReportingData();
+          await initializeReportingData(); // Charger les données de reporting dans le cache
           
           console.log('@@ (dataStore - initializeData) cachedReportingData :', cachedReportingData);
           console.log('@@ (dataStore - initializeData) cachedRobots4Agencies :', cachedRobots4Agencies);
@@ -236,7 +237,7 @@ export default function Dashboard() {
 
           for (const robot of programs) {
             if (robot.robot === "TOUT" || robot.robot === null) continue;
-            const tempsParUnite = robot.temps_par_unite === '0' ? '0' : robot.temps_par_unite;
+            //const tempsParUnite = robot.temps_par_unite === '0' ? '0' : robot.temps_par_unite;
             rawData = cachedReportingData
               .filter(entry => entry['AGENCE'] + "_" + entry['NOM PROGRAMME'] === robot.id_robot)
               .map((entry: any) => ({
@@ -252,12 +253,12 @@ export default function Dashboard() {
               const robotType = currentProgram?.type_gain;
 
               for (const entry of rawData) {
-                const unitFactor = robot.temps_par_unite === '0' ? 1 : Number(robot.temps_par_unite);
+                //const unitFactor = robot.temps_par_unite === '0' ? 1 : Number(robot.temps_par_unite);
                 if (robotType === 'temps') {
-                  totalUnitesMoisCourant_Type1 += (Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) || 0) * unitFactor;
-                  totalUnitesMoisN1_Type1 += (Number(entry['NB UNITES MOIS N-1']) || 0) * unitFactor;
-                  totalUnitesMoisN2_Type1 += (Number(entry['NB UNITES MOIS N-2']) || 0) * unitFactor;
-                  totalUnitesMoisN3_Type1 += (Number(entry['NB UNITES MOIS N-3']) || 0) * unitFactor;
+                  totalUnitesMoisCourant_Type1 += (Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) || 0); // * unitFactor;
+                  totalUnitesMoisN1_Type1 += (Number(entry['NB UNITES MOIS N-1']) || 0); // * unitFactor;
+                  totalUnitesMoisN2_Type1 += (Number(entry['NB UNITES MOIS N-2']) || 0); // * unitFactor;
+                  totalUnitesMoisN3_Type1 += (Number(entry['NB UNITES MOIS N-3']) || 0); // * unitFactor;
                 } else if (robotType === 'autre') {
                   totalUnitesMoisCourant_Type2 += (Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) || 0);
                   totalUnitesMoisN1_Type2 += (Number(entry['NB UNITES MOIS N-1']) || 0);
@@ -292,18 +293,18 @@ export default function Dashboard() {
             'NB UNITES MOIS N-2': formatNumber(totalUnitesMoisN2_Type1),
             'NB UNITES MOIS N-3': formatNumber(totalUnitesMoisN3_Type1)
           };
-          const mergedDataType2: DataEntry = {
-            ...rawData[0],
-            'NB UNITES DEPUIS DEBUT DU MOIS': formatNumber(totalUnitesMoisCourant_Type2),
-            'NB UNITES MOIS N-1': formatNumber(totalUnitesMoisN1_Type2),
-            'NB UNITES MOIS N-2': formatNumber(totalUnitesMoisN2_Type2),
-            'NB UNITES MOIS N-3': formatNumber(totalUnitesMoisN3_Type2)
-          };
+          // const mergedDataType2: DataEntry = {
+          //   ...rawData[0],
+          //   'NB UNITES DEPUIS DEBUT DU MOIS': formatNumber(totalUnitesMoisCourant_Type2),
+          //   'NB UNITES MOIS N-1': formatNumber(totalUnitesMoisN1_Type2),
+          //   'NB UNITES MOIS N-2': formatNumber(totalUnitesMoisN2_Type2),
+          //   'NB UNITES MOIS N-3': formatNumber(totalUnitesMoisN3_Type2)
+          // };
 
           for (let i = 1; i <= 31; i++) {
             const dateKey = i.toString().padStart(2, '0') + '/' + currentMonth + '/' + currentYear;
             mergedDataType1[dateKey] = arrJoursDuMois_Type1[i - 1];
-            mergedDataType2[dateKey] = arrJoursDuMois_Type2[i - 1];
+           // mergedDataType2[dateKey] = arrJoursDuMois_Type2[i - 1];
           }
 
           if (selectedAgency && selectedAgency.nomAgence === 'TOUT') {
@@ -322,11 +323,16 @@ export default function Dashboard() {
             .filter(entry => entry['AGENCE'] + "_" + entry['NOM PROGRAMME'] === selectedRobotData.agence + "_" + selectedRobotData.robot)
             .map((entry: any) => ({
              ...entry,
-              'NB UNITES DEPUIS DEBUT DU MOIS': tpsParUnit !== '0' ? String(Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) * Number(tpsParUnit)) : String(entry['NB UNITES DEPUIS DEBUT DU MOIS']),
-              'NB UNITES MOIS N-1': tpsParUnit !== '0' ? String(Number(entry['NB UNITES MOIS N-1']) * Number(tpsParUnit)) : String(entry['NB UNITES MOIS N-1']),
-              'NB UNITES MOIS N-2': tpsParUnit !== '0' ? String(Number(entry['NB UNITES MOIS N-2']) * Number(tpsParUnit)) : String(entry['NB UNITES MOIS N-2']),
-              'NB UNITES MOIS N-3': tpsParUnit !== '0' ? String(Number(entry['NB UNITES MOIS N-3']) * Number(tpsParUnit)) : String(entry['NB UNITES MOIS N-3']),
-              //...selectedRobot
+              // 'NB UNITES DEPUIS DEBUT DU MOIS': tpsParUnit !== '0' ? String(Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) * Number(tpsParUnit)) : String(entry['NB UNITES DEPUIS DEBUT DU MOIS']),
+              // 'NB UNITES MOIS N-1': tpsParUnit !== '0' ? String(Number(entry['NB UNITES MOIS N-1']) * Number(tpsParUnit)) : String(entry['NB UNITES MOIS N-1']),
+              // 'NB UNITES MOIS N-2': tpsParUnit !== '0' ? String(Number(entry['NB UNITES MOIS N-2']) * Number(tpsParUnit)) : String(entry['NB UNITES MOIS N-2']),
+              // 'NB UNITES MOIS N-3': tpsParUnit !== '0' ? String(Number(entry['NB UNITES MOIS N-3']) * Number(tpsParUnit)) : String(entry['NB UNITES MOIS N-3']),
+              
+              'NB UNITES DEPUIS DEBUT DU MOIS': tpsParUnit !== '0' ? String(Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) ) : String(entry['NB UNITES DEPUIS DEBUT DU MOIS']),
+              'NB UNITES MOIS N-1': tpsParUnit !== '0' ? String(Number(entry['NB UNITES MOIS N-1']) ) : String(entry['NB UNITES MOIS N-1']),
+              'NB UNITES MOIS N-2': tpsParUnit !== '0' ? String(Number(entry['NB UNITES MOIS N-2']) ) : String(entry['NB UNITES MOIS N-2']),
+              'NB UNITES MOIS N-3': tpsParUnit !== '0' ? String(Number(entry['NB UNITES MOIS N-3']) ) : String(entry['NB UNITES MOIS N-3']),
+               ...selectedRobot
             }));
           console.log('## data:', data," tpsParUnit:", tpsParUnit);
           setRobotData(data[0]);
@@ -344,7 +350,7 @@ export default function Dashboard() {
   // ------------------------------------------------------------------
   const handleAgencyChange = (agencyId: string) => {
     const agencySelected = agencies.find(a => a.idAgence === agencyId);
-    console.log('--- AGENCY CHANGE ---');
+    console.log('--- AGENCY CHANGE BEGIN ---');
     console.log('Agence choisie:', agencySelected);
     setSelectedAgency(agencySelected || null);
     sessionStorage.setItem('selectedAgencyId', agencyId);
@@ -373,13 +379,14 @@ export default function Dashboard() {
         setSelectedRobotData(firstRobot);
       }
     }
+    console.log('--- AGENCY CHANGE END ---');
   };
 
   // ------------------------------------------------------------------
   // Gestion du changement de robot (programme)
   // ------------------------------------------------------------------
   const handleProgramChange = (robotID: string) => {
-    console.log('--- ROBOT CHANGE - robotID:', robotID, '---');
+    console.log('--- BEGIN ROBOT CHANGE - robotID:', robotID, '---');
     const program = programs.find(p => p.id_robot === robotID);
     if (program && selectedAgency) {
       setSelectedRobot(program);
@@ -387,6 +394,7 @@ export default function Dashboard() {
     } else {
       console.log('_Programme ou agence non trouvé');
     }
+    console.log('--- END ROBOT CHANGE - ', robotID, '---');
   };
 
   const handleOpenForm = () => {
