@@ -23,17 +23,16 @@ import {
   initializeReportingData,
   getCachedAgencies,
   getRobotsByAgency,
-  getRobotsByAgencyAndService,
   Agency,
   Program,
   isDataInitialized,
   resetCache,
   isFirstLoginSession,
-  updateRobots,
   setUpdateRobotsCallback,
   cachedReportingData,
   loadAllRobots,
-  cachedRobots4Agencies
+  cachedRobots4Agencies,
+  loadAllAgencies
 } from '../utils/dataStore'
 
 // ============================================================
@@ -133,8 +132,9 @@ export default function Dashboard() {
           }
 
           // Initialiser les données en cache dans le bon ordre
+          await loadAllAgencies(); // Charger toutes les agences dans le cache
           await initializeData(username); // Charger les données utilisateur et agences dans le cache
-          await loadAllRobots(); // Charger tous les robots dans le cache (cachedRobots4Agencies
+          await loadAllRobots(); // Charger tous les robots dans le cache (cachedRobots4Agencies)
           await initializeReportingData(); // Charger les données de reporting dans le cache
           
           console.log('@@ (dataStore - initializeData) cachedReportingData :', cachedReportingData);
@@ -236,8 +236,8 @@ export default function Dashboard() {
           const currentYear = displayYear;
 
           for (const robot of programs) {
-            if (robot.robot === "TOUT" || robot.robot === null) continue;
-            //const tempsParUnite = robot.temps_par_unite === '0' ? '0' : robot.temps_par_unite;
+            if (robot.robot === "TOUT" || robot.robot === null) 
+              continue;
             rawData = cachedReportingData
               .filter(entry => entry['AGENCE'] + "_" + entry['NOM PROGRAMME'] === robot.id_robot)
               .map((entry: any) => ({
@@ -253,13 +253,12 @@ export default function Dashboard() {
               const robotType = currentProgram?.type_gain;
 
               for (const entry of rawData) {
-                //const unitFactor = robot.temps_par_unite === '0' ? 1 : Number(robot.temps_par_unite);
                 if (robotType === 'temps') {
-                  totalUnitesMoisCourant_Type1 += (Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) || 0); // * unitFactor;
-                  totalUnitesMoisN1_Type1 += (Number(entry['NB UNITES MOIS N-1']) || 0); // * unitFactor;
-                  totalUnitesMoisN2_Type1 += (Number(entry['NB UNITES MOIS N-2']) || 0); // * unitFactor;
-                  totalUnitesMoisN3_Type1 += (Number(entry['NB UNITES MOIS N-3']) || 0); // * unitFactor;
-                } else if (robotType === 'autre') {
+                  totalUnitesMoisCourant_Type1 += (Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) || 0);
+                  totalUnitesMoisN1_Type1 += (Number(entry['NB UNITES MOIS N-1']) || 0); 
+                  totalUnitesMoisN2_Type1 += (Number(entry['NB UNITES MOIS N-2']) || 0); 
+                  totalUnitesMoisN3_Type1 += (Number(entry['NB UNITES MOIS N-3']) || 0); 
+                } else { 
                   totalUnitesMoisCourant_Type2 += (Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) || 0);
                   totalUnitesMoisN1_Type2 += (Number(entry['NB UNITES MOIS N-1']) || 0);
                   totalUnitesMoisN2_Type2 += (Number(entry['NB UNITES MOIS N-2']) || 0);
@@ -272,7 +271,7 @@ export default function Dashboard() {
                     const idx = i - 1;
                     if (robotType === 'temps') {
                       arrJoursDuMois_Type1[idx] = `${Number(arrJoursDuMois_Type1[idx]) + Number(value)}`;
-                    } else if (robotType === 'autre') {
+                    } else { 
                       arrJoursDuMois_Type2[idx] = `${Number(arrJoursDuMois_Type2[idx]) + Number(value)}`;
                     }
                   }
@@ -293,13 +292,6 @@ export default function Dashboard() {
             'NB UNITES MOIS N-2': formatNumber(totalUnitesMoisN2_Type1),
             'NB UNITES MOIS N-3': formatNumber(totalUnitesMoisN3_Type1)
           };
-          // const mergedDataType2: DataEntry = {
-          //   ...rawData[0],
-          //   'NB UNITES DEPUIS DEBUT DU MOIS': formatNumber(totalUnitesMoisCourant_Type2),
-          //   'NB UNITES MOIS N-1': formatNumber(totalUnitesMoisN1_Type2),
-          //   'NB UNITES MOIS N-2': formatNumber(totalUnitesMoisN2_Type2),
-          //   'NB UNITES MOIS N-3': formatNumber(totalUnitesMoisN3_Type2)
-          // };
 
           for (let i = 1; i <= 31; i++) {
             const dateKey = i.toString().padStart(2, '0') + '/' + currentMonth + '/' + currentYear;
@@ -313,7 +305,6 @@ export default function Dashboard() {
           }
 
           setRobotData1(mergedDataType1);
-          //setRobotData2(mergedDataType2);
           setHistoriqueData(allRobotsEvolution);
           setUseChart4All((prev: boolean) => !prev);
         } else {
@@ -323,11 +314,6 @@ export default function Dashboard() {
             .filter(entry => entry['AGENCE'] + "_" + entry['NOM PROGRAMME'] === selectedRobotData.agence + "_" + selectedRobotData.robot)
             .map((entry: any) => ({
              ...entry,
-              // 'NB UNITES DEPUIS DEBUT DU MOIS': tpsParUnit !== '0' ? String(Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) * Number(tpsParUnit)) : String(entry['NB UNITES DEPUIS DEBUT DU MOIS']),
-              // 'NB UNITES MOIS N-1': tpsParUnit !== '0' ? String(Number(entry['NB UNITES MOIS N-1']) * Number(tpsParUnit)) : String(entry['NB UNITES MOIS N-1']),
-              // 'NB UNITES MOIS N-2': tpsParUnit !== '0' ? String(Number(entry['NB UNITES MOIS N-2']) * Number(tpsParUnit)) : String(entry['NB UNITES MOIS N-2']),
-              // 'NB UNITES MOIS N-3': tpsParUnit !== '0' ? String(Number(entry['NB UNITES MOIS N-3']) * Number(tpsParUnit)) : String(entry['NB UNITES MOIS N-3']),
-              
               'NB UNITES DEPUIS DEBUT DU MOIS': tpsParUnit !== '0' ? String(Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) ) : String(entry['NB UNITES DEPUIS DEBUT DU MOIS']),
               'NB UNITES MOIS N-1': tpsParUnit !== '0' ? String(Number(entry['NB UNITES MOIS N-1']) ) : String(entry['NB UNITES MOIS N-1']),
               'NB UNITES MOIS N-2': tpsParUnit !== '0' ? String(Number(entry['NB UNITES MOIS N-2']) ) : String(entry['NB UNITES MOIS N-2']),

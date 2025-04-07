@@ -162,7 +162,7 @@ export default function Chart({ robotType, data, selectedAgency }: ChartProps) {
             {/* // fin histogramme */}
           </div>
           <div className="flex justify-around mt-10">
-            {/* // histogramme */}
+            {/* // Indicateurs mensuels */}
             {data ? (
               <>
               <div className="w-1/4 mr-5 ml-5 ">
@@ -209,7 +209,7 @@ export default function Chart({ robotType, data, selectedAgency }: ChartProps) {
             <div className="flex justify-center  h-[60px] text-gray-500">
             </div>
             )}
-            {/* // fin histogramme */}
+            {/* // fin Indicateurs mensuels */}
           </div>
 
       </div>
@@ -222,10 +222,13 @@ export default function Chart({ robotType, data, selectedAgency }: ChartProps) {
                   <span className="text-red-700 text-3xl font-bold">Description</span>
                 </div>
              
-                <div className="mt-5  px-4 pt-10" >
-                  Robot <span className="font-bold">{data.robot}</span> :
+                <div className="mt-5  px-4 pt-6" >
+                  Robot : <span className="font-bold">{data.robot}</span>
                 </div>         
-                
+                <div className="mt-2 ml-4" >
+                  Agence : <span className="_font-bold">{data.agenceLbl}</span>
+                </div>   
+
                 <div className="mt-4 px-4 pt-2" >
                 {data.description_long}
                 </div>      

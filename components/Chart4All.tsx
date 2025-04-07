@@ -77,7 +77,7 @@ export default function Chart({ robotType, data1}: ChartProps) {
 // - Filtre les robots présents dans le cache afin d'exclure ceux dont le type d'unité est "temps"
 // - Met en place un intervalle pour faire défiler les informations toutes les 30 secondes
   useEffect(() => {
-if (cachedRobots4Agencies.length > 0 && !isPaused) {
+    if (cachedRobots4Agencies.length > 0 && !isPaused) {
       // Filtrer les robots pour exclure ceux avec type_unite = 'temps'
       const filteredRobots = cachedRobots4Agencies.filter(robot => robot.type_gain !== 'temps');
       setRobots(filteredRobots);
@@ -254,9 +254,9 @@ if (cachedRobots4Agencies.length > 0 && !isPaused) {
                       Robot : <span className="font-bold">{robots[currentIndex]?.robot}</span>
                     </div>
                     <div className="mt-2 px-4 " >
-                      Agence : <span className="font-">{robots[currentIndex]?.agence}</span>
+                      Agence : <span className="font-">{robots[currentIndex]?.agenceLbl}</span>
                     </div>
-                    <div className="mt-4 px-4 r">
+                    <div className="mt-4 px-4 ">
                       {robots[currentIndex]?.description_long}
                     </div>
                     <div className="h-[10px] bg-x-200"></div>

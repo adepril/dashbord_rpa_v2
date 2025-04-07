@@ -36,6 +36,7 @@ export interface Program {
   robot: string;
   id_robot: string;
   agence: string;
+  agenceLbl?: string;
   description?: string;
   date_maj?: string;
   type_unite: string;
@@ -64,9 +65,40 @@ export interface Program {
 // - cachedRobots: stocke les robots filtrés pour les agences en cache.
 // ------------------------------------------------------------
 let cachedAgencies: Agency[] = [];
+export let cachedAllAgencies: Agency[] = [];
 export let cachedRobots4Agencies: Program[] = [];
 export let cachedRobots: Program[] = [];
 export let cachedServices: string[] = [];
+
+/**
+ * loadAllAgencies
+ * -------------------------------------------------------------------
+ * Description :
+ *  - Charge toutes les agences depuis la collection "agences" dans Firestore.
+ *  - Met à jour la variable globale cachedAllAgencies.
+ * 
+ * Entrée : Aucun
+ * Sortie : Promise<void>
+ */
+export async function loadAllAgencies(): Promise<void> {
+  try {
+    const agenciesRef = collection(db, 'agences');
+    const querySnapshot = await getDocs(agenciesRef);
+    cachedAllAgencies = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        idAgence: data.idAgence,
+        nomAgence: data.nomAgence,
+        libelleAgence: data.libelleAgence
+      };
+    });
+    // Trier les agences par ordre alphabétique
+    cachedAllAgencies.sort((a, b) => a.nomAgence.localeCompare(b.nomAgence));
+  } catch (error) {
+    console.log('Erreur lors du chargement de toutes les agences:', error);
+    throw error;
+  }
+}
 
 // ============================================================
 // Callback pour la mise à jour des robots
@@ -156,7 +188,7 @@ export async function initializeData(userId: string): Promise<void> {
 
     // 3. Chargement de tous les robots pour ces agences
     await loadAllRobotsForAgencies();
-    console.log('(dataStore - loadAllRobotsForAgencies) Chargement des robots', cachedRobots);
+    console.log('$$(dataStore - loadAllRobotsForAgencies) cachedRobots ', cachedRobots);
 
     // Marquer l'initialisation comme terminée
     isInitialized = true;
@@ -288,6 +320,10 @@ export async function loadAllRobots(): Promise<void> {
         robot: data["NOM PROGRAMME"],
         id_robot: data.AGENCE + "_" + data["NOM PROGRAMME"],
         agence: data.AGENCE,
+        agenceLbl: (() => {
+          const agency = cachedAllAgencies.find(a => a.nomAgence === data.AGENCE);
+          return agency ? agency.libelleAgence : data.AGENCE;
+        })(),
         description: data.DESCRIPTION,
         date_maj: data["DATE MAJ"],
         type_unite: data["TYPE UNITE"],
@@ -347,7 +383,7 @@ async function loadAllRobotsForAgencies(): Promise<void> {
     const robotsRef = collection(db, 'robots_et_baremes'); // Collection de robots
     const agencyNames = cachedAgencies.map(agency => agency.nomAgence);
     cachedRobots = [];
-    console.log('*(dataStore - loadAllRobotsForAgencies) Chargement des ROBOTS des agences :', agencyNames);
+    //console.log('*(dataStore - loadAllRobotsForAgencies) Chargement des ROBOTS des agences :', agencyNames);
 
     for (const agencyName of agencyNames) {
       // Ignorer l'agence spéciale "TOUT"
@@ -361,8 +397,12 @@ async function loadAllRobotsForAgencies(): Promise<void> {
             robot: data["NOM PROGRAMME"],
             id_robot: data.AGENCE+"_"+data["NOM PROGRAMME"],
             agence: data.AGENCE,
+            agenceLbl: (() => {
+              const agency = cachedAllAgencies.find(a => a.nomAgence === data.AGENCE);
+              return agency ? agency.libelleAgence : data.AGENCE;
+            })(),
             description: data.DESCRIPTION,
-            data_maj: data["DATE MAJ"],
+            date_maj: data["DATE MAJ"],
             type_unite: data["TYPE UNITE"],
             temps_par_unite: data["TEMPS PAR UNITE"].replace(',', '.') || '0',
             type_gain: data["TYPE GAIN"].replace(' (mn)', '').toLowerCase() || '0',
@@ -374,7 +414,6 @@ async function loadAllRobotsForAgencies(): Promise<void> {
             resultat: data.RESULTAT
           };
         });
-
         cachedRobots.push(...robots);
       }
     }
@@ -609,12 +648,7 @@ export async function initializeReportingData(): Promise<void> {
     const querySnapshot = await getDocs(collection(db, 'DataReportingMoisCourant'));
     cachedReportingData = querySnapshot.docs.map(doc => {
       const data = doc.data();
-      
-      // Trouver le robot correspondant dans cachedAllRobots
-      // const matchingRobot = cachedAllRobots.find(robot =>
-      //   (robot.robot === data['NOM PROGRAMME'] || (robot.id_robot && robot.id_robot.includes(data['NOM PROGRAMME']))) &&
-      //   robot.agence === data['AGENCE']
-      // );
+
       const matchingRobot = cachedRobots4Agencies.find(robot => robot.id_robot === data['NOM PROGRAMME'] + '_' + data['AGENCE']);
       
 
