@@ -545,22 +545,19 @@ export function getRobotsByAgencyAndService(agencyId: string, service: string): 
     );
   }
 
+  const toutRobot: Program = {
+    id_robot: 'TOUT',
+    robot: 'TOUT',
+    agence: 'TOUT',
+    type_gain: '0',
+    temps_par_unite: '0',
+    type_unite: ''
+  };
+
   // Trier les robots par ordre alphabétique
   filteredRobots.sort((a, b) => a.robot.localeCompare(b.robot));
-
-  if (!service || service === 'TOUT') {
-    const toutRobot: Program = {
-      id_robot: 'TOUT',
-      robot: 'TOUT',
-      agence: 'TOUT',
-      type_gain: '0',
-      temps_par_unite: '0',
-      type_unite: ''
-    };
-    return [toutRobot, ...filteredRobots];
-  }
-
-  return filteredRobots;
+  
+  return [toutRobot, ...filteredRobots];
 }
 
 // ============================================================

@@ -228,7 +228,9 @@ export default function Chart({ robotType, data, selectedAgency }: ChartProps) {
                 <div className="mt-2 ml-4" >
                   Agence : <span className="_font-bold">{data.agenceLbl}</span>
                 </div>   
-
+                <div className="mt-2 ml-4" >
+                  Service : <span className="font-">{data.service}</span>
+                </div>
                 <div className="mt-4 px-4 pt-2" >
                 {data.description_long}
                 </div>      

@@ -2,25 +2,30 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
-const SERVICES = [
-  "TOUT",
-  "COMMERCE",
-  "EXPLOITATION",
-  "ADMINISTRATIF",
-  "DOUANE"
-];
-
 interface ServiceSelectorProps {
   selectedService: string;
   onServiceChange: (service: string) => void;
+  availableServices: Set<string>;
+  setIsUserSelectingService: (isSelecting: boolean) => void;
 }
 
-export default function ServiceSelector({ selectedService, onServiceChange }: ServiceSelectorProps) {
-  // Si availableServices n'est pas fourni, utiliser tous les services
-  const servicesToShow = SERVICES;
+export default function ServiceSelector({ 
+  selectedService, 
+  onServiceChange, 
+  availableServices,
+  setIsUserSelectingService
+}: ServiceSelectorProps) {
+  // Utiliser availableServices pour déterminer les services à afficher
+  const servicesToShow = Array.from(availableServices);
 
   return (
-    <Select value={selectedService} onValueChange={onServiceChange} disabled={true}>
+    <Select 
+      value={selectedService} 
+      onValueChange={(service) => {
+        onServiceChange(service);
+        setIsUserSelectingService(true);
+      }}
+    >
       <SelectTrigger className="bg-white border border-gray-300 rounded-md h-9 w-[200px] text-sm">
         <SelectValue placeholder="TOUT">
           {selectedService || "TOUT"}

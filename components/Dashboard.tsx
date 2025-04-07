@@ -23,6 +23,7 @@ import {
   initializeReportingData,
   getCachedAgencies,
   getRobotsByAgency,
+  getRobotsByAgencyAndService,
   Agency,
   Program,
   isDataInitialized,
@@ -98,6 +99,7 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [OpenFormNewOrder, setIsFormOpen] = useState(false);
   const [useChart4All, setUseChart4All] = useState(true);
+  const [isUserSelectingService, setIsUserSelectingService] = useState(false);
 
   // Récupère l'objet router de Next.js pour rediriger l'utilisateur si besoin
   const router = useRouter();
@@ -171,8 +173,8 @@ export default function Dashboard() {
     const loadPrograms = async () => {
       console.log('(Dashboard) l\'agence ou le service change -> Chargement des programmes...');
       if (selectedAgency && isDataInitialized()) {
-        // Filtrer les robots en fonction de l'agence sélectionnée
-        const allRobots = selectedAgency.idAgence === '99' ? getRobotsByAgency('99') : getRobotsByAgency(selectedAgency.idAgence);
+        const agencyId = selectedAgency.idAgence;
+        const allRobots = getRobotsByAgencyAndService(agencyId, selectedService);
         console.log('Robots chargés:', allRobots);
         setPrograms(allRobots);
         updateService(allRobots);
@@ -407,10 +409,14 @@ export default function Dashboard() {
       }
     });
 
-    setAvailableServices(services);
+    if (!isUserSelectingService) {
+      setAvailableServices(services);
 
-    if (selectedService && !services.has(selectedService)) {
-      setSelectedService("TOUT");
+      if (selectedService && !services.has(selectedService)) {
+        setSelectedService("TOUT");
+      }
+    } else {
+      setIsUserSelectingService(false);
     }
   };
 
@@ -447,13 +453,25 @@ export default function Dashboard() {
                     <circle cx="12" cy="7" r="4"></circle>
                   </svg> {userData.userName}
                 </span>
-                <div className="flex space-x-8 mt-2">
+                  <div className="flex space-x-8 mt-2">
                   <div className="flex items-center space-x-2">
                     <span>Agence:</span>
                     <AgencySelector
                       agencies={agencies}
                       selectedAgencyId={selectedAgency?.idAgence || ''}
                       onAgencyChange={handleAgencyChange}
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span>Service:</span>
+                    <ServiceSelector
+                      selectedService={selectedService}
+                      onServiceChange={(service) => {
+                        setSelectedService(service);
+                        setIsUserSelectingService(true);
+                      }}
+                      availableServices={availableServices}
+                      setIsUserSelectingService={setIsUserSelectingService}
                     />
                   </div>
                   <div className="flex items-center space-x-2">
