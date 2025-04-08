@@ -431,26 +431,29 @@ export default function Dashboard() {
           <div className="flex-none">
             <Image src="/logo_bbl-groupe.svg" alt="Logo BBL Groupe" width={100} height={70} onClick={() => router.push('/')} />
           </div>
-          <span className="text-black flex items-center ml-4">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="lucide lucide-user w-5 h-5 mr-2 text-gray-600 cursor-pointer"
-              onClick={() => router.push('/')}
-            >
-              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg> {userData.userName}
-          </span>
+          <div className=" flex mb-10">
+            <span className="text-black flex items-center ml-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="lucide lucide-user w-5 h-5 mr-2 text-gray-600 cursor-pointer"
+                onClick={() => router.push('/')}
+              >
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg> {userData.userName}
+            </span>            
+          </div>
+
         </div>
-        <div className="flex-1 flex justify-center">
+        <div className="flex-1 flex justify-center mt-5 mr-8 bg--200">
           <div className="flex space-x-8 items-center">
             <div className="flex items-center space-x-2">
               <span>Agence:</span>
@@ -479,7 +482,7 @@ export default function Dashboard() {
                 selectedProgramId={selectedRobot?.id_robot || ''}
                 onProgramChange={handleProgramChange}
               />
-              <div className="w-[50px]"></div>
+              <div className="w-[80px]"></div>
               <div className="flex justify-end">
                 <button onClick={handleOpenForm} className="bg-neutral-950 text-neutral-100 border border-neutral-400 border-b-4 font-medium relative px-4 py-1 rounded-lg hover:brightness-150 hover:border-t-4 active:opacity-75 duration-300">
                   Nouvelle Demande
