@@ -26,7 +26,7 @@ const handleAgencyChange = (agencyId: string) => {
 
   return (
     <Select value={selectedAgencyId || undefined} onValueChange={handleAgencyChange}>
-      <SelectTrigger className="bg-white border border-gray-300 rounded-md h-9 w-[350px] text-sm">
+      <SelectTrigger className="bg-white border border-gray-300 rounded-md h-9 w-[250px] text-sm">
         <SelectValue placeholder="Sélectionnez une agence">
           {agencies.find(a => a.idAgence === selectedAgencyId)?.libelleAgence || agencies.find(a => a.idAgence === selectedAgencyId)?.nomAgence}
         </SelectValue>

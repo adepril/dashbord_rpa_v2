@@ -21,7 +21,7 @@ export default function ProgramSelector({ robots, selectedProgramId, onProgramCh
   
   return (
     <Select value={selectedProgramId} onValueChange={onProgramChange}>
-      <SelectTrigger className="bg-white border border-gray-300 rounded-md h-9 w-[350px] text-sm">
+      <SelectTrigger className="bg-white border border-gray-300 rounded-md h-9 w-[300px] text-sm">
       <SelectValue placeholder="Sélectionnez un programme">
                 {verboseName(programs.find((p: Program) => p.id_robot === selectedProgramId))}
       </SelectValue>

@@ -26,12 +26,12 @@ export default function ServiceSelector({
         setIsUserSelectingService(true);
       }}
     >
-      <SelectTrigger className="bg-white border border-gray-300 rounded-md h-9 w-[200px] text-sm">
+      <SelectTrigger className="bg-white border border-gray-300 rounded-md h-9 w-[250px] text-sm">
         <SelectValue placeholder="TOUT">
           {selectedService || "TOUT"}
         </SelectValue>
       </SelectTrigger>
-      <SelectContent className="bg-white border border-gray-300 rounded-md w-[200px]">
+      <SelectContent className="bg-white border border-gray-300 rounded-md w-[250px]">
         {servicesToShow.map((service) => (
           <SelectItem
             key={service}
