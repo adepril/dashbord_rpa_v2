@@ -64,10 +64,12 @@ export default function Chart({ robotType, data, selectedAgency }: ChartProps) {
       }
     }
 
-    const chartData = Array.from({ length: 31 }, (_, i) => {
-      const day = (i + 1).toString().padStart(2, '0');
-      const dateKey = `${day}/${displayMonth.toString().padStart(2, '0')}/${displayYear}`;
+  // Generate chart data for the current month
+  const chartData = Array.from({ length: 31 }, (_, i) => {
+    const day = (i + 1).toString().padStart(2, '0');
+    const dateKey = `${day}/${displayMonth.toString().padStart(2, '0')}/${displayYear}`;
     let value = 0;
+    // Check if data exists for the given dateKey and assign it to value
     if (data && data[dateKey]) {
       value = Number(data[dateKey]);
     }
@@ -127,24 +129,28 @@ export default function Chart({ robotType, data, selectedAgency }: ChartProps) {
                       fontSize={10} />
                     <Tooltip
                       labelFormatter={(label: string) => label}
+                      // Customize the tooltip content based on the payload and label
                       content={({ payload, label }) => {
                         if (!payload || payload.length === 0) return null;
                         const { valeur, date } = payload[0].payload;
                         if (valeur === undefined || valeur === 0) return null;
 
                         if (robotType?.toLowerCase() === "temps") {
+                          // Calculate gain and number of treatments for 'temps' robotType
                           const gain = 'Gain : ' + formatDuration(valeur);
                           const nbTraitement = 'Nb traitement : ' + (data.temps_par_unite ? Math.round(valeur / data.temps_par_unite) : 'N/A');
+                          // Format the date for display
                           const dateFormatted = new Date(date.split('/').reverse().join('-')).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
                           return (
                             <div className="bg-white shadow-md p-2 border border-gray-200 rounded text-sm">
                               <p className="font-bold">{dateFormatted}</p>
                               <p className="text-gray-600">{gain}</p>
-                              <p className="text-gray-600">{nbTraitement}</p>  {/*  Aroundire */}
+                              <p className="text-gray-600">{nbTraitement}</p>  
                             </div>
                           );
                         }
 
+                        // Default tooltip content for other robotTypes
                         return (
                           <div className="bg-white shadow-md p-2 border border-gray-200 rounded text-sm">
                             {valeur > 1 ? `${valeur} éxecutions` : `${valeur} éxecution`}
