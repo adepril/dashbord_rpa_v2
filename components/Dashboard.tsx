@@ -255,11 +255,12 @@ export default function Dashboard() {
               const robotType = currentProgram?.type_gain;
 
               for (const entry of rawData) {
+                const unitFactor = robot.type_unite !== 'temps' || robot.temps_par_unite === '0' ? 1 : Number(robot.temps_par_unite);
                 if (robotType === 'temps') {
-                  totalUnitesMoisCourant_Type1 += (Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) || 0);
-                  totalUnitesMoisN1_Type1 += (Number(entry['NB UNITES MOIS N-1']) || 0); 
-                  totalUnitesMoisN2_Type1 += (Number(entry['NB UNITES MOIS N-2']) || 0); 
-                  totalUnitesMoisN3_Type1 += (Number(entry['NB UNITES MOIS N-3']) || 0); 
+                  totalUnitesMoisCourant_Type1 += (Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) || 0) * unitFactor;
+                  totalUnitesMoisN1_Type1 += (Number(entry['NB UNITES MOIS N-1']) || 0) * unitFactor;
+                  totalUnitesMoisN2_Type1 += (Number(entry['NB UNITES MOIS N-2']) || 0) * unitFactor;
+                  totalUnitesMoisN3_Type1 += (Number(entry['NB UNITES MOIS N-3']) || 0) * unitFactor;
                 } else { 
                   totalUnitesMoisCourant_Type2 += (Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) || 0);
                   totalUnitesMoisN1_Type2 += (Number(entry['NB UNITES MOIS N-1']) || 0);

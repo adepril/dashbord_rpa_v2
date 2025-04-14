@@ -43,7 +43,7 @@ const CustomizedAxisTick: React.FC<CustomizedAxisTickProps> = (props) => {
 
 export default function Chart({ robotType, data, selectedAgency }: ChartProps) {
 
-    //console.log("Chart.tsx - data:", data);
+    console.log("Chart.tsx - data:", data);
     //console.log("Chart.tsx - selectedAgency:", selectedAgency);
     //console.log("Chart.tsx - robots:", robots);
     const [robots, setRobots] = useState<Program[]>([]);
@@ -88,7 +88,7 @@ export default function Chart({ robotType, data, selectedAgency }: ChartProps) {
             {data ? (
               <>
                 <div className="ml-[10%] text-left text-xl font-bold mb-4">
-                  {robotType?.toLowerCase() === 'temps' ? 'Gain de temps' : 'Sécurisation des processus'} {/*data['AGENCE'] + '_' + data['NOM PROGRAMME']*/}
+                  {robotType?.toLowerCase() === 'temps' ? 'Gain de temps  ('+data.temps_par_unite+' min / traitement)' : 'Sécurisation des processus'} {/*data['AGENCE'] + '_' + data['NOM PROGRAMME']*/}
                 </div>
                 <div className="absolute top-2 right-2 text-black px-2 py-1 ">
                   {robotType?.toLowerCase() === "autre" && (
@@ -127,17 +127,30 @@ export default function Chart({ robotType, data, selectedAgency }: ChartProps) {
                       fontSize={10} />
                     <Tooltip
                       labelFormatter={(label: string) => label}
-                      formatter={(value: any, name: string, props: any) => {
-                        const { valeur } = props.payload;
-                        if ((valeur === undefined || valeur === 0)) {
-                          return [''];
-                        }
+                      content={({ payload, label }) => {
+                        if (!payload || payload.length === 0) return null;
+                        const { valeur, date } = payload[0].payload;
+                        if (valeur === undefined || valeur === 0) return null;
+
                         if (robotType?.toLowerCase() === "temps") {
-                          const gain ='Gain : ' + (robotType?.toLowerCase() === "temps" ? formatDuration(value) : `${value}`)
-                          return [gain];
+                          const gain = 'Gain : ' + formatDuration(valeur);
+                          const nbTraitement = 'Nb traitement : ' + (data.temps_par_unite ? Math.round(valeur / data.temps_par_unite) : 'N/A');
+                          const dateFormatted = new Date(date.split('/').reverse().join('-')).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+                          return (
+                            <div className="bg-white shadow-md p-2 border border-gray-200 rounded text-sm">
+                              <p className="font-bold">{dateFormatted}</p>
+                              <p className="text-gray-600">{gain}</p>
+                              <p className="text-gray-600">{nbTraitement}</p>  {/*  Aroundire */}
+                            </div>
+                          );
                         }
-                        return  valeur > 1 ? [`${valeur} éxecutions`] : [`${valeur} éxecution`];
-                      } } />
+
+                        return (
+                          <div className="bg-white shadow-md p-2 border border-gray-200 rounded text-sm">
+                            {valeur > 1 ? `${valeur} éxecutions` : `${valeur} éxecution`}
+                          </div>
+                        );
+                      }} />
                     <Bar
                       dataKey="valeur"
                       fill={robotType?.toLowerCase() === "temps" ? "#3498db" : "#EA580C"}

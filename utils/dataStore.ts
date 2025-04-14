@@ -646,7 +646,7 @@ export async function initializeReportingData(): Promise<void> {
     cachedReportingData = querySnapshot.docs.map(doc => {
       const data = doc.data();
 
-      const matchingRobot = cachedRobots4Agencies.find(robot => robot.id_robot === data['NOM PROGRAMME'] + '_' + data['AGENCE']);
+      const matchingRobot = cachedRobots4Agencies.find(robot => robot.id_robot === data['AGENCE'] + '_' + data['NOM PROGRAMME']);
       
 
       // Pour chaque clé correspondant à une date, applique le calcul du gain
