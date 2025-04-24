@@ -67,12 +67,33 @@ export default function MergedRequestForm({
   const [formDataState, setFormData] = useState({
     ...formData,
     Nb_operations_mensuelles: formData.Nb_operations_mensuelles || '',
-    Temps_consommé: formData.Temps_consommé || ''
+    Temps_consommé: formData.Temps_consommé || '',
+    Temps_total: '',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [statuts, setStatuts] = useState<{numero: string, label: string}[]>([]);
   const [isEditing, setIsEditing] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    let formattedValue = value;
+    
+    if (name === 'Temps_consommé' || name === 'Nb_operations_mensuelles') {
+      formattedValue = value.replace(',', '.');
+    }
+    
+    setFormData(prev => {
+      const newFormData = { ...prev, [name]: formattedValue };
+      if (name === 'Nb_operations_mensuelles' || name === 'Temps_consommé') {
+        const nbOperations = name === 'Nb_operations_mensuelles' ? formattedValue : newFormData.Nb_operations_mensuelles;
+        const tempsConsomme = name === 'Temps_consommé' ? formattedValue : newFormData.Temps_consommé;
+        const tempsTotal = parseFloat(nbOperations) * parseFloat(tempsConsomme);
+        newFormData.Temps_total = isNaN(tempsTotal) ? '' : tempsTotal % 1 === 0 ? tempsTotal.toFixed(0) : tempsTotal.toFixed(2);
+      }
+      return newFormData;
+    });
+  };
 
   useEffect(() => {
     const loadStatuts = async () => {
@@ -90,10 +111,6 @@ export default function MergedRequestForm({
     loadStatuts();
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-  }
 
   const handleStatusChange = (value: string) => {
     setFormData(prev => ({ ...prev, Statut: value }))
@@ -268,6 +285,23 @@ export default function MergedRequestForm({
                   onChange={handleChange}
                 />
               </div>
+              <div>
+                <Label htmlFor="Temps total">Temps total (minutes)</Label>
+                <Input
+                  id="Temps total"
+                  name="Temps_total"
+                  value={formDataState.Temps_total}
+                  readOnly
+                  className="bg-gray-100 cursor-not-allowed"
+                />
+              </div>
+              <div>
+                <Label htmlFor="Validateur">Validateur</Label>
+                <Input
+                  id="Validateur"
+                  name="Validateur"
+                />
+              </div>
               <div className="flex justify-end space-x-2 mt-4">
                 <Button type="button" className="bg-red-500 hover:bg-red-700 text-white" onClick={onClose}>
                   Annuler
@@ -354,8 +388,7 @@ export default function MergedRequestForm({
                 )}
               </div>
               )}
-
-             
+            
               {formDataState.type_gain  === 'temps' ? (
               <div>
                 <Label htmlFor="Temps consommé">Temps consommé (minutes par opération)</Label>
@@ -380,6 +413,24 @@ export default function MergedRequestForm({
               </div>
               )}  
           
+              <div>
+                <Label htmlFor="Temps total">Temps total (minutes)</Label>
+                <Input
+                  id="Temps total"
+                  name="Temps_total"
+                  value={formDataState.Temps_total}
+                  readOnly
+                  className="bg-gray-100 cursor-not-allowed"
+                />
+              </div>
+              <div>
+                <Label htmlFor="Validateur">Validateur</Label>
+                <Input
+                  id="Validateur"
+                  name="Validateur"
+                />
+              </div>
+
               {/* // ----------------- Boutons de validation ------------------- */}
               {user && user.userId === '0' ? (
                 <div className="flex justify-end space-x-2 mt-4">
@@ -417,7 +468,7 @@ export default function MergedRequestForm({
               ) : (
                 <>
                 <Button type="button"
-                  className="bg-red-500 hover:bg-red-700 text-white" onClick={onClose} >Fermer</Button>
+                  className="bg-red-500 hover:bg-red-700 text-white space-x-2 mt-4" onClick={onClose} >Fermer</Button>
                 {/* <Button type="button"
                   className="bg-red-500 hover:bg-red-700 text-white" onClick={() => setIsEditing(false)} >TODO</Button> */}
                 </>
@@ -474,6 +525,25 @@ export default function MergedRequestForm({
                 />
               </div>
               )}  
+
+              <div>
+                <Label htmlFor="Temps total">Temps total (minutes)</Label>
+                <Input
+                  id="Temps total"
+                  name="Temps_total"
+                  value={formDataState.Temps_total}
+                  readOnly
+                  className="bg-gray-100 cursor-not-allowed"
+                />
+              </div>
+              <div>
+                <Label htmlFor="Validateur">Validateur</Label>
+                <Input
+                  id="Validateur"
+                  name="Validateur"
+                />
+              </div>
+
               <div className="flex justify-end space-x-2 mt-4">
                 <Button type="button" className="bg-red-500 hover:bg-red-700 text-white" onClick={onClose}>Annuler</Button>
                 <Button type="submit" className="bg-green-500 hover:bg-green-700 text-white" disabled={isLoading}>
