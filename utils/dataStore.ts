@@ -228,6 +228,9 @@ async function fetchUserData(userId: string) {
     return {
       userId: userData.userId,
       userName: userData.userName,
+      userEmail: userData.email,
+      userSuperieur: userData.superieur,
+      userValidateur: userData.validateur,
       userAgenceIds: userData.userAgenceIds.split('-')
     };
   } catch (error) {

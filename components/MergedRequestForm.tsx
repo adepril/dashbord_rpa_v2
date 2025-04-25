@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { ClientWrapper } from "./ui/client-wrapper"
 import { collection, addDoc, getDocs, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { fetchStatuts } from '../utils/dataFetcher';
+import { fetchStatuts, fetchAllUsers } from '../utils/dataFetcher';
 import { stat } from 'fs';
 
 //const userData = JSON.parse(localStorage.getItem('userData') || 'null');
@@ -26,6 +26,9 @@ interface MergedRequestFormProps {
   user?: { 
     userId: string;
     userName: string; 
+    userEmail: string;
+    userSuperieur: string;
+    userValidateur: string;
     password: string;
     userAgenceIds: string[]
   }
@@ -39,6 +42,7 @@ interface MergedRequestFormProps {
     Date: string;
     type: 'new' | 'evolution' | 'edit';
     type_gain?: string;
+    Validateur: string;
   };
 }
 
@@ -47,15 +51,16 @@ interface MergedRequestFormProps {
 export default function MergedRequestForm({
   onClose,
   type,
-  typeGain,
-  user,
-  formData = {
+    typeGain,
+    user,
+    formData = {
     Intitulé: '',
     Description: '',
     Robot: '',
     Temps_consommé: '',
     Nb_operations_mensuelles: '',
     Statut: '1', // Par défaut "En attente de validation"
+    Validateur: '',
     Date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
     type: 'new',
     type_gain: '',
@@ -74,6 +79,8 @@ export default function MergedRequestForm({
   const [isSuccess, setIsSuccess] = useState(false);
   const [statuts, setStatuts] = useState<{numero: string, label: string}[]>([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [users, setUsers] = useState<{ userId: string; userName: string }[]>([]);
+  const validateurValue = user?.userValidateur?.toLowerCase() === 'oui' ? user?.userName : user?.userSuperieur || '';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -109,6 +116,16 @@ export default function MergedRequestForm({
       }
     };
     loadStatuts();
+
+    const loadUsers = async () => {
+      try {
+        const usersData = await fetchAllUsers();
+        setUsers(usersData);
+      } catch (error) {
+        console.log('Erreur lors du chargement des utilisateurs:', error);
+      }
+    };
+    loadUsers();
   }, []);
 
 
@@ -295,13 +312,18 @@ export default function MergedRequestForm({
                   className="bg-gray-100 cursor-not-allowed"
                 />
               </div>
+
               <div>
-                <Label htmlFor="Validateur">Validateur</Label>
+                <Label htmlFor="Validateur">Validateur 555</Label>
                 <Input
                   id="Validateur"
                   name="Validateur"
+                  value={(() => { console.log('user:', user); return user?.userValidateur?.toLowerCase() === 'oui' ? user?.userName : user?.userSuperieur || ''; })()}
+                  readOnly
+                  className="bg-gray-100 cursor-not-allowed"
                 />
               </div>
+              
               <div className="flex justify-end space-x-2 mt-4">
                 <Button type="button" className="bg-red-500 hover:bg-red-700 text-white" onClick={onClose}>
                   Annuler
@@ -424,10 +446,13 @@ export default function MergedRequestForm({
                 />
               </div>
               <div>
-                <Label htmlFor="Validateur">Validateur</Label>
+                <Label htmlFor="Validateur">Validateur 123</Label>
                 <Input
                   id="Validateur"
                   name="Validateur"
+                  value={formDataState.Validateur}
+                  readOnly
+                  className="bg-gray-100 cursor-not-allowed"
                 />
               </div>
 
@@ -536,11 +561,39 @@ export default function MergedRequestForm({
                   className="bg-gray-100 cursor-not-allowed"
                 />
               </div>
-              <div>
+
+              {/* <div>
                 <Label htmlFor="Validateur">Validateur</Label>
+                <Select
+                  value={formDataState.Validateur}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, Validateur: value }))}
+                >
+                  <SelectTrigger className="bg-white border border-gray-300 rounded py-2 px-4">
+                    <SelectValue placeholder="Sélectionnez un validateur" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-300 rounded py-2 px-4">
+                    {users && users.length > 0 ? (
+                      users.map((user) => (
+                        <SelectItem key={user.userId} value={user.userName}>
+                          {user.userName}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="loading" disabled>
+                        Chargement des utilisateurs...
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div> */}
+              <div>
+                <Label htmlFor="Validateur">Validateur22</Label>
                 <Input
                   id="Validateur"
                   name="Validateur"
+                  value={formDataState.Validateur}
+                  onChange={handleChange}
+                  className="bg-white"
                 />
               </div>
 
@@ -565,3 +618,4 @@ export default function MergedRequestForm({
     </ClientWrapper>
   )
 }
+

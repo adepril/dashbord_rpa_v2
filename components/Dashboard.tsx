@@ -507,6 +507,7 @@ export default function Dashboard() {
               Temps_consommé: '',
               Nb_operations_mensuelles: '',
               Statut: '1',
+              Validateur: '',
               Date: new Date().toISOString(),
               type: 'new'
             }}

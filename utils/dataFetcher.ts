@@ -9,6 +9,8 @@ export let allRobotsByAgency: Program[] = [];
 interface UserData {
   userId: string;
   userName: string;
+  userSuperieur: string;
+  userValidateur: string;
   userAgenceIds: string[];
 }
 
@@ -16,35 +18,36 @@ interface UserData {
  * Fetches the user data for the given userId from Firestore.
  * @param {string} userId - The userId to search for.
  * @returns {Promise<UserData | null>} - The user data if found, or null if not found.
+ * @deprecated This function is not used in the current implementation.
  */
-export async function fetchUserIdByUserId(userId: string): Promise<UserData | null> {
-  console.log('Fetching user data for userId:', userId);
-  try {
-    const usersRef = collection(db, 'utilisateurs');
-    const q = query(usersRef, where('userId', '==', userId));
-    const querySnapshot = await getDocs(q);
+// export async function fetchUserIdByUserId(userId: string): Promise<UserData | null> {
+//   console.log('Fetching user data for userId:', userId);
+//   try {
+//     const usersRef = collection(db, 'utilisateurs');
+//     const q = query(usersRef, where('userId', '==', userId));
+//     const querySnapshot = await getDocs(q);
 
-    if (querySnapshot.empty) {
-      console.log('No user found with userId:', userId);
-      return null;
-    }
+//     if (querySnapshot.empty) {
+//       console.log('No user found with userId:', userId);
+//       return null;
+//     }
 
-    const userData = querySnapshot.docs[0].data();
-    console.log('User data found:', userData);
-    console.log('userAgenceIds:', userData.userAgenceIds);
+//     const userData = querySnapshot.docs[0].data();
+//     console.log('User data found:', userData);
+//     console.log('userAgenceIds:', userData.userAgenceIds);
 
-    const userDataFormatted = {
-      userId: userData.userId,
-      userName: userData.userName,
-      userAgenceIds: userData.userAgenceIds || []
-    };
-    console.log('Formatted user data:', userDataFormatted);
-    return userDataFormatted;
-  } catch (error) {
-    console.log('Error fetching user data:', error);
-    return null;
-  }
-}
+//     const userDataFormatted = {
+//       userId: userData.userId,
+//       userName: userData.userName,
+//       userAgenceIds: userData.userAgenceIds || []
+//     };
+//     console.log('Formatted user data:', userDataFormatted);
+//     return userDataFormatted;
+//   } catch (error) {
+//     console.log('Error fetching user data:', error);
+//     return null;
+//   }
+// }
 
 interface Agency {
   idAgence: string;
@@ -298,3 +301,25 @@ export const formatNumber = (num: number) => {
     return `${entier}`;
   }
 };
+
+/**
+ * Fetches all users from the Firestore collection "utilisateurs".
+ * @returns A Promise that resolves to an array of user objects with userId and userName properties.
+ */
+export async function fetchAllUsers(): Promise<{ userId: string; userName: string }[]> {
+  try {
+    const usersRef = collection(db, 'utilisateurs');
+    const querySnapshot = await getDocs(usersRef);
+    const users = querySnapshot.docs.map((doc) => {
+      const userData = doc.data();
+      return {
+        userId: userData.userId,
+        userName: userData.userName,
+      };
+    });
+    return users;
+  } catch (error) {
+    console.log('Error fetching users:', error);
+    return [];
+  }
+}

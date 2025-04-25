@@ -21,6 +21,9 @@ interface ProgramTableProps {
   user: {
     userId: string;
     userName: string;
+    userEmail: string;
+    userSuperieur: string;
+    userValidateur: string;
     password: string;
     userAgenceIds: string[];
   };
@@ -28,6 +31,12 @@ interface ProgramTableProps {
 
 
 export default function ProgramTable({robot, data, typeGain, useChart4All, user}: ProgramTableProps): JSX.Element {
+  const enhancedUser = {
+    ...user,
+    userEmail: 'default@example.com',
+    superieur: 'defaultSuperieur',
+    validateur: 'oui'
+  };
   //console.log('(ProgramTable) robot:', robot, ' data:', data, '  useChart4All:', useChart4All, );
   const [showForm, setShowForm] = useState(false);
   const [popupInfo, setPopupInfo] = useState<{ row: any; position: { x: number; y: number } | null }>({ row: null, position: null });
@@ -160,6 +169,7 @@ export default function ProgramTable({robot, data, typeGain, useChart4All, user}
             onClose={handleCloseForm}
             type="evolution"
             typeGain={typeGain}
+            user={enhancedUser}
             formData={{
               Intitulé: '',
               Description: '',
@@ -167,8 +177,11 @@ export default function ProgramTable({robot, data, typeGain, useChart4All, user}
               Temps_consommé: '',
               Nb_operations_mensuelles: '',
               Statut: '1', 
-            Date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
-              type: 'evolution'
+              Date: new Date().toISOString(),
+              //Date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+              type: 'evolution',
+              type_gain: typeGain,
+              Validateur: user.userName
             }}
           />
         )}
@@ -240,42 +253,45 @@ export default function ProgramTable({robot, data, typeGain, useChart4All, user}
       </div>
 
       {OpenFormRequestEvolution && (
-        <MergedRequestForm
-          onClose={handleCloseForm}
-          type="evolution"
-          typeGain={typeGain}
-          user={user}
-          formData={{
-            Intitulé: '',
-            Description: '',
-            Robot: selectedRobot.Programme,
-            Temps_consommé: '',
-            Nb_operations_mensuelles: '',
-            Statut: '1', 
-            Date: new Date().toISOString(),
-            type: 'evolution',
-            type_gain: typeGain
-          }}
+          <MergedRequestForm
+            onClose={handleCloseForm}
+            type="evolution"
+            typeGain={typeGain}
+            user={enhancedUser}
+            formData={{
+              Intitulé: '',
+              Description: '',
+              Robot: selectedRobot.Programme,
+              Temps_consommé: '',
+              Nb_operations_mensuelles: '',
+              Statut: '1', 
+              Date: new Date().toISOString(),
+              //Date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+              type: 'evolution',
+              type_gain: typeGain,
+              Validateur: ''
+            }}
         />
       )}
 
       {OpenFormEdit && (
-        <MergedRequestForm
-          onClose={handleCloseForm}
-          type="edit"
-          typeGain={typeGain}
-          user={user}
-          formData={{
-            Intitulé: selectedRobot.Intitulé,
-            Description: selectedRobot.Description,
-            Robot: selectedRobot.Programme,
-            Temps_consommé: selectedRobot.Temps_consommé,
-            Statut: selectedRobot.Statut,
-            Nb_operations_mensuelles: selectedRobot.Nb_operations_mensuelles,
-            Date: selectedRobot.Date,
-            type: 'edit',
-            type_gain: selectedRobot.type_gain
-          }}
+          <MergedRequestForm
+            onClose={handleCloseForm}
+            type="edit"
+            typeGain={typeGain}
+            user={enhancedUser}
+            formData={{
+              Intitulé: selectedRobot.Intitulé,
+              Description: selectedRobot.Description,
+              Robot: selectedRobot.Programme,
+              Temps_consommé: selectedRobot.Temps_consommé,
+              Statut: selectedRobot.Statut,
+              Nb_operations_mensuelles: selectedRobot.Nb_operations_mensuelles,
+              Date: selectedRobot.Date,
+              type_gain: selectedRobot.type_gain,
+              Validateur: user.userName,
+              type: 'edit'
+            }}
         />
       )}
     </div>
