@@ -314,7 +314,7 @@ export default function MergedRequestForm({
               </div>
 
               <div>
-                <Label htmlFor="Validateur">Validateur 555</Label>
+                <Label htmlFor="Validateur">Validateur</Label>
                 <Input
                   id="Validateur"
                   name="Validateur"
@@ -446,7 +446,7 @@ export default function MergedRequestForm({
                 />
               </div>
               <div>
-                <Label htmlFor="Validateur">Validateur 123</Label>
+                <Label htmlFor="Validateur">Validateur</Label>
                 <Input
                   id="Validateur"
                   name="Validateur"
@@ -562,32 +562,8 @@ export default function MergedRequestForm({
                 />
               </div>
 
-              {/* <div>
-                <Label htmlFor="Validateur">Validateur</Label>
-                <Select
-                  value={formDataState.Validateur}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, Validateur: value }))}
-                >
-                  <SelectTrigger className="bg-white border border-gray-300 rounded py-2 px-4">
-                    <SelectValue placeholder="Sélectionnez un validateur" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border border-gray-300 rounded py-2 px-4">
-                    {users && users.length > 0 ? (
-                      users.map((user) => (
-                        <SelectItem key={user.userId} value={user.userName}>
-                          {user.userName}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value="loading" disabled>
-                        Chargement des utilisateurs...
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div> */}
               <div>
-                <Label htmlFor="Validateur">Validateur22</Label>
+                <Label htmlFor="Validateur">Validateur</Label>
                 <Input
                   id="Validateur"
                   name="Validateur"
