@@ -1,0 +1,110 @@
+Date : 2025-06-10 18:09:57
+Directory : c:\DEV\Workspace\dashboard_rpa_bbl_2
+Total : 59 files,  12787 codes, 618 comments, 567 blanks, all 13972 lines
+
+Languages
++--------------------+------------+------------+------------+------------+------------+
+| language           | files      | code       | comment    | blank      | total      |
++--------------------+------------+------------+------------+------------+------------+
+| JSON               |          2 |      8,351 |          0 |          2 |      8,353 |
+| TypeScript JSX     |         26 |      2,953 |        155 |        314 |      3,422 |
+| TypeScript         |         11 |        727 |        429 |        126 |      1,282 |
+| Markdown           |          5 |        509 |          0 |         94 |        603 |
+| XML                |         10 |        123 |         33 |         23 |        179 |
+| HTML               |          1 |         58 |          0 |          1 |         59 |
+| JSON with Comments |          2 |         42 |          0 |          1 |         43 |
+| PostCSS            |          1 |         18 |          0 |          4 |         22 |
+| JavaScript         |          1 |          6 |          1 |          2 |          9 |
++--------------------+------------+------------+------------+------------+------------+
+
+Directories
++-----------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                  | files      | code       | comment    | blank      | total      |
++-----------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                     |         59 |     12,787 |        618 |        567 |     13,972 |
+| . (Files)                                                             |         11 |      8,936 |          2 |        102 |      9,040 |
+| .roo                                                                  |          1 |          3 |          0 |          0 |          3 |
+| app                                                                   |          6 |        134 |          0 |         27 |        161 |
+| app (Files)                                                           |          3 |         59 |          0 |         10 |         69 |
+| app\api                                                               |          2 |         62 |          0 |         12 |         74 |
+| app\api\contact                                                       |          1 |         35 |          0 |          7 |         42 |
+| app\api\password-reset                                                |          1 |         27 |          0 |          5 |         32 |
+| app\dashboard                                                         |          1 |         13 |          0 |          5 |         18 |
+| components                                                            |         22 |      2,881 |        155 |        297 |      3,333 |
+| components (Files)                                                    |         11 |      2,280 |        155 |        212 |      2,647 |
+| components\ui                                                         |         11 |        601 |          0 |         85 |        686 |
+| context                                                               |          1 |         18 |          0 |          6 |         24 |
+| hooks                                                                 |          1 |         49 |          2 |         14 |         65 |
+| lib                                                                   |          4 |         56 |          8 |         13 |         77 |
+| lib (Files)                                                           |          2 |         25 |          0 |          6 |         31 |
+| lib\mail                                                              |          1 |         23 |          8 |          4 |         35 |
+| lib\schemas                                                           |          1 |          8 |          0 |          3 |         11 |
+| public                                                                |         11 |        181 |         33 |         24 |        238 |
+| utils                                                                 |          2 |        529 |        418 |         84 |      1,031 |
++-----------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++-----------------------------------------------------------------------+--------------------+------------+------------+------------+------------+
+| filename                                                              | language           | code       | comment    | blank      | total      |
++-----------------------------------------------------------------------+--------------------+------------+------------+------------+------------+
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\.roo\mcp.json                    | JSON with Comments |          3 |          0 |          0 |          3 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\app\api\contact\route.ts         | TypeScript         |         35 |          0 |          7 |         42 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\app\api\password-reset\route.ts  | TypeScript         |         27 |          0 |          5 |         32 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\app\dashboard\page.tsx           | TypeScript JSX     |         13 |          0 |          5 |         18 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\app\globals.css                  | PostCSS            |         18 |          0 |          4 |         22 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\app\layout.tsx                   | TypeScript JSX     |         33 |          0 |          4 |         37 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\app\page.tsx                     | TypeScript JSX     |          8 |          0 |          2 |         10 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\components\AgencySelector.tsx    | TypeScript JSX     |         51 |          0 |          9 |         60 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\components\Chart.tsx             | TypeScript JSX     |        244 |         13 |         20 |        277 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\components\Chart4All.tsx         | TypeScript JSX     |        258 |         38 |         21 |        317 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\components\Chart4Service.tsx     | TypeScript JSX     |        143 |          0 |          9 |        152 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\components\ClientWrapper.tsx     | TypeScript JSX     |         19 |          0 |          5 |         24 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\components\Dashboard.tsx         | TypeScript JSX     |        459 |         47 |         49 |        555 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\components\LoginForm.tsx         | TypeScript JSX     |        238 |          9 |         26 |        273 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\components\MergedRequestForm.tsx | TypeScript JSX     |        533 |         26 |         39 |        598 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\components\ProgramSelector.tsx   | TypeScript JSX     |         35 |          1 |          7 |         43 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\components\ProgramTable.tsx      | TypeScript JSX     |        258 |         20 |         22 |        300 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\components\ServiceSelector.tsx   | TypeScript JSX     |         42 |          1 |          5 |         48 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\components\ui\button.tsx         | TypeScript JSX     |         51 |          0 |          6 |         57 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\components\ui\card.tsx           | TypeScript JSX     |         71 |          0 |          9 |         80 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\components\ui\client-wrapper.tsx | TypeScript JSX     |         19 |          0 |          5 |         24 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\components\ui\dialog.tsx         | TypeScript JSX     |        109 |          0 |         14 |        123 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\components\ui\input.tsx          | TypeScript JSX     |         19 |          0 |          4 |         23 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\components\ui\label.tsx          | TypeScript JSX     |         21 |          0 |          6 |         27 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\components\ui\select.tsx         | TypeScript JSX     |        146 |          0 |         15 |        161 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\components\ui\table.tsx          | TypeScript JSX     |        107 |          0 |         11 |        118 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\components\ui\textarea.tsx       | TypeScript JSX     |         19 |          0 |          4 |         23 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\components\ui\toast.tsx          | TypeScript JSX     |         20 |          0 |          4 |         24 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\components\ui\tooltip.tsx        | TypeScript JSX     |         19 |          0 |          7 |         26 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\context\ShowAllRobotsContext.tsx | TypeScript JSX     |         18 |          0 |          6 |         24 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\dashboard_functions_analysis.md  | Markdown           |        287 |          0 |         38 |        325 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\data_management_analysis.md      | Markdown           |         81 |          0 |         22 |        103 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\data_management_plan.md          | Markdown           |         44 |          0 |          9 |         53 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\data_management_plan_fr.md       | Markdown           |         44 |          0 |          9 |         53 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\hooks\use-toast.ts               | TypeScript         |         49 |          2 |         14 |         65 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\lib\firebase.ts                  | TypeScript         |         14 |          0 |          3 |         17 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\lib\mail\nodemailer.ts           | TypeScript         |         23 |          8 |          4 |         35 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\lib\schemas\contact.ts           | TypeScript         |          8 |          0 |          3 |         11 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\lib\utils.ts                     | TypeScript         |         11 |          0 |          3 |         14 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\next.config.ts                   | TypeScript         |         14 |          1 |          1 |         16 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\package-lock.json                | JSON               |      8,304 |          0 |          1 |      8,305 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\package.json                     | JSON               |         47 |          0 |          1 |         48 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\postcss.config.mjs               | JavaScript         |          6 |          1 |          2 |          9 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\public\file.svg                  | XML                |          1 |          0 |          0 |          1 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\public\globe.svg                 | XML                |          1 |          0 |          0 |          1 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\public\icon_no.svg               | XML                |         10 |          2 |          2 |         14 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\public\icon_ok.svg               | XML                |         14 |          2 |          1 |         17 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\public\iconsDisplay.html         | HTML               |         58 |          0 |          1 |         59 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\public\logo_bbl-groupe.svg       | XML                |         13 |          0 |          1 |         14 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\public\next.svg                  | XML                |          1 |          0 |          0 |          1 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\public\statusIcons - Copie.svg   | XML                |         39 |         10 |          9 |         58 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\public\statusIcons.svg           | XML                |         42 |         19 |         10 |         71 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\public\vercel.svg                | XML                |          1 |          0 |          0 |          1 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\public\window.svg                | XML                |          1 |          0 |          0 |          1 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\tailwind.config.ts               | TypeScript         |         17 |          0 |          2 |         19 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\tsconfig.json                    | JSON with Comments |         39 |          0 |          1 |         40 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\utils\dataFetcher.ts             | TypeScript         |        172 |        100 |         27 |        299 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\utils\dataStore.ts               | TypeScript         |        357 |        318 |         57 |        732 |
+| c:\DEV\Workspace\dashboard_rpa_bbl_2\variable_explanation.md          | Markdown           |         53 |          0 |         16 |         69 |
+| Total                                                                 |                    |     12,787 |        618 |        567 |     13,972 |
++-----------------------------------------------------------------------+--------------------+------------+------------+------------+------------+

@@ -1,0 +1,1 @@
+L'analyse détaillée des fonctions loadPrograms et loadProgramData dans components/Dashboard.tsx a été effectuée avec des exemples et des références de lignes. Ces fonctions complètent initializeReportingData sans créer de redondance, en gérant respectivement le chargement des robots basés sur les sélections et le traitement des données spécifiques au robot choisi.

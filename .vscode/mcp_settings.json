@@ -1,0 +1,21 @@
+{
+  "mcp": {
+    "servers": {
+      "github.com/Saik0s/mcp-browser-use": {
+        "command": "uv",
+        "args": [
+          "--directory",
+          "mcp-browser-use-server",
+          "run",
+          "mcp-server-browser-use"
+        ],
+        "env": {
+          "MCP_LLM_PROVIDER": "google",
+          "MCP_LLM_MODEL_NAME": "gemini-1.5-flash-latest",
+          "MCP_BROWSER_HEADLESS": "true",
+          "MCP_LLM_GOOGLE_API_KEY": "AIzaSyCY2C0v0_KhgcyNij8rXFXLVx6FHKWBGxM"
+        }
+      }
+    }
+  }
+}

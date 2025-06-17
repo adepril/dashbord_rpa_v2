@@ -3,6 +3,23 @@ import { db } from '../lib/firebase';
 import { describe } from 'node:test';
 import { Program } from './dataStore';
 
+// ------------------------------------------------------------
+// ROLE: Service de récupération des données Firestore
+//
+// Ce module fournit des fonctions spécifiques pour:
+// 1. Récupérer des entités individuelles (agences, utilisateurs, citations)
+// 2. Effectuer des requêtes filtrées (par programme, statut, etc.)
+// 3. Transformer les données brutes en structures typées
+//
+// Différences avec dataStore.ts:
+// - Pas de gestion de cache (seulement des requêtes directes)
+// - Pas de calculs complexes (uniquement la récupération)
+// - Pas de callbacks UI (retourne des Promises)
+//
+// Variables globales:
+// - allRobotsByAgency: Liste temporaire des robots par agence
+// ------------------------------------------------------------
+
 // Variable globale pour stocker tous les programmes
 export let allRobotsByAgency: Program[] = [];
 
@@ -14,40 +31,7 @@ interface UserData {
   userAgenceIds: string[];
 }
 
-/**
- * Fetches the user data for the given userId from Firestore.
- * @param {string} userId - The userId to search for.
- * @returns {Promise<UserData | null>} - The user data if found, or null if not found.
- * @deprecated This function is not used in the current implementation.
- */
-// export async function fetchUserIdByUserId(userId: string): Promise<UserData | null> {
-//   console.log('Fetching user data for userId:', userId);
-//   try {
-//     const usersRef = collection(db, 'utilisateurs');
-//     const q = query(usersRef, where('userId', '==', userId));
-//     const querySnapshot = await getDocs(q);
 
-//     if (querySnapshot.empty) {
-//       console.log('No user found with userId:', userId);
-//       return null;
-//     }
-
-//     const userData = querySnapshot.docs[0].data();
-//     console.log('User data found:', userData);
-//     console.log('userAgenceIds:', userData.userAgenceIds);
-
-//     const userDataFormatted = {
-//       userId: userData.userId,
-//       userName: userData.userName,
-//       userAgenceIds: userData.userAgenceIds || []
-//     };
-//     console.log('Formatted user data:', userDataFormatted);
-//     return userDataFormatted;
-//   } catch (error) {
-//     console.log('Error fetching user data:', error);
-//     return null;
-//   }
-// }
 
 interface Agency {
   idAgence: string;
@@ -56,12 +40,22 @@ interface Agency {
 }
 
 /**
- * Fetches all agencies for a given list of IDs.
- * Returns an array of agency objects with idAgence and nomAgence properties.
- * If no agency is found with a given ID, it is skipped.
- * If an error occurs, an empty array is returned.
- * @param agencyIds the list of agency IDs to fetch
- * @returns an array of agency objects
+ * fetchAgenciesByIds - Récupère les agences correspondant aux IDs fournis
+ *
+ * Cette fonction:
+ * 1. Prend en entrée une liste d'IDs d'agences
+ * 2. Effectue une requête Firestore pour chaque ID valide (!= "-")
+ * 3. Retourne un tableau d'objets Agency formatés
+ *
+ * Gestion des erreurs:
+ * - Ignore les IDs invalides (log dans la console)
+ * - Retourne tableau vide en cas d'erreur globale
+ *
+ * @param agencyIds string[] - Liste des IDs d'agences à récupérer
+ * @returns Promise<Agency[]> - Tableau des agences trouvées
+ *
+ * Exemple d'utilisation:
+ * const agencies = await fetchAgenciesByIds(['AG1', 'AG2'])
  */
 export async function fetchAgenciesByIds(agencyIds: string[]): Promise<Agency[]> {
   console.log('Retrieve agencies for IDs:', agencyIds);
@@ -107,58 +101,7 @@ export async function fetchAgenciesByIds(agencyIds: string[]): Promise<Agency[]>
  * @param {string} type_gain - Type de gain (non utilisé dans ce contexte).
  * @returns {Promise<{[key: string]: string}[]>} - Données de reporting mensuel.
  */
-// export async function fetchDataReportingByRobot(robotName: string, agence: string, tempsParUnite: string, type_gain: string) {
-//   console.log('(#####dataFetcher) fetchDataReportingByRobot - NomProgramme:', robotName, 'Agence:', agence, 'type_gain:', type_gain, 'tempsParUnite:', tempsParUnite);
-//   try {
-//     const reportingRef = collection(db, 'DataReportingMoisCourant');
-//     const q = query(reportingRef, where('NOM PROGRAMME', '==', robotName), where('AGENCE', '==', agence));
-//     const querySnapshot = await getDocs(q);
-//     console.log('(dataFetcher) Query snapshot:', querySnapshot.docs.map(doc => doc.data()));
 
-//     const data = querySnapshot.docs.map((doc: any) => {
-//       const docData = doc.data();
-//       const dateData: { [key: string]: string } = {};
-//       const currentDate = new Date();
-//       const year = currentDate.getFullYear();
-//       const month = currentDate.getMonth() + 1;
-
-//       for (let i = 1; i <= 31; i++) {
-//         const day = i.toString().padStart(2, '0');
-//         const dateKey = `${day}/${month.toString().padStart(2, '0')}/${year}`;
-//         if (docData[dateKey] !== undefined && docData[dateKey] !== '') {
-//           const execValue = Number(docData[dateKey]);
-//           if (tempsParUnite !== '0' && !isNaN(execValue)) {
-//             dateData[dateKey] = (execValue * Number(tempsParUnite)).toString();
-//           } else {
-//             dateData[dateKey] = docData[dateKey];
-//           }
-//         } else {
-//           dateData[dateKey] = '';
-//         }
-//       }
-
-//       return {
-//         ...dateData,
-//         AGENCE: docData.AGENCE || 'N/A',
-//         'NOM PROGRAMME': docData['NOM PROGRAMME'] || 'N/A',
-//         'NB UNITES DEPUIS DEBUT DU MOIS': (!isNaN(Number(docData['NB UNITES DEPUIS DEBUT DU MOIS']))) ?
-//           (tempsParUnite === '0' ? Number(docData['NB UNITES DEPUIS DEBUT DU MOIS']) : Number(docData['NB UNITES DEPUIS DEBUT DU MOIS']) * Number(tempsParUnite)) : 0,
-//         'NB UNITES MOIS N-1': (!isNaN(Number(docData['NB UNITES MOIS N-1']))) ?
-//           (tempsParUnite === '0' ? Number(docData['NB UNITES MOIS N-1']) : Number(docData['NB UNITES MOIS N-1']) * Number(tempsParUnite)) : 0,
-//         'NB UNITES MOIS N-2': (!isNaN(Number(docData['NB UNITES MOIS N-2']))) ?
-//           (tempsParUnite === '0' ? Number(docData['NB UNITES MOIS N-2']) : Number(docData['NB UNITES MOIS N-2']) * Number(tempsParUnite)) : 0,
-//         'NB UNITES MOIS N-3': (!isNaN(Number(docData['NB UNITES MOIS N-3']))) ?
-//           (tempsParUnite === '0' ? Number(docData['NB UNITES MOIS N-3']) : Number(docData['NB UNITES MOIS N-3']) * Number(tempsParUnite)) : 0,
-//       };
-//     });
-
-//     console.log('(dataFetcher) Processed reporting data:', data);
-//     return data;
-//   } catch (error) {
-//     console.log('Error fetching reporting data:', error);
-//     return [];
-//   }
-// }
 
 interface Evolution {
   Robot: string;
@@ -167,10 +110,24 @@ interface Evolution {
 }
 
 /**
- * Fetches all evolution documents from the Firestore collection and processes them.
+ * fetchAllEvolutions - Récupère et traite tous les documents d'évolution
  *
- * Groups the documents by the 'Robot' field and, for each group, retains only the document with the highest 'statut' value.
- * @returns A Promise that resolves to an array of Evolution objects.
+ * Cette fonction:
+ * 1. Récupère tous les documents de la collection 'evolutions'
+ * 2. Groupe les documents par champ 'Robot'
+ * 3. Pour chaque groupe, conserve uniquement le document avec le 'statut' le plus élevé
+ *
+ * Typage:
+ * - Retourne Promise<Evolution[]>
+ * - Evolution contient obligatoirement Robot (string) et statut (number)
+ *
+ * Gestion des erreurs:
+ * - Retourne tableau vide en cas d'erreur
+ * - Log l'erreur dans la console
+ *
+ * @returns Promise<Evolution[]> - Tableau des évolutions filtrées
+ *
+ * Note: Utilisé pour afficher uniquement la dernière version de chaque évolution
  */
 export async function fetchAllEvolutions(): Promise<Evolution[]> {
   console.log('fetchAllEvolutions');
@@ -207,10 +164,34 @@ export async function fetchAllEvolutions(): Promise<Evolution[]> {
  * @param programId The name of the program to fetch evolutions for.
  * @returns A Promise that resolves to an array of evolution documents.
  */
-export async function fetchEvolutionsByProgram(programId: string) {
+function getMonthRange(selectedMonth: string) {
+  const currentDate = new Date();
+  let startDate = new Date();
+  let endDate = new Date();
+
+  if (selectedMonth !== 'N') {
+    const monthOffset = parseInt(selectedMonth.split('-')[1]);
+    startDate.setMonth(startDate.getMonth() - monthOffset);
+    endDate.setMonth(endDate.getMonth() - monthOffset);
+  }
+
+  startDate.setDate(1);
+  endDate.setMonth(endDate.getMonth() + 1);
+  endDate.setDate(0);
+
+  return { startDate, endDate };
+}
+
+export async function fetchEvolutionsByProgram(programId: string, selectedMonth: string = 'N') {
   try {
     const evolutionsRef = collection(db, 'evolutions');
-    const q = query(evolutionsRef, where('Robot', '==', programId));
+    const { startDate, endDate } = getMonthRange(selectedMonth);
+    const q = query(
+      evolutionsRef,
+      where('Robot', '==', programId),
+      where('Date', '>=', startDate),
+      where('Date', '<=', endDate)
+    );
     const querySnapshot = await getDocs(q);
     const data = querySnapshot.docs.map(doc => {
       const docData = doc.data();
@@ -269,8 +250,24 @@ export async function fetchRandomQuote(): Promise<Quote | null> {
 }
 
 /**
- * Fetches statut documents from the Firestore collection "statut".
- * @returns A Promise that resolves to an array of statut objects with numero and label properties.
+ * fetchStatuts - Récupère tous les statuts depuis Firestore
+ *
+ * Cette fonction:
+ * 1. Récupère tous les documents de la collection 'statut'
+ * 2. Transforme les données en objets {numero, label}
+ * 3. Trie les statuts par numéro croissant
+ *
+ * Structure de retour:
+ * - numero: number (identifiant unique du statut)
+ * - label: string (libellé du statut)
+ *
+ * Gestion des erreurs:
+ * - Retourne tableau vide en cas d'erreur
+ * - Log l'erreur dans la console
+ *
+ * @returns Promise<Array<{numero: number, label: string}>>
+ *
+ * Note: Utilisé pour les filtres et affichages des statuts
  */
 export async function fetchStatuts() {
   try {

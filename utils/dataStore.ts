@@ -1,10 +1,21 @@
 // ------------------------------------------------------------
 // FILE: utils/dataStore.ts
-// Description : Ce module gère l'accès aux données provenant de Firestore 
-// et le stockage en cache pour l'application Dashboard RPA BBL. 
-// Il définit notamment les interfaces Agency et Program pour représenter
-// les agences et les robots (programmes), ainsi que les fonctions d'initialisation 
-// des données et de filtrage des informations par agence/service.
+// ROLE: Gestion centralisée du cache des données et coordination des opérations Firestore
+//
+// Ce module est le coeur de la gestion des données pour le dashboard RPA BBL. Il :
+// 1. Initialise et maintient un cache des données Firestore (agences, robots, reporting)
+// 2. Fournit des fonctions de filtrage avancé par agence/service
+// 3. Gère les callbacks pour la mise à jour des composants UI
+// 4. Effectue les calculs de reporting (temps gagné, etc.)
+//
+// Interfaces clés:
+// - Agency: Structure des données d'agence (id, nom, libellé)
+// - Program: Structure complète des robots RPA (nom, agence, métadonnées)
+//
+// Variables globales:
+// - cachedAgencies: Cache des agences accessibles à l'utilisateur
+// - cachedRobots: Robots filtrés pour l'utilisateur courant
+// - cachedReportingData: Données de reporting calculées
 // ------------------------------------------------------------
 
 import { collection, getDocs, query, where } from 'firebase/firestore';
@@ -172,7 +183,7 @@ export async function initializeData(userId: string): Promise<void> {
     if (!userData) {
       throw new Error('Utilisateur non trouvé');
     }
-    console.log('(dataStore - initializeData) Données utilisateur:', userData);
+    //console.log('(dataStore - initializeData) Données utilisateur:', userData);
 
     // 2. Chargement des agences
     if (userId === '0') {
@@ -182,13 +193,13 @@ export async function initializeData(userId: string): Promise<void> {
     } else {
       // Cas normal : charger les agences liées à l'utilisateur
       await loadUserAgencies(userData.userAgenceIds);
-      console.log('## (dataStore - initializeData) Chargement des agences utilisateur', userData.userAgenceIds);
-      console.log('## (dataStore - initializeData) Agences chargées', cachedAgencies);
+      //console.log('## (dataStore - initializeData) Chargement des agences utilisateur', userData.userAgenceIds);
+      //console.log('## (dataStore - initializeData) Agences chargées', cachedAgencies);
     }
 
     // 3. Chargement de tous les robots pour ces agences
     await loadAllRobotsForAgencies();
-    console.log('$$(dataStore - loadAllRobotsForAgencies) cachedRobots ', cachedRobots);
+    //console.log('$$(dataStore - loadAllRobotsForAgencies) cachedRobots ', cachedRobots);
 
     // Marquer l'initialisation comme terminée
     isInitialized = true;
@@ -347,7 +358,7 @@ export async function loadAllRobots(): Promise<void> {
 
     // Pour chaque robot, essaye de lier les données de reporting
     cachedRobots4Agencies = cachedRobots4Agencies.map(robot => {
-      const reportingData = cachedReportingData.find(
+      const reportingData = findInMonthlyData(cachedReportingData,
         report => report['AGENCE'] + '_' + report['NOM PROGRAMME'] === robot.id_robot
       );
       if (reportingData) {
@@ -629,13 +640,75 @@ export function resetCache(): void {
 // ============================================================
 // Gestion du reporting (données de reporting des robots)
 // ------------------------------------------------------------
-export let cachedReportingData: any[] = [];
+export interface ReportingEntry {
+  AGENCE: string;
+  'NOM PROGRAMME': string;
+  'NB UNITES DEPUIS DEBUT DU MOIS': string;
+  [key: string]: any;
+}
+
+interface MonthlyData {
+  currentMonth: ReportingEntry[];
+  prevMonth1: ReportingEntry[];
+  prevMonth2: ReportingEntry[];
+  prevMonth3: ReportingEntry[];
+}
+
+// Helper function to find data in MonthlyData
+function findInMonthlyData(data: MonthlyData, predicate: (entry: ReportingEntry) => boolean): ReportingEntry | undefined {
+  return [...data.currentMonth, ...data.prevMonth1, ...data.prevMonth2, ...data.prevMonth3].find(predicate);
+}
+
+export let cachedReportingData: MonthlyData = {
+  currentMonth: [],
+  prevMonth1: [],
+  prevMonth2: [],
+  prevMonth3: []
+};
+
+export let totalCurrentMonth: number = 0;
+export let totalPrevMonth1: number = 0;
+export let totalPrevMonth2: number = 0;
+export let totalPrevMonth3: number = 0;
+
+export function getReportingDataForRobot(robotId: string, month: string): ReportingEntry | undefined {
+  const data = getReportingData(month);
+  return data.find((entry: ReportingEntry) =>
+    entry['AGENCE'] + '_' + entry['NOM PROGRAMME'] === robotId
+  );
+}
+
+export function getReportingData(month: string): ReportingEntry[] {
+  switch(month) {
+    case 'N': return cachedReportingData.currentMonth;
+    case 'N-1': return cachedReportingData.prevMonth1;
+    case 'N-2': return cachedReportingData.prevMonth2;
+    case 'N-3': return cachedReportingData.prevMonth3;
+    default: return [];
+  }
+}
+
+export function getTotalCurrentMonth(): number {
+  return totalCurrentMonth;
+}
+
+export function getTotalPrevMonth1(): number {
+  return totalPrevMonth1;
+}
+
+export function getTotalPrevMonth2(): number {
+  return totalPrevMonth2;
+}
+
+export function getTotalPrevMonth3(): number {
+  return totalPrevMonth3;
+}
 
 /**
  * initializeReportingData
  * -------------------------------------------------------------------
  * Description :
- *  - Récupère les données de reporting mensuel depuis la collection "DataReportingMoisCourant".
+ *  - Récupère les données de reporting mensuel depuis les collections "dataMoisN", "DataMoisN-1", "DataMoisN-2", "DataMoisN-3".
  *  - Pour chaque document, multiplie les valeurs (exprimées pour chaque jour sous le format "jj/mm/aaaa")
  *    par le temps par unité du robot correspondant si applicable.
  *  - Stocke le résultat dans cachedReportingData.
@@ -643,51 +716,114 @@ export let cachedReportingData: any[] = [];
  * Entrée : Aucun.
  * Sortie : Promise<void>
  */
+/**
+ * calculateMonthlyTotal
+ * -------------------------------------------------------------------
+ * Description :
+ *  - Calcule le total des valeurs numériques pour un mois donné.
+ *  - Additionne les valeurs des clés qui représentent des dates (format "jj/mm/aaaa").
+ *
+ * Entrée :
+ *  - data: ReportingEntry[] - Tableau des entrées de reporting pour un mois.
+ * Sortie :
+ *  - number - Le total calculé pour le mois.
+ */
+function calculateMonthlyTotal(data: ReportingEntry[]): number {
+  let total = 0;
+  data.forEach(entry => {
+    for (const key in entry) {
+      // Vérifier si la clé est une date au format "jj/mm/aaaa"
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(key)) {
+        const value = parseFloat(entry[key]);
+        if (!isNaN(value)) {
+          total += value;
+        }
+      }
+    }
+  });
+  return total;
+}
+
 export async function initializeReportingData(): Promise<void> {
   try {
-    const querySnapshot = await getDocs(collection(db, 'DataReportingMoisCourant'));
-    cachedReportingData = querySnapshot.docs.map(doc => {
+    // Clear existing data
+    cachedReportingData = {
+      currentMonth: [],
+      prevMonth1: [],
+      prevMonth2: [],
+      prevMonth3: []
+    };
+    // Récupérer les données des 4 collections (mois courant et 3 mois précédents)
+    const [currentMonthSnapshot, prevMonth1Snapshot, prevMonth2Snapshot, prevMonth3Snapshot] = await Promise.all([
+      getDocs(collection(db, 'DataMoisN')),
+      getDocs(collection(db, 'DataMoisN-1')),
+      getDocs(collection(db, 'DataMoisN-2')),
+      getDocs(collection(db, 'DataMoisN-3'))
+    ]);
+
+    // Fusionner les données dans un format similaire à l'ancienne structure
+    // Initialiser chaque mois séparément
+    cachedReportingData.currentMonth = currentMonthSnapshot.docs.map(createMergedData);
+    cachedReportingData.prevMonth1 = prevMonth1Snapshot.docs.map(createMergedData);
+    cachedReportingData.prevMonth2 = prevMonth2Snapshot.docs.map(createMergedData);
+    cachedReportingData.prevMonth3 = prevMonth3Snapshot.docs.map(createMergedData);
+    console.log('@ cachedReportingData.currentMonth  :', cachedReportingData.currentMonth );
+    console.log('@ cachedReportingData.prevMonth1 :', cachedReportingData.prevMonth1 );
+    console.log('@ cachedReportingData.prevMonth2 :', cachedReportingData.prevMonth2 ); 
+    console.log('@ cachedReportingData.prevMonth3 :', cachedReportingData.prevMonth3 );
+
+    // Calculer les totaux mensuels
+    totalCurrentMonth = calculateMonthlyTotal(cachedReportingData.currentMonth);
+    totalPrevMonth1 = calculateMonthlyTotal(cachedReportingData.prevMonth1);
+    totalPrevMonth2 = calculateMonthlyTotal(cachedReportingData.prevMonth2);
+    totalPrevMonth3 = calculateMonthlyTotal(cachedReportingData.prevMonth3);
+
+    console.log('Total Mois Courant:', totalCurrentMonth);
+    console.log('Total Mois N-1:', totalPrevMonth1);
+    console.log('Total Mois N-2:', totalPrevMonth2);
+    console.log('Total Mois N-3:', totalPrevMonth3);
+
+    function createMergedData(doc: any): MergedData {
       const data = doc.data();
-
-      const matchingRobot = cachedRobots4Agencies.find(robot => robot.id_robot === data['AGENCE'] + '_' + data['NOM PROGRAMME']);
-      
-
-      // Pour chaque clé correspondant à une date, applique le calcul du gain
-      for (const key in data) {
-        if (/^\d{2}\/\d{2}\/\d{4}$/.test(key)) {
-          const originalValue = Number(data[key]);
-          if (!isNaN(originalValue)) {
-            // Multiplie la valeur par le temps_par_unite si applicable
-            if (matchingRobot && matchingRobot.temps_par_unite && matchingRobot.temps_par_unite !== '0') {
-              data[key] = (originalValue * Number(matchingRobot.temps_par_unite)).toString();
-            }
-          }
-        }
+      return {
+        'AGENCE': data['AGENCE'] || '',
+        'NOM PROGRAMME': data['NOM PROGRAMME'] || '',
+        'NB UNITES DEPUIS DEBUT DU MOIS': data['NB UNITES DEPUIS DEBUT DU MOIS'] || '0',
+        ...data
+      };
+    }
+      const currentData = currentMonthSnapshot.docs[0].data();
+      const matchingRobot = cachedRobots4Agencies.find(robot => robot.id_robot === currentData['AGENCE'] + '_' + currentData['NOM PROGRAMME']);
+      console.log('@ Matching robot:', matchingRobot);
+   
+      // Interface pour les données fusionnées
+      interface MergedData {
+        [key: string]: any; // Permet les clés dynamiques pour les dates
+        'AGENCE': string;
+        'NOM PROGRAMME': string;
+        'NB UNITES DEPUIS DEBUT DU MOIS': string;
       }
-      
-      // Appliquer la même logique de multiplication aux totaux mensuels
-      const monthlyTotals = [
-        'NB UNITES DEPUIS DEBUT DU MOIS',
-        'NB UNITES MOIS N-1',
-        'NB UNITES MOIS N-2',
-        'NB UNITES MOIS N-3'
-      ];
-      
-      for (const totalKey of monthlyTotals) {
-        if (data[totalKey] !== undefined) {
-          const originalValue = Number(data[totalKey]);
-          if (!isNaN(originalValue)) {
-            // Multiplie la valeur par le temps_par_unite si applicable
-            if (matchingRobot && matchingRobot.temps_par_unite && matchingRobot.temps_par_unite !== '0') {
-              data[totalKey] = (originalValue * Number(matchingRobot.temps_par_unite)).toString();
-            }
-          }
-        }
-      }
-      
-      return data;
-    });
+
+      // Créer un objet typé avec la même structure que l'ancienne collection
+      const mergedData: MergedData = {
+        'AGENCE': currentData['AGENCE'] || '',
+        'NOM PROGRAMME': currentData['NOM PROGRAMME'] || '',
+        'NB UNITES DEPUIS DEBUT DU MOIS': currentData['NB UNITES DEPUIS DEBUT DU MOIS'] || '0',
+        ...currentData // Spread operator pour les autres propriétés (dates notamment)
+      };
+
+      // Appliquer les calculs de temps comme avant
+      // for (const key in mergedData) {
+      //   if (/^\d{2}\/\d{2}\/\d{4}$/.test(key)) {
+      //     const originalValue = Number(mergedData[key]);
+      //     if (!isNaN(originalValue) && matchingRobot?.temps_par_unite && matchingRobot.temps_par_unite !== '0') {
+      //       mergedData[key] = (originalValue * Number(matchingRobot.temps_par_unite)).toString();
+      //     }
+      //   }
+      // }
+
     console.log('(dataStore) Reporting data cached:', cachedReportingData);
+    return;
   } catch (error) {
     console.log('Error caching reporting data:', error);
     throw error;

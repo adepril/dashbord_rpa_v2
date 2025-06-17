@@ -12,12 +12,18 @@ import { db } from '../lib/firebase';
 import { formatDuration } from '../lib/utils'
 // Importation des types et des données mises en cache concernant les robots (programmes)
 import { Program, cachedRobots4Agencies } from '../utils/dataStore';
+import { formatNumber} from '../utils/dataFetcher'
 
 // Définition des propriétés que ce composant attend
 interface ChartProps {
   robotType: string
-  data1: any //,data2: any
-  //selectedAgency: string
+  data1: any
+  totalCurrentMonth: number
+  totalPrevMonth1: number 
+  totalPrevMonth2: number
+  totalPrevMonth3: number
+  selectedMonth: string, // 'N', 'N-1', 'N-2', 'N-3'
+  setSelectedMonth: (month: string) => void
 }
 
 // Interface définissant les propriétés utilisées pour personnaliser l'affichage des ticks sur l'axe X
@@ -50,9 +56,10 @@ const CustomizedAxisTick: React.FC<CustomizedAxisTickProps> = (props) => {
 }
 
 // Composant principal d'affichage du graphique et des infos additionnelles sur les robots
-export default function Chart({ robotType, data1}: ChartProps) {
-  
-  //console.log("Chart4All.tsx - data1:", data1);
+export default function Chart({ robotType, data1, selectedMonth, setSelectedMonth, totalCurrentMonth, totalPrevMonth1, totalPrevMonth2, totalPrevMonth3 }: ChartProps) {
+
+  console.log("Chart4All.tsx - data1:", data1);
+  console.log("Chart4All.tsx - selectedMonth:", selectedMonth);
   //console.log("Chart4All.tsx - data1:", data1, " data2:", data2);
   //console.log("Chart4All.tsx - robotType:", selectedAgency);
   //console.log("Chart4All.tsx - robotType:", cachedAllRobots);
@@ -60,7 +67,7 @@ export default function Chart({ robotType, data1}: ChartProps) {
   // Interface locale pour décrire la forme des données de reporting attendues (exemple)
   interface ReportingData {
     'NB UNITES DEPUIS DEBUT DU MOIS': string;
-    'NB UNITES MOIS N-1': string;
+    //'NB UNITES MOIS N-1': string;
   }
 
   // États locaux du composant :
@@ -103,18 +110,27 @@ export default function Chart({ robotType, data1}: ChartProps) {
     );
   }
 
-  // Détermination de la date actuelle pour l'axe X du graphique
+  // Détermination de la date en fonction du mois sélectionné
   const currentDate = new Date();
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth() + 1;
-  let displayMonth = month;
-  let displayYear = year;
-  if(currentDate.getDate() === 1) {
-    if(month === 1) {
+  let displayMonth = currentDate.getMonth() + 1;
+  let displayYear = currentDate.getFullYear();
+  
+  if (selectedMonth !== 'N') {
+    const monthOffset = parseInt(selectedMonth.split('-')[1]);
+    displayMonth -= monthOffset;
+    if (displayMonth < 1) {
+      displayMonth += 12;
+      displayYear -= 1;
+    }
+  }
+
+  // Ajustement si on est le 1er du mois
+  if (currentDate.getDate() === 1 && selectedMonth === 'N') {
+    if (displayMonth === 1) {
       displayMonth = 12;
-      displayYear = year - 1;
+      displayYear -= 1;
     } else {
-      displayMonth = month - 1;
+      displayMonth -= 1;
     }
   }
 
@@ -148,12 +164,11 @@ export default function Chart({ robotType, data1}: ChartProps) {
     <>
     {/* Section gauche : Histogramme et totaux */}
     <div className="w-full flex justify- gap-4 items-center ">
-
-        <div className="w-2/3 pt-4 pb-12 bg-white rounded-lg shadow ml-2">
+        
+        <div className="w-2/3 pt-4 pb-2 bg-white rounded-lg shadow ml-2">
 
           <div className="h-[300px] relative">
-          <div className="ml-[10%] text-left text-xl font-bold mb-4">Gain de temps</div>
-
+            <div className="ml-[10%] text-left text-xl font-bold mb-4">Gain de temps</div>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={chartData1}
@@ -210,36 +225,75 @@ export default function Chart({ robotType, data1}: ChartProps) {
               </BarChart>
             </ResponsiveContainer>
           </div>
-          {/* Affichage des totaux mensuels (mois courant, M-1, M-2, M-3) */}
-          <div className="flex justify-around mt-10">
-              <div className="w-1/4 mr-5 ml-5 ">
+
+          
+            {/* Widgets des totaux mensuels */}
+            <div className="flex justify-around ">
+              <div className="w-full grid grid-cols-4 gap-4 mt-12 ml-5 mr-5 bg-red-100 rounded-lg shadow-md">
+
                 <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
-                  <div className="ml-4 text-xs ">Total du mois</div>
-                  <div className="ml-4 text-xl " title={data1['NB UNITES DEPUIS DEBUT DU MOIS'] ? data1['NB UNITES DEPUIS DEBUT DU MOIS'] +' minutes' : 'N/A'}>
-                  {data1 && data1['NB UNITES DEPUIS DEBUT DU MOIS'] !== undefined ? formatDuration(data1['NB UNITES DEPUIS DEBUT DU MOIS']) : '0'}
+                  <h3 className="text-2lg font-semibold pl-2">Mois courant</h3>
+                  <p className="text-2xl  font-bold pl-4">{formatDuration(totalCurrentMonth)}</p>
+                </div>
+                <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
+                  <h3 className="text-2lg font-semibold pl-2">Mois N-1</h3>
+                  <p className="text-2xl font-bold pl-4 ">{formatDuration(totalPrevMonth1)}</p>
+                </div>
+                <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
+                  <h3 className="text-2lg font-semibold pl-2">Mois N-2</h3>
+                  <p className="text-2xl font-bold pl-4">{formatDuration(totalPrevMonth2)}</p>
+                </div>
+                <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
+                  <h3 className="text-2lg font-semibold pl-2">Mois N-3</h3>
+                  <p className="text-2xl font-bold pl-4">{formatDuration(totalPrevMonth3)}</p>
+                </div>
+
+              </div>
+            </div>
+
+ 
+          {/* <div className="flex justify-around mt-10">
+
+            <div className="w-full mr-5 ml-5">
+              <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
+                <div className="ml-4 text-xs">Total du mois {selectedMonth === 'N' ? 'Courant' : selectedMonth}</div>
+                <div className="ml-4 text-xl" title={data1['NB UNITES DEPUIS DEBUT DU MOIS'] ? data1['NB UNITES DEPUIS DEBUT DU MOIS'] +' minutes' : 'N/A'}>
+                  {formatDuration(data1 && data1['NB UNITES DEPUIS DEBUT DU MOIS'])}
+                </div>
+              </div>
+            </div>
+
+            <div className=" w-1/4 mr-5 ml-5">
+              <div className={robotType?.toLowerCase() === 'temps' ? ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2' ) : ( 'bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2')}>
+                <div className="ml-4 text-xs ">M-1</div>
+                <div className="ml-4 text-xl" title={data1['NB UNITES DEPUIS DEBUT DU MOIS'] ? data1['NB UNITES DEPUIS DEBUT DU MOIS'] +' minutes' : 'N/A'}>
+                  {formatDuration(data1 && data1['NB UNITES DEPUIS DEBUT DU MOIS'])}
+                </div>
+              </div>
+            </div>
+            <div className=" w-1/4 mr-5 ml-5">
+              <div className={robotType?.toLowerCase() === 'temps' ? ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2' ) : ( 'bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2')}>
+                  <div className="ml-4 text-xs ">M-2</div>
+                  <div className="ml-4 text-xl" title={data1['NB UNITES DEPUIS DEBUT DU MOIS'] ? data1['NB UNITES DEPUIS DEBUT DU MOIS'] +' minutes' : 'N/A'}>
+                  {formatDuration(data1 && data1['NB UNITES DEPUIS DEBUT DU MOIS'])}
+                  </div>
+              </div>
+            </div>
+              <div className="w-1/4 mr-5 ml-5">
+                <div className={robotType?.toLowerCase() === 'temps' ? ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2' ) : ( 'bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2')}>
+                  <div className="ml-4 text-xs ">M-3</div>
+                  <div className="ml-4 text-xl" title={data1['NB UNITES DEPUIS DEBUT DU MOIS'] ? data1['NB UNITES DEPUIS DEBUT DU MOIS'] +' minutes' : 'N/A'}>
+                  {formatDuration(data1 && data1['NB UNITES DEPUIS DEBUT DU MOIS'])}
                   </div>
                 </div>
               </div>
-              <div className=" w-1/4 mr-5 ml-5">
-              <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
-                  <div className="ml-4 text-xs ">M-1</div>
-                  <div className="ml-4 text-xl" title={data1['NB UNITES MOIS N-1'] ? data1['NB UNITES MOIS N-1'] +' minutes' : 'N/A'}>{data1 && data1['NB UNITES MOIS N-1'] !== undefined ? formatDuration(data1['NB UNITES MOIS N-1']) : '0'}</div>
-                </div>
-              </div>
-              <div className=" w-1/4 mr-5 ml-5">
-                <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
-                  <div className="ml-4 text-xs">M-2</div>
-                  <div className="ml-4 text-xl" title={data1['NB UNITES MOIS N-2'] ? data1['NB UNITES MOIS N-2'] +' minutes' : 'N/A'}>{data1 && data1['NB UNITES MOIS N-2'] !== undefined ? formatDuration(data1['NB UNITES MOIS N-2']) : '0'}</div>
-                </div>
-              </div>
-              <div className="w-1/4 mr-5 ml-5">
-              <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
-                  <div className="ml-4 text-xs ">M-3</div>
-                  <div className="ml-4 text-xl" title={data1['NB UNITES MOIS N-3'] ? data1['NB UNITES MOIS N-3'] +' minutes' : 'N/A'}>{data1 && data1['NB UNITES MOIS N-3'] !== undefined ? formatDuration(data1['NB UNITES MOIS N-3']) : '0'}</div>
-                </div>
-              </div>
-          </div>
+
+          </div>  
+          */}
+
+
         </div>
+        
          {/* Section droite : Informations complémentaires sur les robots ("Le saviez-vous ?") */}
         <div className="w-1/3 p-4 pb-12 bg-white rounded-lg shadow ml-2">
             <div className="h-[380px] relative">
