@@ -67,7 +67,6 @@ export default function Chart({ robotType, data1, selectedMonth, setSelectedMont
   // Interface locale pour décrire la forme des données de reporting attendues (exemple)
   interface ReportingData {
     'NB UNITES DEPUIS DEBUT DU MOIS': string;
-    //'NB UNITES MOIS N-1': string;
   }
 
   // États locaux du composant :
@@ -229,23 +228,23 @@ export default function Chart({ robotType, data1, selectedMonth, setSelectedMont
           
             {/* Widgets des totaux mensuels */}
             <div className="flex justify-around ">
-              <div className="w-full grid grid-cols-4 gap-4 mt-12 ml-5 mr-5 bg-red-100 rounded-lg shadow-md">
+              <div className="w-full grid grid-cols-4 gap-4 mt-12 mb-4 ml-5 mr-5 rounded-lg ">
 
-                <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
+                <div className={selectedMonth?.toLowerCase()==='n' ? ('bg-[#3333db] text-white shadow-md rounded-lg py-2 cursor-pointer') : ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2 cursor-pointer')} onClick={() => setSelectedMonth('N')}>
                   <h3 className="text-2lg font-semibold pl-2">Mois courant</h3>
-                  <p className="text-2xl  font-bold pl-4">{formatDuration(totalCurrentMonth)}</p>
+                  <p className="text-2xl  font-bold pl-5">{formatDuration(totalCurrentMonth)}</p>
                 </div>
-                <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
+                <div className={selectedMonth?.toLowerCase()==='n-1' ? ('bg-[#3333db] text-white shadow-md rounded-lg py-2 cursor-pointer') : ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2 cursor-pointer')} onClick={() => setSelectedMonth('N-1')}>
                   <h3 className="text-2lg font-semibold pl-2">Mois N-1</h3>
-                  <p className="text-2xl font-bold pl-4 ">{formatDuration(totalPrevMonth1)}</p>
+                  <p className="text-2xl font-bold pl-5 ">{formatDuration(totalPrevMonth1)}</p>
                 </div>
-                <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
+                <div className={selectedMonth?.toLowerCase()==='n-2' ? ('bg-[#3333db] text-white shadow-md rounded-lg py-2 cursor-pointer') : ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2 cursor-pointer')} onClick={() => setSelectedMonth('N-2')}>
                   <h3 className="text-2lg font-semibold pl-2">Mois N-2</h3>
-                  <p className="text-2xl font-bold pl-4">{formatDuration(totalPrevMonth2)}</p>
+                  <p className="text-2xl font-bold pl-5">{formatDuration(totalPrevMonth2)}</p>
                 </div>
-                <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
+                <div className={selectedMonth?.toLowerCase()==='n-3' ? ('bg-[#3333db] text-white shadow-md rounded-lg py-2 cursor-pointer') : ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2 cursor-pointer')} onClick={() => setSelectedMonth('N-3')}>
                   <h3 className="text-2lg font-semibold pl-2">Mois N-3</h3>
-                  <p className="text-2xl font-bold pl-4">{formatDuration(totalPrevMonth3)}</p>
+                  <p className="text-2xl font-bold pl-5">{formatDuration(totalPrevMonth3)}</p>
                 </div>
 
               </div>

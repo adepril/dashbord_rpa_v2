@@ -452,6 +452,7 @@ export default function Dashboard() {
       <>
         <div className="flex flex-col w-full">
           {/* Widgets de sélection du mois */}
+          {/* 
           <div className="flex justify-start ml-8 space-x-2 mb-4">
             <button
               onClick={() => setSelectedMonth('N')}
@@ -477,7 +478,8 @@ export default function Dashboard() {
             >
               M-3
             </button>
-          </div>
+          </div> 
+          */}
 
           <div className="flex justify-between items-start w-full">
 
