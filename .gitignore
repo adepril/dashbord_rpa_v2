@@ -1,1 +1,9 @@
 .vscode/
+.next/
+.yarn/cache/
+.yarn/build/    
+.vscode/extensions/
+.VSCodeCounter/
+node_modules/
+dist/
+.roo/
