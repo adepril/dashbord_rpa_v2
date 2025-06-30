@@ -3,12 +3,12 @@ import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCgZEssQ-OQMjyYp3PV6pvKpx1NHZgMslA",
-  authDomain: "groupe-bbl.firebaseapp.com",
-  projectId: "groupe-bbl",
-  storageBucket: "groupe-bbl.firebasestorage.app",
-  messagingSenderId: "874485140986",
-  appId: "1:874485140986:web:649396788b0b842c81a843"
+  apiKey: process.env.NEXT_PUBLIC_Firebase_Api_Key ,
+  authDomain: process.env.NEXT_PUBLIC_Firebase_Auth_Domain,
+  projectId: process.env.NEXT_PUBLIC_Firebase_Project_Id,
+  storageBucket: process.env.NEXT_PUBLIC_Firebase_Storage_Bucket,
+  messagingSenderId: process.env.NEXT_PUBLIC_Firebase_Messaging_Sender_Id,
+  appId: process.env.NEXT_PUBLIC_Firebase_App_Id
 };
 
 const app = initializeApp(firebaseConfig);
