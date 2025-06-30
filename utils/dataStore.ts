@@ -688,6 +688,34 @@ export function getReportingData(month: string): ReportingEntry[] {
   }
 }
 
+export function getRobotTotalCurrentMonth(robotId: string): number {
+  const entry = cachedReportingData.currentMonth.find(e =>
+    e['AGENCE'] + '_' + e['NOM PROGRAMME'] === robotId
+  );
+  return entry ? Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) : 0;
+}
+
+export function getRobotTotalPrevMonth1(robotId: string): number {
+  const entry = cachedReportingData.prevMonth1.find(e =>
+    e['AGENCE'] + '_' + e['NOM PROGRAMME'] === robotId
+  );
+  return entry ? Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) : 0;
+}
+
+export function getRobotTotalPrevMonth2(robotId: string): number {
+  const entry = cachedReportingData.prevMonth2.find(e =>
+    e['AGENCE'] + '_' + e['NOM PROGRAMME'] === robotId
+  );
+  return entry ? Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) : 0;
+}
+
+export function getRobotTotalPrevMonth3(robotId: string): number {
+  const entry = cachedReportingData.prevMonth3.find(e =>
+    e['AGENCE'] + '_' + e['NOM PROGRAMME'] === robotId
+  );
+  return entry ? Number(entry['NB UNITES DEPUIS DEBUT DU MOIS']) : 0;
+}
+
 export function getTotalCurrentMonth(): number {
   return totalCurrentMonth;
 }

@@ -35,13 +35,16 @@ import {
   getReportingData,
   ReportingEntry,
   loadAllRobots,
-  cachedRobots4Agencies,
   loadAllAgencies,
   cachedReportingData,
   getTotalCurrentMonth,
   getTotalPrevMonth1,
   getTotalPrevMonth2,
-  getTotalPrevMonth3
+  getTotalPrevMonth3,
+  getRobotTotalCurrentMonth,
+  getRobotTotalPrevMonth1,
+  getRobotTotalPrevMonth2,
+  getRobotTotalPrevMonth3
 } from '../utils/dataStore'
 
 // ============================================================
@@ -115,6 +118,11 @@ export default function Dashboard() {
   const [totalPrevMonth2, setTotalPrevMonth2] = useState<number>(0);
   const [totalPrevMonth3, setTotalPrevMonth3] = useState<number>(0);
 
+  const [totalCurrentMonth_Chart, setTotalCurrentMonth_Chart] = useState<number>(0);
+  const [totalPrevMonth1_Chart, setTotalPrevMonth1_Chart] = useState<number>(0);
+  const [totalPrevMonth2_Chart, setTotalPrevMonth2_Chart] = useState<number>(0);
+  const [totalPrevMonth3_Chart, setTotalPrevMonth3_Chart] = useState<number>(0);
+
   // Récupère l'objet router de Next.js pour rediriger l'utilisateur si besoin
   const router = useRouter();
 
@@ -159,9 +167,6 @@ export default function Dashboard() {
           setTotalPrevMonth2(getTotalPrevMonth2());
           setTotalPrevMonth3(getTotalPrevMonth3());
 
-          // console.log('@@ (dataStore - initializeData) cachedReportingData :', cachedReportingData);
-          // console.log('@@ (dataStore - initializeData) cachedRobots4Agencies :', cachedRobots4Agencies);
-
           // Récupérer les agences depuis le cache
           const userAgencies = getCachedAgencies();
           setAgencies(userAgencies);
@@ -205,7 +210,7 @@ export default function Dashboard() {
           setSelectedRobotData(firstRobot);
           setRobotData(null);
           setRobotData1(null);
-          setRobotData2(null);
+          //setRobotData2(null);
           setHistoriqueData([]);
           setUseChart4All((prev: boolean) => !prev);
         } else {
@@ -225,6 +230,7 @@ export default function Dashboard() {
     const loadProgramData = async () => {
       if (selectedRobotData) {
         if (selectedRobotData.robot === "TOUT") {
+          // ****** Chart4All.tsx ******
           const allRobotsEvolution: any[] = [];
           let oneRobotEvolution: any[] = [];
           const arrJoursDuMois: string[] = new Array(31).fill("0");
@@ -323,29 +329,75 @@ export default function Dashboard() {
 
           setRobotData1(mergedDataType1);
           setHistoriqueData(allRobotsEvolution);
-          setUseChart4All((prev: boolean) => !prev);
+          //setUseChart4All((prev: boolean) => !prev);
+          setUseChart4All(true);
         } else {
+          // ****** Chart.tsx ******
           setUseChart4All(false);
           const tpsParUnit = selectedRobotData.temps_par_unite === '0' ? '0' : selectedRobotData.temps_par_unite;
           // Search in current month data first
           const currentMonthData = cachedReportingData.currentMonth.filter((entry: ReportingEntry) => {
             return entry['AGENCE'] + "_" + entry['NOM PROGRAMME'] === selectedRobotData.agence + "_" + selectedRobotData.robot;
           });
+          const prevMonth1Data = cachedReportingData.prevMonth1.filter((entry: ReportingEntry) => {
+            return entry['AGENCE'] + "_" + entry['NOM PROGRAMME'] === selectedRobotData.agence + "_" + selectedRobotData.robot;
+          });
+          const prevMonth2Data = cachedReportingData.prevMonth2.filter((entry: ReportingEntry) => {
+            return entry['AGENCE'] + "_" + entry['NOM PROGRAMME'] === selectedRobotData.agence + "_" + selectedRobotData.robot;
+          });
+          const prevMonth3Data = cachedReportingData.prevMonth3.filter((entry: ReportingEntry) => {
+            return entry['AGENCE'] + "_" + entry['NOM PROGRAMME'] === selectedRobotData.agence + "_" + selectedRobotData.robot;
+          });
 
-          // If not found, search in previous months
-          const data = currentMonthData.length > 0 ? currentMonthData :
-            [...cachedReportingData.prevMonth1, ...cachedReportingData.prevMonth2, ...cachedReportingData.prevMonth3]
-              .filter((entry: ReportingEntry) => {
-                return entry['AGENCE'] + "_" + entry['NOM PROGRAMME'] === selectedRobotData.agence + "_" + selectedRobotData.robot;
-              });
+          // Récupérer les données pour le robot sélectionné et pour le mois sélectionné
+          const robotEntry = (() => {
+            switch(selectedMonth) {
+            case 'N':
+              return currentMonthData[0];
+            case 'N-1':
+              return prevMonth1Data[0];
+            case 'N-2':
+              return prevMonth2Data[0];
+            case 'N-3':
+              return prevMonth3Data[0];
+            default:
+              return currentMonthData[0];
+            }
+          })();
 
-          const processedData = data.map((entry: ReportingEntry) => ({
-             ...entry,
-              'NB UNITES DEPUIS DEBUT DU MOIS': tpsParUnit !== '0' ? String(Number(entry['NB UNITES DEPUIS DEBUT DU MOIS'])) : String(entry['NB UNITES DEPUIS DEBUT DU MOIS']),
-               ...selectedRobot
-            }));
-          console.log('## processedData:', processedData, " tpsParUnit:", tpsParUnit);
-          setRobotData(processedData[0]);
+          if (robotEntry) {
+            const unitFactor = selectedRobotData.temps_par_unite === '0' ? 1 : Number(selectedRobotData.temps_par_unite);
+            
+            // Mettre à jour les totaux pour le graphique
+            setTotalCurrentMonth_Chart(
+              currentMonthData[0] ? Number(currentMonthData[0]['NB UNITES DEPUIS DEBUT DU MOIS']) : 0
+            );
+            setTotalPrevMonth1_Chart(
+              prevMonth1Data[0] ? Number(prevMonth1Data[0]['NB UNITES DEPUIS DEBUT DU MOIS']) : 0
+            );
+            setTotalPrevMonth2_Chart(
+              prevMonth2Data[0] ? Number(prevMonth2Data[0]['NB UNITES DEPUIS DEBUT DU MOIS']) : 0
+            );
+            setTotalPrevMonth3_Chart(
+              prevMonth3Data[0] ? Number(prevMonth3Data[0]['NB UNITES DEPUIS DEBUT DU MOIS']) : 0
+            );
+
+            // Préparer les données pour l'histogramme
+            const processedData = {
+              ...robotEntry,
+              'NB UNITES DEPUIS DEBUT DU MOIS': tpsParUnit !== '0'
+                ? String(Number(robotEntry['NB UNITES DEPUIS DEBUT DU MOIS']))
+                : String(robotEntry['NB UNITES DEPUIS DEBUT DU MOIS']),
+              ...selectedRobotData
+            };
+            setRobotData(processedData);
+          }
+
+          setTotalCurrentMonth(prevMonth1Data[0] ? Number(prevMonth1Data[0]['NB UNITES DEPUIS DEBUT DU MOIS']) : 0);
+          setTotalPrevMonth1(prevMonth1Data[0] ? Number(prevMonth1Data[0]['NB UNITES DEPUIS DEBUT DU MOIS']) : 0);
+          setTotalPrevMonth2(prevMonth2Data[0] ? Number(prevMonth2Data[0]['NB UNITES DEPUIS DEBUT DU MOIS']) : 0);
+          setTotalPrevMonth3(prevMonth3Data[0] ? Number(prevMonth3Data[0]['NB UNITES DEPUIS DEBUT DU MOIS']) : 0);
+
           const oneRobotEvolution = await fetchEvolutionsByProgram(selectedRobotData.robot, selectedMonth);
           setHistoriqueData(oneRobotEvolution);
         }
@@ -451,35 +503,6 @@ export default function Dashboard() {
     return (
       <>
         <div className="flex flex-col w-full">
-          {/* Widgets de sélection du mois */}
-          {/* 
-          <div className="flex justify-start ml-8 space-x-2 mb-4">
-            <button
-              onClick={() => setSelectedMonth('N')}
-              className={`px-3 py-1 rounded-md text-sm ${selectedMonth === 'N' ? 'bg-blue-600 text-white' : 'bg-blue-100'}`}
-            >
-              Mois courant
-            </button>
-            <button
-              onClick={() => setSelectedMonth('N-1')}
-              className={`px-4 py-2 rounded-lg ${selectedMonth === 'N-1' ? 'bg-blue-600 text-white' : 'bg-blue-200'}`}
-            >
-              M-1
-            </button>
-            <button
-              onClick={() => setSelectedMonth('N-2')}
-              className={`px-4 py-2 rounded-lg ${selectedMonth === 'N-2' ? 'bg-blue-600 text-white' : 'bg-blue-200'}`}
-            >
-              M-2
-            </button>
-            <button
-              onClick={() => setSelectedMonth('N-3')}
-              className={`px-4 py-2 rounded-lg ${selectedMonth === 'N-3' ? 'bg-blue-600 text-white' : 'bg-blue-200'}`}
-            >
-              M-3
-            </button>
-          </div> 
-          */}
 
           <div className="flex justify-between items-start w-full">
 
@@ -599,29 +622,16 @@ export default function Dashboard() {
                         robotType={selectedRobot?.type_gain}
                         data={robotData}
                         selectedAgency={selectedAgency?.idAgence || ''}
+                        selectedMonth={selectedMonth}
+                        setSelectedMonth={setSelectedMonth}
+                        totalCurrentMonth={totalCurrentMonth}
+                        totalPrevMonth1={totalPrevMonth1}
+                        totalPrevMonth2={totalPrevMonth2}
+                        totalPrevMonth3={totalPrevMonth3}
                       />
                     )}
                   </div>
                   
-                  {/* Widgets des totaux mensuels */}
-                  {/* <div className="col-span-4 grid grid-cols-4 gap-4 mt-4">
-                    <div className="bg-white p-4 rounded-lg shadow-md text-center">
-                      <h3 className="text-lg font-semibold">Mois courant</h3>
-                      <p className="text-2xl font-bold text-blue-600">{formatNumber(totalCurrentMonth)}</p>
-                    </div>
-                    <div className="bg-white p-4 rounded-lg shadow-md text-center">
-                      <h3 className="text-lg font-semibold">Mois N-1</h3>
-                      <p className="text-2xl font-bold text-blue-600">{formatNumber(totalPrevMonth1)}</p>
-                    </div>
-                    <div className="bg-white p-4 rounded-lg shadow-md text-center">
-                      <h3 className="text-lg font-semibold">Mois N-2</h3>
-                      <p className="text-2xl font-bold text-blue-600">{formatNumber(totalPrevMonth2)}</p>
-                    </div>
-                    <div className="bg-white p-4 rounded-lg shadow-md text-center">
-                      <h3 className="text-lg font-semibold">Mois N-3</h3>
-                      <p className="text-2xl font-bold text-blue-600">{formatNumber(totalPrevMonth3)}</p>
-                    </div>
-                  </div> */}
                 </div>
 
                 {/* Tableau d'historique des données */}

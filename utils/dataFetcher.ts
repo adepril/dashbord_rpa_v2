@@ -320,3 +320,92 @@ export async function fetchAllUsers(): Promise<{ userId: string; userName: strin
     return [];
   }
 }
+
+/**
+ * Fetches user data from Firestore based on the provided user ID.
+ * @param userId The ID of the user to fetch.
+ * @returns A Promise that resolves to a UserData object or null if the user is not found.
+ */
+export async function fetchUser(userId: string): Promise<UserData | null> {
+  try {
+    const usersRef = collection(db, 'utilisateurs');
+    const q = query(usersRef, where('userId', '==', userId));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      const userData = querySnapshot.docs[0].data();
+      return {
+        userId: userData.userId,
+        userName: userData.userName,
+        userSuperieur: userData.userSuperieur,
+        userValidateur: userData.userValidateur,
+        userAgenceIds: userData.userAgenceIds,
+      };
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.log('Error fetching user:', error);
+    return null;
+  }
+}
+
+
+
+
+
+/**
+ * Fetches reporting data for a specific agency from the Firestore collection "reporting".
+ * @param agence The name of the agency to fetch data for.
+ * @returns A Promise that resolves to an array of reporting data objects.
+ */
+export async function fetchDataReportingByAgency(agence: string) {
+  try {
+    const reportingRef = collection(db, 'reporting');
+    const q = query(reportingRef, where('AGENCE', '==', agence));
+    const querySnapshot = await getDocs(q);
+    const data = querySnapshot.docs.map(doc => doc.data());
+    return data;
+  } catch (error) {
+    console.log('Error fetching reporting data:', error);
+    return [];
+  }
+}
+
+/**
+ * Fetches all reporting data from the Firestore collection "reporting".
+ * @returns A Promise that resolves to an array of reporting data objects.
+ */
+export async function fetchAllReportingData() {
+  try {
+    const reportingRef = collection(db, 'reporting');
+    const querySnapshot = await getDocs(reportingRef);
+    const data = querySnapshot.docs.map(doc => doc.data());
+    return data;
+  } catch (error) {
+    console.log('Error fetching all reporting data:', error);
+    return [];
+  }
+}
+
+/**
+ * Fetches all services from the Firestore collection "services".
+ * @returns A Promise that resolves to an array of service objects with id and name properties.
+ */
+export async function fetchAllServices(): Promise<{ id: string; name: string }[]> {
+  try {
+    const servicesRef = collection(db, 'services');
+    const querySnapshot = await getDocs(servicesRef);
+    const services = querySnapshot.docs.map((doc) => {
+      const serviceData = doc.data();
+      return {
+        id: doc.id,
+        name: serviceData.name,
+      };
+    });
+    return services;
+  } catch (error) {
+    console.log('Error fetching services:', error);
+    return [];
+  }
+}

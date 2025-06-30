@@ -58,11 +58,12 @@ const CustomizedAxisTick: React.FC<CustomizedAxisTickProps> = (props) => {
 // Composant principal d'affichage du graphique et des infos additionnelles sur les robots
 export default function Chart({ robotType, data1, selectedMonth, setSelectedMonth, totalCurrentMonth, totalPrevMonth1, totalPrevMonth2, totalPrevMonth3 }: ChartProps) {
 
-  console.log("Chart4All.tsx - data1:", data1);
-  console.log("Chart4All.tsx - selectedMonth:", selectedMonth);
-  //console.log("Chart4All.tsx - data1:", data1, " data2:", data2);
-  //console.log("Chart4All.tsx - robotType:", selectedAgency);
-  //console.log("Chart4All.tsx - robotType:", cachedAllRobots);
+  // console.log("Chart4All.tsx - data1:", data1);
+  // console.log("Chart4All.tsx - selectedMonth:", selectedMonth);
+  // console.log("Chart4All.tsx - totalCurrentMonth:", totalCurrentMonth);
+  // console.log("Chart4All.tsx - totalPrevMonth1:", totalPrevMonth1);
+  // console.log("Chart4All.tsx - totalPrevMonth2:", totalPrevMonth2);
+  // console.log("Chart4All.tsx - totalPrevMonth3:", totalPrevMonth3);
 
   // Interface locale pour décrire la forme des données de reporting attendues (exemple)
   interface ReportingData {
@@ -250,47 +251,6 @@ export default function Chart({ robotType, data1, selectedMonth, setSelectedMont
               </div>
             </div>
 
- 
-          {/* <div className="flex justify-around mt-10">
-
-            <div className="w-full mr-5 ml-5">
-              <div className='bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2'>
-                <div className="ml-4 text-xs">Total du mois {selectedMonth === 'N' ? 'Courant' : selectedMonth}</div>
-                <div className="ml-4 text-xl" title={data1['NB UNITES DEPUIS DEBUT DU MOIS'] ? data1['NB UNITES DEPUIS DEBUT DU MOIS'] +' minutes' : 'N/A'}>
-                  {formatDuration(data1 && data1['NB UNITES DEPUIS DEBUT DU MOIS'])}
-                </div>
-              </div>
-            </div>
-
-            <div className=" w-1/4 mr-5 ml-5">
-              <div className={robotType?.toLowerCase() === 'temps' ? ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2' ) : ( 'bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2')}>
-                <div className="ml-4 text-xs ">M-1</div>
-                <div className="ml-4 text-xl" title={data1['NB UNITES DEPUIS DEBUT DU MOIS'] ? data1['NB UNITES DEPUIS DEBUT DU MOIS'] +' minutes' : 'N/A'}>
-                  {formatDuration(data1 && data1['NB UNITES DEPUIS DEBUT DU MOIS'])}
-                </div>
-              </div>
-            </div>
-            <div className=" w-1/4 mr-5 ml-5">
-              <div className={robotType?.toLowerCase() === 'temps' ? ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2' ) : ( 'bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2')}>
-                  <div className="ml-4 text-xs ">M-2</div>
-                  <div className="ml-4 text-xl" title={data1['NB UNITES DEPUIS DEBUT DU MOIS'] ? data1['NB UNITES DEPUIS DEBUT DU MOIS'] +' minutes' : 'N/A'}>
-                  {formatDuration(data1 && data1['NB UNITES DEPUIS DEBUT DU MOIS'])}
-                  </div>
-              </div>
-            </div>
-              <div className="w-1/4 mr-5 ml-5">
-                <div className={robotType?.toLowerCase() === 'temps' ? ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2' ) : ( 'bg-[#EA580C] hover:bg-[#c24a0a] text-white shadow-md rounded-lg py-2')}>
-                  <div className="ml-4 text-xs ">M-3</div>
-                  <div className="ml-4 text-xl" title={data1['NB UNITES DEPUIS DEBUT DU MOIS'] ? data1['NB UNITES DEPUIS DEBUT DU MOIS'] +' minutes' : 'N/A'}>
-                  {formatDuration(data1 && data1['NB UNITES DEPUIS DEBUT DU MOIS'])}
-                  </div>
-                </div>
-              </div>
-
-          </div>  
-          */}
-
-
         </div>
         
          {/* Section droite : Informations complémentaires sur les robots ("Le saviez-vous ?") */}
@@ -363,7 +323,7 @@ export default function Chart({ robotType, data1, selectedMonth, setSelectedMont
 
         </div>
 
-      </div>
+    </div>
     </>
   );
 }
