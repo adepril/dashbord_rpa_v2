@@ -250,8 +250,6 @@ export default function Dashboard() {
           let displayMonth = currentDate.getMonth() + 1;
           let displayYear = currentDate.getFullYear();
           
-          //console.log(`[Dashboard] Avant ajustement - selectedMonth: ${selectedMonth}, currentDate: ${currentDate.toLocaleDateString()}, displayMonth: ${displayMonth}, displayYear: ${displayYear}`);
-
           if (selectedMonth !== 'N') {
             const monthOffset = parseInt(selectedMonth.split('-')[1]);
             displayMonth -= monthOffset;
@@ -261,11 +259,8 @@ export default function Dashboard() {
             }
           }
           
-          console.log(`[Dashboard] Après ajustement selectedMonth - displayMonth: ${displayMonth}, displayYear: ${displayYear}`);
-
           // Ajustement si on est le 1er du mois et mois courant
-          if (currentDate.getDate() === 1) {  
-            //console.log(`[Dashboard] Règle spéciale 1er du mois appliquée (selectedMonth: N)`);
+          if (currentDate.getDate() === 1 && selectedMonth === 'N') {
             if (displayMonth === 1) {
               displayMonth = 12;
               displayYear -= 1;
@@ -276,7 +271,6 @@ export default function Dashboard() {
           
           const currentMonth = displayMonth.toString().padStart(2, '0');
           const currentYear = displayYear;
-          //console.log(`[Dashboard] Final - currentMonth (padded): ${currentMonth}, currentYear: ${currentYear}`);
 
           for (const robot of programs) {
             if (robot.robot === "TOUT" || robot.robot === null) 
@@ -329,6 +323,7 @@ export default function Dashboard() {
           for (let i = 1; i <= 31; i++) {
             const dateKey = i.toString().padStart(2, '0') + '/' + currentMonth + '/' + currentYear;
             mergedDataType1[dateKey] = arrJoursDuMois_Type1[i - 1];
+            // mergedDataType2[dateKey] = arrJoursDuMois_Type2[i - 1];
           }
 
           if (selectedAgency && selectedAgency.nomAgence === 'TOUT') {
@@ -340,11 +335,8 @@ export default function Dashboard() {
           setHistoriqueData(allRobotsEvolution);
           //setUseChart4All((prev: boolean) => !prev);
           setUseChart4All(true);
-          // *****************Fin  Chart4All.tsx ************************
-
         } else {
-
-          // ***************** Chart.tsx ************************
+          // ****** Chart.tsx ******
           setUseChart4All(false);
           const tpsParUnit = selectedRobotData.temps_par_unite === '0' ? '0' : selectedRobotData.temps_par_unite;
           // Search in current month data first
@@ -379,7 +371,21 @@ export default function Dashboard() {
 
           if (robotEntry) {
             const unitFactor = selectedRobotData.temps_par_unite === '0' ? 1 : Number(selectedRobotData.temps_par_unite);
-   
+            
+            // Mettre à jour les totaux pour le graphique
+            setTotalCurrentMonth_Chart(
+              currentMonthData[0] ? Number(currentMonthData[0]['NB UNITES DEPUIS DEBUT DU MOIS']) : 0
+            );
+            setTotalPrevMonth1_Chart(
+              prevMonth1Data[0] ? Number(prevMonth1Data[0]['NB UNITES DEPUIS DEBUT DU MOIS']) : 0
+            );
+            setTotalPrevMonth2_Chart(
+              prevMonth2Data[0] ? Number(prevMonth2Data[0]['NB UNITES DEPUIS DEBUT DU MOIS']) : 0
+            );
+            setTotalPrevMonth3_Chart(
+              prevMonth3Data[0] ? Number(prevMonth3Data[0]['NB UNITES DEPUIS DEBUT DU MOIS']) : 0
+            );
+
             // Préparer les données pour l'histogramme
             const processedData = {
               ...robotEntry,
@@ -601,7 +607,7 @@ export default function Dashboard() {
 
                 <div className="grid grid-cols-4 gap-4 bg-x-100">
                   <div className="col-span-4 pb-8">
-                    {/* Graphique général dpour tous les robots */}
+                    {/* Graphique général des données */}
                     {selectedRobot?.robot === 'TOUT' ? (
                       <Chart4All
                         selectedMonth={selectedMonth}
@@ -612,11 +618,7 @@ export default function Dashboard() {
                         totalCurrentMonth={totalCurrentMonth}
                         totalPrevMonth1={totalPrevMonth1}
                         totalPrevMonth2={totalPrevMonth2}
-                        totalPrevMonth3={totalPrevMonth3}                      
-                        monthLabelCurrent={getMonthLabelCurrentMonth()}
-                        monthLabelPrev1={getMonthLabelPrevMonth1()}
-                        monthLabelPrev2={getMonthLabelPrevMonth2()}
-                        monthLabelPrev3={getMonthLabelPrevMonth3()}
+                        totalPrevMonth3={totalPrevMonth3}
                       />
                     ) : (
                       /* Graphique pour un robot spécifique */

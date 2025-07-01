@@ -24,10 +24,6 @@ interface ChartProps {
   totalPrevMonth3: number
   selectedMonth: string, // 'N', 'N-1', 'N-2', 'N-3'
   setSelectedMonth: (month: string) => void
-  monthLabelCurrent: string
-  monthLabelPrev1: string
-  monthLabelPrev2: string
-  monthLabelPrev3: string
 }
 
 // Interface définissant les propriétés utilisées pour personnaliser l'affichage des ticks sur l'axe X
@@ -60,7 +56,7 @@ const CustomizedAxisTick: React.FC<CustomizedAxisTickProps> = (props) => {
 }
 
 // Composant principal d'affichage du graphique et des infos additionnelles sur les robots
-export default function Chart({ robotType, data1, selectedMonth, setSelectedMonth, totalCurrentMonth, totalPrevMonth1, totalPrevMonth2, totalPrevMonth3, monthLabelCurrent, monthLabelPrev1, monthLabelPrev2, monthLabelPrev3 }: ChartProps) {
+export default function Chart({ robotType, data1, selectedMonth, setSelectedMonth, totalCurrentMonth, totalPrevMonth1, totalPrevMonth2, totalPrevMonth3 }: ChartProps) {
 
   console.log("Chart4All.tsx - data1:", data1);
   console.log("Chart4All.tsx - selectedMonth:", selectedMonth);
@@ -68,10 +64,6 @@ export default function Chart({ robotType, data1, selectedMonth, setSelectedMont
   // console.log("Chart4All.tsx - totalPrevMonth1:", totalPrevMonth1);
   // console.log("Chart4All.tsx - totalPrevMonth2:", totalPrevMonth2);
   // console.log("Chart4All.tsx - totalPrevMonth3:", totalPrevMonth3);
-  console.log("Chart4All.tsx - monthLabelCurrent:", monthLabelCurrent);
-  console.log("Chart4All.tsx - monthLabelPrev1:", monthLabelPrev1);
-  console.log("Chart4All.tsx - monthLabelPrev2:", monthLabelPrev2);
-  console.log("Chart4All.tsx - monthLabelPrev3:", monthLabelPrev3);
 
   // Interface locale pour décrire la forme des données de reporting attendues (exemple)
   interface ReportingData {
@@ -123,8 +115,6 @@ export default function Chart({ robotType, data1, selectedMonth, setSelectedMont
   let displayMonth = currentDate.getMonth() + 1;
   let displayYear = currentDate.getFullYear();
   
-  console.log(`[Chart4All] Avant ajustement - selectedMonth: ${selectedMonth}, currentDate: ${currentDate.toLocaleDateString()}, displayMonth: ${displayMonth}, displayYear: ${displayYear}`);
-
   if (selectedMonth !== 'N') {
     const monthOffset = parseInt(selectedMonth.split('-')[1]);
     displayMonth -= monthOffset;
@@ -134,11 +124,8 @@ export default function Chart({ robotType, data1, selectedMonth, setSelectedMont
     }
   }
 
-  console.log(`[Chart4All] Après ajustement selectedMonth - displayMonth: ${displayMonth}, displayYear: ${displayYear}`);
-
   // Ajustement si on est le 1er du mois
-  if (currentDate.getDate() === 1 ){  //&& selectedMonth === 'N') {
-    console.log(`[Chart4All] Règle spéciale 1er du mois appliquée (selectedMonth: N)`);
+  if (currentDate.getDate() === 1 && selectedMonth === 'N') {
     if (displayMonth === 1) {
       displayMonth = 12;
       displayYear -= 1;
@@ -146,8 +133,6 @@ export default function Chart({ robotType, data1, selectedMonth, setSelectedMont
       displayMonth -= 1;
     }
   }
-
-  console.log(`[Chart4All] Final - displayMonth: ${displayMonth}, displayYear: ${displayYear}`);
 
 // Construction des données pour le graphique sur 31 jours :
 // Pour chaque jour, recherche une valeur dans data1 ou attribue 0 par défaut
@@ -247,19 +232,19 @@ export default function Chart({ robotType, data1, selectedMonth, setSelectedMont
               <div className="w-full grid grid-cols-4 gap-4 mt-12 mb-4 ml-5 mr-5 rounded-lg ">
 
                 <div className={selectedMonth?.toLowerCase()==='n' ? ('bg-[#3333db] text-white shadow-md rounded-lg py-2 cursor-pointer') : ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2 cursor-pointer')} onClick={() => setSelectedMonth('N')}>
-                  <h3 className="text-2lg font-semibold pl-2">{monthLabelCurrent}</h3>
+                  <h3 className="text-2lg font-semibold pl-2">Mois courant</h3>
                   <p className="text-2xl  font-bold pl-5">{formatDuration(totalCurrentMonth)}</p>
                 </div>
                 <div className={selectedMonth?.toLowerCase()==='n-1' ? ('bg-[#3333db] text-white shadow-md rounded-lg py-2 cursor-pointer') : ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2 cursor-pointer')} onClick={() => setSelectedMonth('N-1')}>
-                  <h3 className="text-2lg font-semibold pl-2">{monthLabelPrev1}</h3>
+                  <h3 className="text-2lg font-semibold pl-2">Mois N-1</h3>
                   <p className="text-2xl font-bold pl-5 ">{formatDuration(totalPrevMonth1)}</p>
                 </div>
                 <div className={selectedMonth?.toLowerCase()==='n-2' ? ('bg-[#3333db] text-white shadow-md rounded-lg py-2 cursor-pointer') : ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2 cursor-pointer')} onClick={() => setSelectedMonth('N-2')}>
-                  <h3 className="text-2lg font-semibold pl-2">{monthLabelPrev2}</h3>
+                  <h3 className="text-2lg font-semibold pl-2">Mois N-2</h3>
                   <p className="text-2xl font-bold pl-5">{formatDuration(totalPrevMonth2)}</p>
                 </div>
                 <div className={selectedMonth?.toLowerCase()==='n-3' ? ('bg-[#3333db] text-white shadow-md rounded-lg py-2 cursor-pointer') : ('bg-[#3498db] hover:bg-[#3333db] text-white shadow-md rounded-lg py-2 cursor-pointer')} onClick={() => setSelectedMonth('N-3')}>
-                  <h3 className="text-2lg font-semibold pl-2">{monthLabelPrev3}</h3>
+                  <h3 className="text-2lg font-semibold pl-2">Mois N-3</h3>
                   <p className="text-2xl font-bold pl-5">{formatDuration(totalPrevMonth3)}</p>
                 </div>
 

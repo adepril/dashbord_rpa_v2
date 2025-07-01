@@ -392,7 +392,7 @@ export async function loadAllRobots(): Promise<void> {
  * Entrée : Aucun
  * Sortie : Promise<void> — Met à jour cachedRobots.
  */
-async function loadAllRobotsForAgencies(): Promise<void> {
+export async function loadAllRobotsForAgencies(): Promise<void> {
   try {
     const robotsRef = collection(db, 'robots_et_baremes'); // Collection de robots
     const agencyNames = cachedAgencies.map(agency => agency.nomAgence);
@@ -502,63 +502,27 @@ export function getRobotsByAgency(_agencyId: string): Program[] {
  *  - Program[] : Liste des robots filtrés par service.
  */
 export function getRobotsByService(service: string): Program[] {
-  if (!service || service === 'TOUT') {
-    // Créer une copie pour ne pas modifier cachedRobots
-    const robots = [...cachedRobots];
-    // Trier par ordre alphabétique
-    robots.sort((a, b) => a.robot.localeCompare(b.robot));
-    return robots;
+  if (service === 'TOUT' || !service) {
+    return cachedRobots;
   }
-  
-  // Filtrer puis trier
-  const filteredRobots = cachedRobots.filter(robot =>
-    (robot.service ?? '').toLowerCase() === service.toLowerCase()
-  );
-  
-  // Trier par ordre alphabétique
-  filteredRobots.sort((a, b) => a.robot.localeCompare(b.robot));
-  
-  return filteredRobots;
+  return cachedRobots.filter(robot => robot.service === service);
 }
 
 /**
  * getRobotsByAgencyAndService
  * -------------------------------------------------------------------
  * Description :
- *  - Retourne les robots filtrés en fonction de l'agence et du service.
- *  - Si l'agence est "TOUT", retourne tous les robots.
- *  - Sinon, filtre par le nom de l'agence utilisé.
- *  - Ensuite, applique un filtrage par service si spécifié.
- *  - Dans le cas où le service n'est pas défini ou est "TOUT", ajoute le robot "TOUT" dans la liste.
+ *  - Retourne tous les robots filtrés par agence et par service.
+ *  - Si l'agence est "TOUT" (id '99'), retourne tous les robots pour le service spécifié.
+ *  - Si le service est "TOUT" ou non spécifié, retourne tous les robots pour l'agence spécifiée.
  * 
  * Entrée :
- *  - agencyId (string)
- *  - service (string)
+ *  - agencyId (string) : Identifiant de l'agence sélectionnée.
+ *  - service (string) : Nom du service sélectionné.
  * Sortie :
- *  - Program[] : Liste des robots filtrés.
+ *  - Program[] : Liste des robots filtrés par agence et service.
  */
 export function getRobotsByAgencyAndService(agencyId: string, service: string): Program[] {
-  let filteredRobots = cachedRobots;
-
-  // Filtrer par agence si appliqué
-  if (agencyId && agencyId !== 'TOUT') {
-    if (agencyId === '99') {
-      filteredRobots = cachedRobots;
-    } else {
-      const agency = cachedAgencies.find(a => a.idAgence === agencyId);
-      if (agency) {
-        filteredRobots = filteredRobots.filter(robot => robot.agence === agency.nomAgence);
-      }
-    }
-  }
-
-  // Filtrer par service si spécifié
-  if (service && service !== 'TOUT') {
-    filteredRobots = filteredRobots.filter(robot =>
-      (robot.service ?? '').toLowerCase() === service.toLowerCase()
-    );
-  }
-
   const toutRobot: Program = {
     id_robot: 'TOUT',
     robot: 'TOUT',
@@ -568,43 +532,49 @@ export function getRobotsByAgencyAndService(agencyId: string, service: string): 
     type_unite: ''
   };
 
-  // Trier les robots par ordre alphabétique
-  filteredRobots.sort((a, b) => a.robot.localeCompare(b.robot));
-  
-  return [toutRobot, ...filteredRobots];
+  let filteredByAgency: Program[];
+  if (agencyId === '99') {
+    filteredByAgency = cachedRobots4Agencies;
+  } else {
+    const agency = cachedAgencies.find(a => a.idAgence === agencyId);
+    const agencyName = agency ? agency.nomAgence : agencyId;
+    filteredByAgency = cachedRobots4Agencies.filter(r => r.agence === agencyName);
+  }
+
+  if (service === 'TOUT' || !service) {
+    return [toutRobot, ...filteredByAgency.sort((a, b) => a.robot.localeCompare(b.robot))];
+  } else {
+    const filteredByService = filteredByAgency.filter(robot => robot.service === service);
+    return [toutRobot, ...filteredByService.sort((a, b) => a.robot.localeCompare(b.robot))];
+  }
 }
 
-// ============================================================
-// Gestion du cache des services
-// ------------------------------------------------------------
 /**
  * updateService
  * -------------------------------------------------------------------
  * Description :
- *  - Extrait tous les services uniques (non null) des robots et
- *    met à jour le cache cachedServices.
- * 
+ *  - Extrait et met à jour les services disponibles à partir d'une liste de robots.
+ *  - Met à jour la variable globale cachedServices.
+ *
  * Entrée :
- *  - robots: Program[]
+ *  - robots (Program[]) : Liste des robots.
  * Sortie :
- *  - string[] : Liste des services uniques.
+ *  - string[] : Liste des services uniques trouvés.
  */
 export function updateService(robots: Program[]): string[] {
-  // Extraire les services uniques et non-null
-  let services = Array.from(new Set(robots.map(robot => robot.service).filter((s): s is string => !!s)));
-  
-  // Trier les services par ordre alphabétique
-  services.sort((a, b) => a.localeCompare(b));
-  
-  // Mettre à jour le cache
-  cachedServices = services;
-  
-  return services;
+  const services = new Set<string>();
+  services.add("TOUT"); // Toujours ajouter l'option "TOUT"
+
+  robots.forEach(robot => {
+    if (robot.service) {
+      services.add(robot.service);
+    }
+  });
+
+  cachedServices = Array.from(services).sort(); // Convertir en tableau et trier
+  return cachedServices;
 }
 
-// ============================================================
-// Vérification et réinitialisation de l'initialisation
-// ------------------------------------------------------------
 /**
  * isDataInitialized
  * -------------------------------------------------------------------
@@ -617,6 +587,28 @@ export function updateService(robots: Program[]): string[] {
  */
 export function isDataInitialized(): boolean {
   return isInitialized;
+}
+
+/**
+ * isFirstLoginSession
+ * -------------------------------------------------------------------
+ * Description :
+ *  - Retourne true si c'est la première session de l'utilisateur,
+ *    sinon false.
+ */
+export function isFirstLoginSession(): boolean {
+  return isFirstLogin;
+}
+
+/**
+ * updateFirstLoginStatus
+ * -------------------------------------------------------------------
+ * Description :
+ *  - Permet de mettre à jour l'état indiquant que l'utilisateur 
+ *    n'est plus en première connexion.
+ */
+export function updateFirstLoginStatus(): void {
+  isFirstLogin = false;
 }
 
 /**
@@ -645,7 +637,6 @@ export interface ReportingEntry {
   'NOM PROGRAMME': string;
   'NB UNITES DEPUIS DEBUT DU MOIS': string;
   [key: string]: any;
-  monthLabel?: string;
 }
 
 interface MonthlyLabels {
@@ -662,6 +653,7 @@ interface MonthlyData {
   prevMonth3: ReportingEntry[];
   monthLabels: MonthlyLabels;
 }
+
 // Helper function to find data in MonthlyData
 function findInMonthlyData(data: MonthlyData, predicate: (entry: ReportingEntry) => boolean): ReportingEntry | undefined {
   return [...data.currentMonth, ...data.prevMonth1, ...data.prevMonth2, ...data.prevMonth3].find(predicate);
@@ -698,10 +690,7 @@ export function getReportingData(month: string): ReportingEntry[] {
     case 'N-1': return cachedReportingData.prevMonth1;
     case 'N-2': return cachedReportingData.prevMonth2;
     case 'N-3': return cachedReportingData.prevMonth3;
-    default:
-      const data = cachedReportingData.currentMonth;
-      console.log(`[dataStore] getReportingData - Month: ${month}, Data:`, data);
-      return data;
+    default: return [];
   }
 }
 
@@ -749,30 +738,6 @@ export function getTotalPrevMonth3(): number {
   return totalPrevMonth3;
 }
 
-/**
- * initializeReportingData
- * -------------------------------------------------------------------
- * Description :
- *  - Récupère les données de reporting mensuel depuis les collections "dataMoisN", "DataMoisN-1", "DataMoisN-2", "DataMoisN-3".
- *  - Pour chaque document, multiplie les valeurs (exprimées pour chaque jour sous le format "jj/mm/aaaa")
- *    par le temps par unité du robot correspondant si applicable.
- *  - Stocke le résultat dans cachedReportingData.
- * 
- * Entrée : Aucun.
- * Sortie : Promise<void>
- */
-/**
- * calculateMonthlyTotal
- * -------------------------------------------------------------------
- * Description :
- *  - Calcule le total des valeurs numériques pour un mois donné.
- *  - Additionne les valeurs des clés qui représentent des dates (format "jj/mm/aaaa").
- *
- * Entrée :
- *  - data: ReportingEntry[] - Tableau des entrées de reporting pour un mois.
- * Sortie :
- *  - number - Le total calculé pour le mois.
- */
 function calculateMonthlyTotal(data: ReportingEntry[]): number {
   let total = 0;
   data.forEach(entry => {
@@ -790,138 +755,104 @@ function calculateMonthlyTotal(data: ReportingEntry[]): number {
 }
 
 export async function initializeReportingData(): Promise<void> {
+  if (Object.keys(cachedReportingData.currentMonth).length > 0) {
+    console.log('Données de reporting déjà en cache, pas de rechargement.');
+    return;
+  }
+
   try {
-    // Clear existing data
-    cachedReportingData = {
-      currentMonth: [],
-      prevMonth1: [],
-      prevMonth2: [],
-      prevMonth3: [],
-      monthLabels: {
-        currentMonth: '',
-        prevMonth1: '',
-        prevMonth2: '',
-        prevMonth3: ''
-      }
-    };
+    const reportingRef = collection(db, 'reporting');
+    const currentMonthDate = new Date();
+    const prevMonth1Date = new Date();
+    prevMonth1Date.setMonth(currentMonthDate.getMonth() - 1);
+    const prevMonth2Date = new Date();
+    prevMonth2Date.setMonth(currentMonthDate.getMonth() - 2);
+    const prevMonth3Date = new Date();
+    prevMonth3Date.setMonth(currentMonthDate.getMonth() - 3);
 
-    // Calculer les noms des mois
-    const date = new Date();
-    if (date.getDate() === 1) {
-      date.setMonth(date.getMonth() - 1);
-    }
+    const currentMonthQuery = query(
+      reportingRef,
+      where('MOIS', '==', currentMonthDate.getMonth() + 1),
+      where('ANNEE', '==', currentMonthDate.getFullYear())
+    );
+    const prevMonth1Query = query(
+      reportingRef,
+      where('MOIS', '==', prevMonth1Date.getMonth() + 1),
+      where('ANNEE', '==', prevMonth1Date.getFullYear())
+    );
+    const prevMonth2Query = query(
+      reportingRef,
+      where('MOIS', '==', prevMonth2Date.getMonth() + 1),
+      where('ANNEE', '==', prevMonth2Date.getFullYear())
+    );
+    const prevMonth3Query = query(
+      reportingRef,
+      where('MOIS', '==', prevMonth3Date.getMonth() + 1),
+      where('ANNEE', '==', prevMonth3Date.getFullYear())
+    );
 
-    const currentMonthLabel = date.toLocaleString('fr-FR', { month: 'long' });
-    
-    date.setMonth(date.getMonth() - 1);
-    const prevMonth1Label = date.toLocaleString('fr-FR', { month: 'long' });
-    
-    date.setMonth(date.getMonth() - 1);
-    const prevMonth2Label = date.toLocaleString('fr-FR', { month: 'long' });
-    
-    date.setMonth(date.getMonth() - 1);
-    const prevMonth3Label = date.toLocaleString('fr-FR', { month: 'long' });
-
-    cachedReportingData.monthLabels.currentMonth = currentMonthLabel;
-    cachedReportingData.monthLabels.prevMonth1 = prevMonth1Label;
-    cachedReportingData.monthLabels.prevMonth2 = prevMonth2Label;
-    cachedReportingData.monthLabels.prevMonth3 = prevMonth3Label;
-
-    // Récupérer les données des 4 collections (mois courant et 3 mois précédents)
     const [currentMonthSnapshot, prevMonth1Snapshot, prevMonth2Snapshot, prevMonth3Snapshot] = await Promise.all([
-      getDocs(collection(db, 'DataMoisN')),
-      getDocs(collection(db, 'DataMoisN-1')),
-      getDocs(collection(db, 'DataMoisN-2')),
-      getDocs(collection(db, 'DataMoisN-3'))
+      getDocs(currentMonthQuery),
+      getDocs(prevMonth1Query),
+      getDocs(prevMonth2Query),
+      getDocs(prevMonth3Query)
     ]);
 
-    // Fusionner les données dans un format similaire à l'ancienne structure
-    // Initialiser chaque mois séparément
-    cachedReportingData.currentMonth = currentMonthSnapshot.docs.map(doc => createMergedData(doc, cachedReportingData.monthLabels.currentMonth));
-    cachedReportingData.prevMonth1 = prevMonth1Snapshot.docs.map(doc => createMergedData(doc, cachedReportingData.monthLabels.prevMonth1));
-    cachedReportingData.prevMonth2 = prevMonth2Snapshot.docs.map(doc => createMergedData(doc, cachedReportingData.monthLabels.prevMonth2));
-    cachedReportingData.prevMonth3 = prevMonth3Snapshot.docs.map(doc => createMergedData(doc, cachedReportingData.monthLabels.prevMonth3));
-    console.log('@ cachedReportingData.currentMonth  :', cachedReportingData.currentMonth );
-    console.log('@ cachedReportingData.prevMonth1 :', cachedReportingData.prevMonth1 );
-    console.log('@ cachedReportingData.prevMonth2 :', cachedReportingData.prevMonth2 ); 
-    console.log('@ cachedReportingData.prevMonth3 :', cachedReportingData.prevMonth3 );
+    // Interface pour les données fusionnées
+    interface MergedData {
+      [key: string]: any; // Permet les clés dynamiques pour les dates
+      'AGENCE': string;
+      'NOM PROGRAMME': string;
+      'NB UNITES DEPUIS DEBUT DU MOIS': string;
+    }
 
-    // Calculer les totaux mensuels
-    totalCurrentMonth = calculateMonthlyTotal(cachedReportingData.currentMonth);
-    totalPrevMonth1 = calculateMonthlyTotal(cachedReportingData.prevMonth1);
-    totalPrevMonth2 = calculateMonthlyTotal(cachedReportingData.prevMonth2);
-    totalPrevMonth3 = calculateMonthlyTotal(cachedReportingData.prevMonth3);
-
-    // console.log('Total Mois Courant:', totalCurrentMonth);
-    // console.log('Total Mois N-1:', totalPrevMonth1);
-    // console.log('Total Mois N-2:', totalPrevMonth2);
-    // console.log('Total Mois N-3:', totalPrevMonth3);
-
-function createMergedData(doc: any, monthLabel: string): MergedData {
+    function createMergedData(doc: any): MergedData {
       const data = doc.data();
       return {
         'AGENCE': data['AGENCE'] || '',
         'NOM PROGRAMME': data['NOM PROGRAMME'] || '',
         'NB UNITES DEPUIS DEBUT DU MOIS': data['NB UNITES DEPUIS DEBUT DU MOIS'] || '0',
-        monthLabel: monthLabel, // Ajout du champ monthLabel
         ...data
       };
     }
-      const currentData = currentMonthSnapshot.docs[0].data();
-      const matchingRobot = cachedRobots4Agencies.find(robot => robot.id_robot === currentData['AGENCE'] + '_' + currentData['NOM PROGRAMME']);
-      //console.log('@ Matching robot:', matchingRobot);
-   
-      // Interface pour les données fusionnées
-      interface MergedData {
-        [key: string]: any; // Permet les clés dynamiques pour les dates
-        'AGENCE': string;
-        'NOM PROGRAMME': string;
-        'NB UNITES DEPUIS DEBUT DU MOIS': string;
-      }
 
-      // Créer un objet typé avec la même structure que l'ancienne collection
-      const mergedData: MergedData = {
-        'AGENCE': currentData['AGENCE'] || '',
-        'NOM PROGRAMME': currentData['NOM PROGRAMME'] || '',
-        'NB UNITES DEPUIS DEBUT DU MOIS': currentData['NB UNITES DEPUIS DEBUT DU MOIS'] || '0',
-        ...currentData // Spread operator pour les autres propriétés (dates notamment)
-      };
+    cachedReportingData.currentMonth = currentMonthSnapshot.docs.map(doc => createMergedData(doc));
+    cachedReportingData.prevMonth1 = prevMonth1Snapshot.docs.map(doc => createMergedData(doc));
+    cachedReportingData.prevMonth2 = prevMonth2Snapshot.docs.map(doc => createMergedData(doc));
+    cachedReportingData.prevMonth3 = prevMonth3Snapshot.docs.map(doc => createMergedData(doc));
 
-    //console.log('(dataStore) Reporting data cached:', cachedReportingData);
-    console.log('[dataStore] cachedReportingData après initialisation:', cachedReportingData);
-    console.log('[dataStore] monthLabelCurrent:', cachedReportingData.monthLabels.currentMonth);
-    console.log('[dataStore] monthLabelPrev1:', cachedReportingData.monthLabels.prevMonth1);
-    console.log('[dataStore] monthLabelPrev2:', cachedReportingData.monthLabels.prevMonth2);
-    console.log('[dataStore] monthLabelPrev3:', cachedReportingData.monthLabels.prevMonth3);
+    // Calcul des totaux mensuels
+    totalCurrentMonth = calculateMonthlyTotal(cachedReportingData.currentMonth);
+    totalPrevMonth1 = calculateMonthlyTotal(cachedReportingData.prevMonth1);
+    totalPrevMonth2 = calculateMonthlyTotal(cachedReportingData.prevMonth2);
+    totalPrevMonth3 = calculateMonthlyTotal(cachedReportingData.prevMonth3);
+
+    // Déterminer les labels des mois
+    cachedReportingData.monthLabels.currentMonth = getMonthLabelFromData(cachedReportingData.currentMonth);
+    cachedReportingData.monthLabels.prevMonth1 = getMonthLabelFromData(cachedReportingData.prevMonth1);
+    cachedReportingData.monthLabels.prevMonth2 = getMonthLabelFromData(cachedReportingData.prevMonth2);
+    cachedReportingData.monthLabels.prevMonth3 = getMonthLabelFromData(cachedReportingData.prevMonth3);
+
+    console.log("Cached Reporting Data:", cachedReportingData);
+
   } catch (error) {
-    console.log('Error caching reporting data:', error);
+    console.log('Erreur lors du chargement des données de reporting:', error);
     throw error;
   }
 }
 
-// ============================================================
-// Gestion de la première connexion
-// ------------------------------------------------------------
-/**
- * isFirstLoginSession
- * -------------------------------------------------------------------
- * Description :
- *  - Retourne true si c'est la première session de l'utilisateur,
- *    sinon false.
- */
-export function isFirstLoginSession(): boolean {
-  return isFirstLogin;
-}
-
-/**
- * updateFirstLoginStatus
- * -------------------------------------------------------------------
- * Description :
- *  - Permet de mettre à jour l'état indiquant que l'utilisateur 
- *    n'est plus en première connexion.
- */
-export function updateFirstLoginStatus(): void {
-  isFirstLogin = false;
+function getMonthLabelFromData(data: ReportingEntry[]): string {
+  if (data.length > 0) {
+    const firstEntry = data[0];
+    const dateKey = Object.keys(firstEntry).find(key => key.match(/^\d{2}\/\d{2}\/\d{4}$/));
+    if (dateKey) {
+      const monthNumber = parseInt(dateKey.substring(3, 5));
+      const yearNumber = parseInt(dateKey.substring(6, 10));
+      const date = new Date(yearNumber, monthNumber - 1, 1);
+      return date.toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
+    }
+  }
+  return '';
 }
 
 export function getMonthLabelCurrentMonth(): string {

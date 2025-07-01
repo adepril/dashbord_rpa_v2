@@ -18,10 +18,10 @@ interface ChartProps {
   totalPrevMonth1: number
   totalPrevMonth2: number
   totalPrevMonth3: number
-  monthLabelCurrent: string;
-  monthLabelPrev1: string;
-  monthLabelPrev2: string;
-  monthLabelPrev3: string;
+  monthLabelCurrent: string; // Nouvelle prop
+  monthLabelPrev1: string;   // Nouvelle prop
+  monthLabelPrev2: string;   // Nouvelle prop
+  monthLabelPrev3: string;   // Nouvelle prop
 }
 
 interface CustomizedAxisTickProps {
@@ -59,11 +59,6 @@ export default function Chart({ robotType, data, selectedAgency, setSelectedMont
     // console.log("Chart.tsx - totalPrevMonth1:", totalPrevMonth1);
     // console.log("Chart.tsx - totalPrevMonth2:", totalPrevMonth2);
     // console.log("Chart.tsx - totalPrevMonth3:", totalPrevMonth3);
-    console.log("Chart.tsx - monthLabelCurrent:", monthLabelCurrent);
-    console.log("Chart.tsx - monthLabelPrev1:", monthLabelPrev1);
-    console.log("Chart.tsx - monthLabelPrev2:", monthLabelPrev2);
-    console.log("Chart.tsx - monthLabelPrev3:", monthLabelPrev3);
-
 
     const [robots, setRobots] = useState<Program[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -83,7 +78,7 @@ export default function Chart({ robotType, data, selectedAgency, setSelectedMont
     }
 
     // Ajustement si on est le 1er du mois et mois courant
-    if (currentDate.getDate() === 1 ) {
+    if (currentDate.getDate() === 1 && selectedMonth === 'N') {
       if (displayMonth === 1) {
         displayMonth = 12;
         displayYear -= 1;
