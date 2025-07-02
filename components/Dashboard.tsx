@@ -389,9 +389,11 @@ export default function Dashboard() {
               ...selectedRobotData
             };
             setRobotData(processedData);
+          } else {
+            setRobotData(null); // Réinitialiser robotData si aucune entrée n'est trouvée
           }
 
-          setTotalCurrentMonth(prevMonth1Data[0] ? Number(prevMonth1Data[0]['NB UNITES DEPUIS DEBUT DU MOIS']) : 0);
+          setTotalCurrentMonth(currentMonthData[0] ? Number(currentMonthData[0]['NB UNITES DEPUIS DEBUT DU MOIS']) : 0);
           setTotalPrevMonth1(prevMonth1Data[0] ? Number(prevMonth1Data[0]['NB UNITES DEPUIS DEBUT DU MOIS']) : 0);
           setTotalPrevMonth2(prevMonth2Data[0] ? Number(prevMonth2Data[0]['NB UNITES DEPUIS DEBUT DU MOIS']) : 0);
           setTotalPrevMonth3(prevMonth3Data[0] ? Number(prevMonth3Data[0]['NB UNITES DEPUIS DEBUT DU MOIS']) : 0);
@@ -453,6 +455,8 @@ export default function Dashboard() {
       setSelectedRobotData(program);
     } else {
       console.log('_Programme ou agence non trouvé');
+      //setSelectedRobot(null);
+      //setSelectedRobotData(null);
     }
     console.log('--- END ROBOT CHANGE - ', robotID, '---');
   };
