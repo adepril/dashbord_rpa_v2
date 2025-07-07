@@ -242,41 +242,7 @@ export default function Chart({ robotType, data, selectedAgency, setSelectedMont
           </div>
       </div>
 
-      {/* <div className="w-1/3 p-4 pb-12 bg-white rounded-lg shadow ml-2">
-          <div className="h-[400px] relative">
-            {data && Object.keys(data).length > 0 ? (
-              <>
-                <div className="flex justify-center items-center mt-0 bg-x-100">
-                  <span className="text-red-700 text-3xl font-bold">Description</span>
-                </div>
-             
-                <div className="mt-5  px-4 pt-6" >
-                  Robot : <span className="font-bold">{data.robot}</span>
-                </div>
-                <div className="mt-2 ml-4" >
-                  Agence : <span className="_font-bold">{data.agenceLbl}</span>
-                </div>
-                <div className="mt-2 ml-4" >
-                  Service : <span className="font-">{data.service}</span>
-                </div>
-                <div className="mt-4 px-4 pt-2" >
-                {data.description_long}
-                </div>
-                <div className="mt-4 px-4 pt-2" >
-                Problème : {data.probleme}
-                </div>
-                <div className="mt-4 px-4 pt-2" >
-                Solution apportée : {data.resultat}
-                </div>
-                </>
-              ) : (
-                <div className="flex justify-center items-center text-center h-[400px] ">
-                  <span className="text-gray-500">Aucune donnée disponible</span>
-                </div>
-              )}
-          
-          </div>
-      </div> */}
+
 
       <div className="w-1/3 p-4 pb-12 bg-white rounded-lg shadow ml-2">
           <div className="h-[400px] relative">
